@@ -3,8 +3,10 @@ TCP/IP stack for dpdk
 
 Netdp is porting from [FreeBSD](http://freebsd.org) TCP/IP stack, and provide a userspace TCP/IP stack for use with the Intel [dpdk](http://dpdk.org/). 
 
-See the [wiki page](https://github.com/dpdk-net/netdp/wiki) for more information and instructions.
+[Wiki Page](https://github.com/dpdk-net/netdp/wiki)
+=====
 
+You can get more information and instructions from wiki page.
 
 Support
 =====
