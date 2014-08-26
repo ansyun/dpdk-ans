@@ -9,3 +9,5 @@ See the [wiki page](https://github.com/dpdk-net/netdp/wiki) for more information
 Support
 =====
 For free support, please use netdp team mail list at zimeiw@163.com.
+
+If someone has interest to implement some commands to configure ethernet, IP and routing, please contact us.
