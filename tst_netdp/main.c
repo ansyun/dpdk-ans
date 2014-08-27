@@ -80,12 +80,10 @@
 /* add by netdp_team -- start */
 #include <rte_spinlock.h>
 
-#include "socket.h"
 #include "netdp_init.h"
 #include "netdp_enet_config.h"
-#include "netdp_enet.h"
-#include "netdp_ip_route.h"
-#include "netdp_ip_if_var.h"
+#include "netdp_ip_config.h"
+
 /* add by netdp_team -- end */
 
 
@@ -2430,11 +2428,11 @@ MAIN(int argc, char **argv)
 		printf("add dpdk0 device\r\n");
 		
 		uint8_t *ifname = "dpdk0";
-		netdp_enet_add_intf(portid,  ifname, &ports_eth_addr[portid]);
+		netdp_intf_add(portid,  ifname, &ports_eth_addr[portid]);
 
 		printf("add IP on device\r\n");
 
-		netdp_enet_intf_add_ipaddr((caddr_t)ifname, 0x02020202, 0x00ffffff);
+		netdp_intf_add_ipaddr((caddr_t)ifname, 0x02020202, 0x00ffffff);
        	/* add by netdp_team ---end */
 	
 	}
@@ -2470,15 +2468,15 @@ MAIN(int argc, char **argv)
 
 
       	/* add by netdp_team ---start */
-	netdp_enet_intf_show();
+	netdp_intf_show();
 
 	int route_ret = 0;
 	printf("add static route \r\n");
 
-	route_ret = netdp_ip_add_route(0x00030303, 1, 0x03020202, 0x00ffffff, NETDP_IP_RTF_GATEWAY);
+	route_ret = netdp_add_route(0x00030303, 1, 0x03020202, 0x00ffffff, NETDP_IP_RTF_GATEWAY);
 	//printf("route_ret %d \r\n", route_ret);
 	
-	netdp_ip_route_show_all();
+	netdp_route_show_all();
 
 	printf("\n");
       	/* add by netdp_team ---end */
