@@ -35,12 +35,11 @@
 #ifndef __NETDP_INIT_H__
 #define __NETDP_INIT_H__
 
-#include "netdp_enet.h"
-
 
 typedef void (*netdp_alloc_mbuf_cb)(uint8_t lcore_id, struct rte_mbuf **m);
 
-extern netdp_alloc_mbuf_cb alloc_mbuf_fn; 
+typedef int (*netdp_send_packet_cb)(struct rte_mbuf *m, uint8_t port);
+
 
 int netdp_init(void);
 int netdp_register(netdp_send_packet_cb send_cb, netdp_alloc_mbuf_cb alloc_cb);

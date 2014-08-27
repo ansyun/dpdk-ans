@@ -67,16 +67,23 @@
 #ifndef __NETDP_ENET_CONFIG_H__ 
 #define __NETDP_ENET_CONFIG_H__
 
-#include "netdp_ip_in_var.h"
 
-#define BUF_SIZE (3 * 1024)
-extern  uint64_t etherstatusmask, etherportmask, activeportmask;
+/* if_flags */
+#define NETDP_ENET_IFF_UP                     0x01
+#define NETDP_ENET_IFF_BROADCAST      0x02
+#define NETDP_ENET_IFF_DEBUG              0x04	      /* Turn on debugging.  */
+#define NETDP_ENET_IFF_LOOPBACK         0x08	      /* Is a loopback net.  */
+#define NETDP_ENET_IFF_POINTOPOINT   0x10
+#define NETDP_ENET_IFF_RUNNING           0x40        /* resources allocated */
+#define NETDP_ENET_IFF_NOARP              0x80         /* no address resolution protocol */
+#define NETDP_ENET_IFF_PPROMISC         0x100       /* Receive all packets.  */
+#define NETDP_ENET_IFF_STATICARP       0x80000	/* static ARP */
 
 
-void netdp_enet_intf_add(uint8_t port, uint8_t *if_name, struct ether_addr *mac_addr);
+void netdp_intf_add(uint8_t port, uint8_t *if_name, struct ether_addr *mac_addr);
 
 
-void netdp_enet_intf_del(uint8_t port);
+void netdp_intf_del(uint8_t port);
 
 
 /**
@@ -87,7 +94,7 @@ void netdp_enet_intf_del(uint8_t port);
  *
  */
 
-int netdp_enet_intf_show(void);
+int netdp_intf_show(void);
 
 
 
@@ -102,7 +109,7 @@ int netdp_enet_intf_show(void);
  *
  */
 
-int netdp_enet_intf_get(int *len, caddr_t buf);
+int netdp_intf_get(int *len, caddr_t buf);
 
 
 
@@ -116,7 +123,7 @@ int netdp_enet_intf_get(int *len, caddr_t buf);
  *
  */
 
-int netdp_enet_intf_get_mtu(caddr_t name, int *len);
+int netdp_intf_get_mtu(caddr_t name, int *len);
 
 
 
@@ -130,7 +137,7 @@ int netdp_enet_intf_get_mtu(caddr_t name, int *len);
  *
  */
 
-int netdp_enet_intf_set_mtu(caddr_t name, int *len);
+int netdp_intf_set_mtu(caddr_t name, int *len);
 
 
 
@@ -144,7 +151,7 @@ int netdp_enet_intf_set_mtu(caddr_t name, int *len);
  *
  */
 
-int netdp_enet_intf_get_flags(caddr_t name, int *flags);
+int netdp_intf_get_flags(caddr_t name, int *flags);
 
 
 
@@ -158,7 +165,7 @@ int netdp_enet_intf_get_flags(caddr_t name, int *flags);
  *
  */
 
-int netdp_enet_intf_set_flags(caddr_t name, int *flags);
+int netdp_intf_set_flags(caddr_t name, int *flags);
 
 
 
@@ -173,7 +180,7 @@ int netdp_enet_intf_set_flags(caddr_t name, int *flags);
  *
  */
 
-int netdp_enet_intf_add_ipaddr(caddr_t name, int ip_addr, int netmask);
+int netdp_intf_add_ipaddr(caddr_t name, int ip_addr, int netmask);
 
 /**
  * Delete IP address for an interface.
@@ -185,7 +192,7 @@ int netdp_enet_intf_add_ipaddr(caddr_t name, int ip_addr, int netmask);
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-int netdp_enet_intf_del_ipaddr(caddr_t name, int ip_addr, int netmask);
+int netdp_intf_del_ipaddr(caddr_t name, int ip_addr, int netmask);
 
 
 /**
@@ -198,7 +205,7 @@ int netdp_enet_intf_del_ipaddr(caddr_t name, int ip_addr, int netmask);
  *
  */
 
-int netdp_enet_intf_add_alias_ipaddr(caddr_t name, int ip_addr);
+int netdp_intf_add_alias_ipaddr(caddr_t name, int ip_addr);
 
 
 
@@ -212,6 +219,6 @@ int netdp_enet_intf_add_alias_ipaddr(caddr_t name, int ip_addr);
  *
  */
 
-int netdp_enet_intf_del_alias_ipaddr(caddr_t name, int ip_addr);
+int netdp_intf_del_alias_ipaddr(caddr_t name, int ip_addr);
 
 #endif
