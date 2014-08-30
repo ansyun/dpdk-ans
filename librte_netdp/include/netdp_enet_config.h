@@ -79,11 +79,27 @@
 #define NETDP_ENET_IFF_PPROMISC         0x100       /* Receive all packets.  */
 #define NETDP_ENET_IFF_STATICARP       0x80000	/* static ARP */
 
+/**
+ * Add an interface.
+ *
+ * @param port      port of the interface 
+ * @param if_name      name of the interface 
+ * @param mac_addr   mac address of the interface
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
+int netdp_intf_add(uint8_t port, uint8_t *if_name, struct ether_addr *mac_addr);
 
-void netdp_intf_add(uint8_t port, uint8_t *if_name, struct ether_addr *mac_addr);
-
-
-void netdp_intf_del(uint8_t port);
+/**
+ * Delete an interface.
+ *
+ * @param port      port of the interface 
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
+int netdp_intf_del(uint8_t port);
 
 
 /**

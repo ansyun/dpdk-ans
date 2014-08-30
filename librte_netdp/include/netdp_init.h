@@ -43,5 +43,6 @@ typedef int (*netdp_send_packet_cb)(struct rte_mbuf *m, uint8_t port);
 
 int netdp_init(void);
 int netdp_register(netdp_send_packet_cb send_cb, netdp_alloc_mbuf_cb alloc_cb);
+uint64_t netdp_enet_input(struct rte_mbuf *m, uint8_t portid);
 
 #endif /* __NETDP_INIT_H__ */
