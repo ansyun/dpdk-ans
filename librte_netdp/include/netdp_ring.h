@@ -39,10 +39,84 @@
 #define NETDP_SEC_2_PRI           "NETDP_CTRL_SEC_2_PRI"
 #define NETDP_PRI_2_SEC           "NETDP_CTRL_PRI_2_SEC"
 
-#define NETDP_CTRL_RING_SIZE   512
+#define NETDP_CTRL_RING_SIZE   256
+
+typedef enum 
+{
+   NETDP_MSG_TYPE_IPADDR,
+   NETDP_MSG_TYPE_ROUTE,
+} netdp_msg_type_e;
+
+typedef enum 
+{
+   NETDP_MSG_ACTION_ADD,
+   NETDP_MSG_ACTION_DEL,
+   NETDP_MSG_ACTION_SHOW,
+} netdp_msg_action_e;
+
+typedef struct 
+{
+  uint32_t ip_addr;
+  uint32_t netmask;
+}netdp_ipaddr_t;
+
+#define NETDP_IFNAME_LEN_MAX   16
+
+typedef struct 
+{
+  char ifname[NETDP_IFNAME_LEN_MAX];
+  netdp_ipaddr_t ip;
+}netdp_ipaddr_conf_t;
+
+typedef struct 
+{
+  netdp_ipaddr_t dest_ip;
+  uint32_t gateway_addr;
+}netdp_route_conf_t;
+
+typedef union
+{
+   netdp_ipaddr_conf_t   ipaddr_conf;
+   netdp_route_conf_t     route_conf;
+}netdp_conf_data_t;
+
+typedef struct
+{
+  netdp_msg_type_e   msg_type;
+  netdp_msg_action_e msg_action;
+  netdp_conf_data_t    msg_data;
+}netdp_conf_req_t;
+
+typedef struct
+{
+    char ifname[16];
+    char ifaddr[6];
+    netdp_ipaddr_t ip[10];  /* only show ten ip address*/
+}netdp_ipaddr_show_t;
+
+typedef struct
+{
+//    char ifname[16];
+//    netdp_ipaddr_t ipaddr[10];  
+}netdp_route_show_t;
 
 
- int netdp_init_ring(void);
- void netdp_ring_handle();
+typedef union
+{
+   netdp_ipaddr_show_t   ipaddr_show;
+   netdp_route_show_t    route_show;
+}netdp_show_data_t;
+
+typedef struct
+{
+    int  status;
+    netdp_msg_type_e   msg_type;
+    netdp_msg_action_e msg_action;
+    netdp_show_data_t   msg_data;
+}netdp_conf_ack_t;
+
+
+int netdp_ring_init(void); 
+void netdp_ring_handle();
 
 #endif /* __NETDP_RING_H__ */

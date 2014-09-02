@@ -34,7 +34,7 @@
 
 /*-
  * Copyright (c) 1982, 1986, 1993
- *	The Regents of the University of California.  All rights reserved.
+ *  The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -71,13 +71,13 @@
 /* if_flags */
 #define NETDP_ENET_IFF_UP                     0x01
 #define NETDP_ENET_IFF_BROADCAST      0x02
-#define NETDP_ENET_IFF_DEBUG              0x04	      /* Turn on debugging.  */
-#define NETDP_ENET_IFF_LOOPBACK         0x08	      /* Is a loopback net.  */
+#define NETDP_ENET_IFF_DEBUG              0x04        /* Turn on debugging.  */
+#define NETDP_ENET_IFF_LOOPBACK         0x08        /* Is a loopback net.  */
 #define NETDP_ENET_IFF_POINTOPOINT   0x10
 #define NETDP_ENET_IFF_RUNNING           0x40        /* resources allocated */
 #define NETDP_ENET_IFF_NOARP              0x80         /* no address resolution protocol */
 #define NETDP_ENET_IFF_PPROMISC         0x100       /* Receive all packets.  */
-#define NETDP_ENET_IFF_STATICARP       0x80000	/* static ARP */
+#define NETDP_ENET_IFF_STATICARP       0x80000  /* static ARP */
 
 /**
  * Add an interface.
