@@ -1,7 +1,7 @@
 /*-
  *   BSD LICENSE
  *
- *   Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+ *   Copyright(c) 2010-2014 Netdp Corporation. All rights reserved.
  *   All rights reserved.
  *
  *   Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *       notice, this list of conditions and the following disclaimer in
  *       the documentation and/or other materials provided with the
  *       distribution.
- *     * Neither the name of Intel Corporation nor the names of its
+ *     * Neither the name of Netdp Corporation nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -31,32 +31,6 @@
  *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Copyright (c) 2009, Olivier MATZ <zer0@droids-corp.org>
- * All rights reserved.
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the University of California, Berkeley nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 
 #include <stdio.h>
 #include <stdint.h>
@@ -112,10 +86,6 @@
 #include "netdp_errno.h"
 #include "netdp_ring.h"
 
-struct rte_ring *netdpcmd_ring_tx;
-struct rte_ring *netdpcmd_ring_rx;
-struct rte_mempool *netdpcmd_message_pool;
-
 
 uint32_t netmask_len2int(int mask_len)
 {
@@ -132,33 +102,19 @@ uint32_t netmask_len2int(int mask_len)
     return i_mask;
 }
 
-int netdpcmd_ring_init(void)  
+
+int netmask_int2len(unsigned int mask)
 {
+    int netmask = 0;
 
-    netdpcmd_ring_rx = rte_ring_lookup(NETDP_PRI_2_SEC);
-    if(NULL == netdpcmd_ring_rx)
+    while (mask & 0x80000000)
     {
-        printf("Lookup ring(%s) failed \n", NETDP_PRI_2_SEC);
-        return NETDP_ECTRLRING;
+        netmask++;
+        mask = (mask << 1);
     }
 
-    netdpcmd_ring_tx = rte_ring_lookup(NETDP_SEC_2_PRI);
-     if(NULL == netdpcmd_ring_tx)
-    {
-        printf("Lookup ring(%s) failed \n", NETDP_SEC_2_PRI);
-        return NETDP_ECTRLRING;
-    }
-
-    netdpcmd_message_pool = rte_mempool_lookup(NETDP_MSG_POLL_NAME);
-     if(NULL == netdpcmd_message_pool)
-    {
-        printf("Lookup message pool(%s) failed \n", NETDP_MSG_POLL_NAME);
-        return NETDP_EMSGPOOL;
-    }
-        
-    return 0;
+    return netmask;    
 }
-
 
 
 cmdline_parse_token_string_t netdpcmd_name =
@@ -199,8 +155,9 @@ static void netdpcmd_ip_add_parsed(void *parsed_result,
              struct cmdline *cl,
              __attribute__((unused)) void *data)
 {
-    void *req_msg = NULL;
-    netdp_conf_req_t *conf_req=NULL;
+    int ret = 0;
+    netdp_conf_req_t conf_req;
+    netdp_conf_ack_t conf_ack;
     struct netdpcmd_ip_addr_result *res = parsed_result;
     char ip_str[INET6_ADDRSTRLEN];
     
@@ -214,32 +171,41 @@ static void netdpcmd_ip_add_parsed(void *parsed_result,
         return;
     }
 
-    if (rte_mempool_get(netdpcmd_message_pool, &req_msg) < 0)
+    memset(&conf_req, 0, sizeof(conf_req));
+
+    conf_req.msg_type = NETDP_MSG_TYPE_IPADDR;
+    conf_req.msg_action= NETDP_MSG_ACTION_ADD;
+
+    strcpy(conf_req.msg_data.ipaddr_conf.ifname, res->iface);
+
+    conf_req.msg_data.ipaddr_conf.ip.ip_addr = res->ipaddr.addr.ipv4.s_addr;
+    conf_req.msg_data.ipaddr_conf.ip.netmask = netmask_len2int(res->ipaddr.prefixlen);
+        
+    ret = netdpcmd_ring_send((void *) &conf_req, sizeof(conf_req));
+
+    memset(&conf_ack, 0, sizeof(conf_ack));
+
+     ret = netdpcmd_ring_recv((void *) &conf_ack, sizeof(conf_ack));
+
+    if(ret != NETDPCMD_RECV_MSG)
     {
-        cmdline_printf(cl, "Getting message failed when adding IP address\n");
+        cmdline_printf(cl, "No reply\n");
         return;
     }
 
-    conf_req = (netdp_conf_req_t *)req_msg;
-
-    conf_req->msg_type = NETDP_MSG_TYPE_IPADDR;
-    conf_req->msg_action= NETDP_MSG_ACTION_ADD;
-
-    rte_memcpy(conf_req->msg_data.ipaddr_conf.ifname, res->iface, strlen(res->iface));
-
-    conf_req->msg_data.ipaddr_conf.ip.ip_addr = res->ipaddr.addr.ipv4.s_addr;
-    conf_req->msg_data.ipaddr_conf.ip.netmask = netmask_len2int(res->ipaddr.prefixlen);
-        
-    if (rte_ring_enqueue(netdpcmd_ring_tx, req_msg) < 0) 
+    if(conf_ack.status != 0)
     {
-        cmdline_printf(cl, "Sending message to NETDP stack failed when adding IP address \n");
-        rte_mempool_put(netdpcmd_message_pool, req_msg);
+         cmdline_printf(cl, "Add IP address failed,  error code %d \n", conf_ack.status);
     }
-
+    else
+    {
+         cmdline_printf(cl, "Add IP address successfully \n");
+    }
+    return;
 }
 
 
-cmdline_parse_inst_t netcmd_ip_add = {
+cmdline_parse_inst_t netdpcmd_ip_add = {
   .f = netdpcmd_ip_add_parsed,            /* function to call */
   .data = NULL,                                   /* 2nd arg of func */
   .help_str = "ip addr add 2.2.2.2/24 dev eth2",
@@ -264,16 +230,63 @@ static void netdpcmd_ip_del_parsed(void *parsed_result,
              struct cmdline *cl,
              __attribute__((unused)) void *data)
 {
-  struct netdpcmd_ip_addr_result *res = parsed_result;
-  char ip_str[INET6_ADDRSTRLEN];
+    int ret = 0;
+    netdp_conf_req_t conf_req;
+    netdp_conf_ack_t conf_ack;
+    struct netdpcmd_ip_addr_result *res = parsed_result;
+    char ip_str[INET6_ADDRSTRLEN];
 
-       snprintf(ip_str, sizeof(ip_str), NIPQUAD_FMT, NIPQUAD(res->ipaddr.addr.ipv4));
+    snprintf(ip_str, sizeof(ip_str), NIPQUAD_FMT, NIPQUAD(res->ipaddr.addr.ipv4));
 
-  cmdline_printf(cl, "cmd: %s %s %s %s/%d %s %s\n", res->name, res->type, res->action, ip_str, res->ipaddr.prefixlen, res->dev, res->iface);
+    cmdline_printf(cl, "cmd: %s %s %s %s/%d %s %s\n", res->name, res->type, res->action, ip_str, res->ipaddr.prefixlen, res->dev, res->iface);
 
+
+    if(strlen(res->name) > NETDP_IFNAME_LEN_MAX -1)
+    {
+        cmdline_printf(cl, "Too long device name, max length is %d \n", NETDP_IFNAME_LEN_MAX -1);
+        return;
+    }
+
+
+    conf_req.msg_type = NETDP_MSG_TYPE_IPADDR;
+    conf_req.msg_action= NETDP_MSG_ACTION_DEL;
+
+    strcpy(conf_req.msg_data.ipaddr_conf.ifname, res->iface);
+
+    conf_req.msg_data.ipaddr_conf.ip.ip_addr = res->ipaddr.addr.ipv4.s_addr;
+    conf_req.msg_data.ipaddr_conf.ip.netmask = netmask_len2int(res->ipaddr.prefixlen);
+        
+    ret = netdpcmd_ring_send((void *) &conf_req, sizeof(conf_req));
+
+    memset(&conf_ack, 0, sizeof(conf_ack));
+
+     ret = netdpcmd_ring_recv((void *) &conf_ack, sizeof(conf_ack));
+
+    if(ret != NETDPCMD_RECV_MSG)
+    {
+        cmdline_printf(cl, "No reply\n");
+        return;
+    }
+
+    if(conf_ack.status != 0)
+    {
+         cmdline_printf(cl, "Show IP address failed,  error code %d \n", conf_ack.status);
+         return;
+    }
+
+    if(conf_ack.status != 0)
+    {
+         cmdline_printf(cl, "Del IP address failed,  error code %d \n", conf_ack.status);
+    }
+    else
+    {
+         cmdline_printf(cl, "Del IP address successfully \n");
+    }
+
+    return;
 }
 
-cmdline_parse_inst_t netcmd_ip_del = {
+cmdline_parse_inst_t netdpcmd_ip_del = {
   .f = netdpcmd_ip_del_parsed,            /* function to call */
   .data = NULL,                                   /* 2nd arg of func */
   .help_str = "ip addr del 2.2.2.2/24 dev eth2",
@@ -298,16 +311,63 @@ static void netdpcmd_ip_show_parsed(void *parsed_result,
              struct cmdline *cl,
              __attribute__((unused)) void *data)
 {
-  struct netdpcmd_ip_addr_result *res = parsed_result;
-  char ip_str[INET6_ADDRSTRLEN];
+    int i = 0;
+    int ret = 0;
+    netdp_conf_req_t conf_req;
+    netdp_conf_ack_t conf_ack;
+    struct netdpcmd_ip_addr_result *res = parsed_result;
+    struct in_addr ipaddr;
+    int mask_len;
+ 
+    conf_req.msg_type = NETDP_MSG_TYPE_IPADDR;
+    conf_req.msg_action= NETDP_MSG_ACTION_SHOW;
+        
+     ret = netdpcmd_ring_send((void *) &conf_req, sizeof(conf_req));
 
-       snprintf(ip_str, sizeof(ip_str), NIPQUAD_FMT, NIPQUAD(res->ipaddr.addr.ipv4));
+    memset(&conf_ack, 0, sizeof(conf_ack));
 
-  cmdline_printf(cl, "cmd: %s %s %s \n", res->name, res->type, res->action);
+     ret = netdpcmd_ring_recv((void *) &conf_ack, sizeof(conf_ack));
 
-}
+    if(ret != NETDPCMD_RECV_MSG)
+    {
+        cmdline_printf(cl, "No reply\n");
+        return;
+    }
 
-cmdline_parse_inst_t netcmd_ip_show = {
+    if(conf_ack.status != 0)
+    {
+         cmdline_printf(cl, "Show IP address failed,  error code %d \n", conf_ack.status);
+         return;
+    }
+    
+    cmdline_printf(cl, "\n%s\t", conf_ack.msg_data.ipaddr_show.ifname);
+    cmdline_printf(cl, "HWaddr %02x:%02x:%02x:%02x:%02x:%02x\n", 
+        conf_ack.msg_data.ipaddr_show.ifaddr[0],
+        conf_ack.msg_data.ipaddr_show.ifaddr[1],
+        conf_ack.msg_data.ipaddr_show.ifaddr[2],
+        conf_ack.msg_data.ipaddr_show.ifaddr[3],
+        conf_ack.msg_data.ipaddr_show.ifaddr[4],
+        conf_ack.msg_data.ipaddr_show.ifaddr[5]
+        );
+    
+
+    for(i = 0; i < NETDP_IP_PER_IF_MAX; i++ )
+    {
+        memset(&ipaddr, 0, sizeof(ipaddr));
+
+        if(conf_ack.msg_data.ipaddr_show.ip[i].ip_addr == 0)
+            continue;
+        
+        ipaddr.s_addr =  conf_ack.msg_data.ipaddr_show.ip[i].ip_addr;
+        mask_len =  netmask_int2len(ntohl(conf_ack.msg_data.ipaddr_show.ip[i].netmask));
+        cmdline_printf(cl, "\tinet addr:" NIPQUAD_FMT "/%d\n" , NIPQUAD(ipaddr), mask_len);
+
+    }
+
+    return;
+ }
+
+cmdline_parse_inst_t netdpcmd_ip_show = {
   .f = netdpcmd_ip_show_parsed,            /* function to call */
   .data = NULL,                                   /* 2nd arg of func */
   .help_str = "ip addr show",
@@ -323,7 +383,7 @@ cmdline_parse_inst_t netcmd_ip_show = {
 
 /*********************************************************
 *
-*    IP address add
+*    route add
 *
 *
 **********************************************************/
@@ -340,7 +400,7 @@ static void netdpcmd_route_add_parsed(void *parsed_result,
 
 }
 
-cmdline_parse_inst_t netcmd_route_add = {
+cmdline_parse_inst_t netdpcmd_route_add = {
   .f = netdpcmd_route_add_parsed,            /* function to call */
   .data = NULL,                                   /* 2nd arg of func */
   .help_str = "ip route add 2.2.2.2/24  via 3.3.3.3",
@@ -350,16 +410,107 @@ cmdline_parse_inst_t netcmd_route_add = {
     (void *)&netdpcmd_action_add,
     (void *)&netdpcmd_route_destip,
     (void *)&netdpcmd_route_via,
-         (void *)&netdpcmd_route_nexthop,
+    (void *)&netdpcmd_route_nexthop,
+    NULL,
+  },
+};
+
+/*********************************************************
+*
+*    route del
+*
+*
+**********************************************************/
+static void netdpcmd_route_del_parsed(void *parsed_result,
+             struct cmdline *cl,
+             __attribute__((unused)) void *data)
+{
+  struct netdpcmd_ip_addr_result *res = parsed_result;
+//  char ip_str[INET6_ADDRSTRLEN];
+
+  //     snprintf(ip_str, sizeof(ip_str), NIPQUAD_FMT, NIPQUAD(res->ipaddr.addr.ipv4));
+
+  cmdline_printf(cl, "cmd: %s %s %s \n", res->name, res->type, res->action);
+
+}
+
+cmdline_parse_inst_t netdpcmd_route_del = {
+  .f = netdpcmd_route_add_parsed,            /* function to call */
+  .data = NULL,                                   /* 2nd arg of func */
+  .help_str = "ip route del 2.2.2.2/24 ",
+  .tokens = {                                    /* token list, NULL terminated */
+    (void *)&netdpcmd_name,
+    (void *)&netdpcmd_route_type,
+    (void *)&netdpcmd_action_del,
+    (void *)&netdpcmd_route_destip,
     NULL,
   },
 };
 
 
+/*********************************************************
+*
+*    route show
+*
+*
+**********************************************************/
+static void netdpcmd_route_show_parsed(void *parsed_result,
+             struct cmdline *cl,
+             __attribute__((unused)) void *data)
+{
+  struct netdpcmd_ip_addr_result *res = parsed_result;
+//  char ip_str[INET6_ADDRSTRLEN];
+
+  //     snprintf(ip_str, sizeof(ip_str), NIPQUAD_FMT, NIPQUAD(res->ipaddr.addr.ipv4));
+
+  cmdline_printf(cl, "cmd: %s %s %s \n", res->name, res->type, res->action);
+
+}
+
+cmdline_parse_inst_t netdpcmd_route_show = {
+  .f = netdpcmd_route_show_parsed,            /* function to call */
+  .data = NULL,                                   /* 2nd arg of func */
+  .help_str = "ip route show ",
+  .tokens = {                                    /* token list, NULL terminated */
+    (void *)&netdpcmd_name,
+    (void *)&netdpcmd_route_type,
+    (void *)&netdpcmd_action_show,
+    NULL,
+  },
+};
 
 /*********************************************************
 *
-*    IP address help
+*    quit
+*
+*
+**********************************************************/
+cmdline_parse_token_string_t netdpcmd_quit_quit = TOKEN_STRING_INITIALIZER(struct netdpcmd_quit_result, quit, "quit");
+
+static void netdpcmd_quit_parsed(void *parsed_result,
+             struct cmdline *cl,
+             __attribute__((unused)) void *data)
+{
+    struct netdpcmd_quit_result *res = parsed_result;
+
+    cmdline_printf(cl, "Quit netdp command \n");
+    cmdline_quit(cl);
+
+}
+
+cmdline_parse_inst_t netdpcmd_quit = {
+  .f = netdpcmd_quit_parsed,            /* function to call */
+  .data = NULL,                                                 /* 2nd arg of func */
+  .help_str = "quit ",
+  .tokens = {                                    /* token list, NULL terminated */
+    (void *)&netdpcmd_quit_quit,
+    NULL,
+  },
+};
+
+/*********************************************************
+*
+*    help
 *
 *
 **********************************************************/
@@ -367,11 +518,15 @@ static void netdpcmd_help_parsed(__attribute__((unused)) void *parsed_result,
           struct cmdline *cl,
           __attribute__((unused)) void *data)
 {
-  cmdline_printf(cl,
+    cmdline_printf(cl,
            "ip addr add IFADDR dev STRING \n"   
            "ip addr del IFADDR dev STRING\n"
            "ip addr show\n"
            "ip route add DESTIP via NEXTHOP\n"
+           "ip route del DESTIP\n"
+           "ip route show\n"
+           "help\n"
+           "quit\n"
            );
 }
 
@@ -393,11 +548,14 @@ cmdline_parse_inst_t netdpcmd_help = {
 /****** CONTEXT (list of instruction) */
 
 cmdline_parse_ctx_t ip_main_ctx[] = {
-  (cmdline_parse_inst_t *)&netcmd_ip_add,
-  (cmdline_parse_inst_t *)&netcmd_ip_del,
-  (cmdline_parse_inst_t *)&netcmd_ip_show,
-  (cmdline_parse_inst_t *)&netcmd_route_add,
+  (cmdline_parse_inst_t *)&netdpcmd_ip_add,
+  (cmdline_parse_inst_t *)&netdpcmd_ip_del,
+  (cmdline_parse_inst_t *)&netdpcmd_ip_show,
+  (cmdline_parse_inst_t *)&netdpcmd_route_add,
+  (cmdline_parse_inst_t *)&netdpcmd_route_del,
+  (cmdline_parse_inst_t *)&netdpcmd_route_show,
   (cmdline_parse_inst_t *)&netdpcmd_help,
+  (cmdline_parse_inst_t *)&netdpcmd_quit,
   NULL,
 };
 

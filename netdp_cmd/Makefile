@@ -1,6 +1,6 @@
 #   BSD LICENSE
 #
-#   Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+#   Copyright(c) 2010-2014 Netdp Corporation. All rights reserved.
 #   All rights reserved.
 #
 #   Redistribution and use in source and binary forms, with or without
@@ -38,16 +38,16 @@ RTE_TARGET ?= x86_64-native-linuxapp-gcc
 
 include $(RTE_SDK)/mk/rte.vars.mk
 
-NETDP_PATH = /home/wu/dev/netdp/librte_netdp
+NETDPLIB_PATH = $(RTE_NETDP)/librte_netdp
 
 # binary name
 APP = netdpcmd
 
 # all source are stored in SRCS-y
-SRCS-y := netdpcmd_main.c netdpcmd_ip.c 
+SRCS-y := netdpcmd_main.c netdpcmd_ip.c netdpcmd_ring.c
 
 CFLAGS += -O3
 #CFLAGS += $(WERROR_FLAGS)
-CFLAGS += -I $(NETDP_PATH)/include/
+CFLAGS += -I $(NETDPLIB_PATH)/include/
 
 include $(RTE_SDK)/mk/rte.extapp.mk

@@ -39,7 +39,7 @@ RTE_TARGET ?= x86_64-default-linuxapp-gcc
 include $(RTE_SDK)/mk/rte.vars.mk
 
 
-NETDP_PATH = /home/wu/dev/netdp/librte_netdp
+NETDPLIB_PATH = $(RTE_NETDP)/librte_netdp
 
 
 # binary name
@@ -50,9 +50,9 @@ SRCS-y := main.c
 
 CFLAGS += -O3 $(USER_FLAGS)
 #CFLAGS += $(WERROR_FLAGS)
-CFLAGS += -I $(NETDP_PATH)/include/
+CFLAGS += -I $(NETDPLIB_PATH)/include/
 
-LDLIBS += $(NETDP_PATH)/librte_netdp.a 
+LDLIBS += $(NETDPLIB_PATH)/librte_netdp.a 
 
 
 # workaround for a gcc bug with noreturn attribute

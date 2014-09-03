@@ -35,48 +35,16 @@
 #ifndef _NETDPCMD_IP_H_
 #define _NETDPCMD_IP_H_
 
-/* not defined under linux */
-#define NIPQUAD_FMT "%u.%u.%u.%u"
-#define NIPQUAD(addr)       \
-  (unsigned)((unsigned char *)&addr)[0],  \
-  (unsigned)((unsigned char *)&addr)[1],  \
-  (unsigned)((unsigned char *)&addr)[2],  \
-  (unsigned)((unsigned char *)&addr)[3]
 
 #define NETDPCMD_RECV_MSG         1
 #define NETDPCMD_NONRECV_MSG  2
 
 
+extern int netdpcmd_ring_init(void); 
 
-/* help */
-struct netdpcmd_help_result
-{
-  cmdline_fixed_string_t help;
-};
+extern int netdpcmd_ring_recv(void *buff, int buff_len);
 
-/* quit */
-struct netdpcmd_quit_result
-{
-  cmdline_fixed_string_t quit;
-};
-
-/* ip addr/route add/del/show */
-struct netdpcmd_ip_addr_result {
-  cmdline_fixed_string_t name;  /* ip */
-  cmdline_fixed_string_t type;   /* addr/route */
-  cmdline_fixed_string_t action; /* add/del/show */
-  cmdline_ipaddr_t ipaddr;       /* ip address */
-  cmdline_fixed_string_t dev;   /* device */
-  cmdline_fixed_string_t iface;   /* interface */
-
-  cmdline_fixed_string_t via;  /* via */
-  cmdline_ipaddr_t destip;       /* dest network */
-  cmdline_ipaddr_t nexthop;       /* nexthot*/
-
-};
-
-
-extern cmdline_parse_ctx_t ip_main_ctx[];
+extern int netdpcmd_ring_send(void *buff, int buff_len);
 
 
 #endif /* _NETDPCMD_IP_H_ */

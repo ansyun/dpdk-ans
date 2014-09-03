@@ -2433,7 +2433,7 @@ MAIN(int argc, char **argv)
        	/* add by netdp_team ---start */
 		printf("add dpdk0 device\r\n");
 		
-		uint8_t *ifname = "dpdk0";
+		uint8_t *ifname = "eth3";
 		netdp_intf_add(portid,  ifname, &ports_eth_addr[portid]);
 
 		printf("add IP on device\r\n");
