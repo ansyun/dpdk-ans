@@ -42,6 +42,7 @@
 #define NETDP_RING_MSG_SIZE   256
 #define NETDP_IFNAME_LEN_MAX   16
 #define NETDP_IP_PER_IF_MAX      20
+#define NETDP_RT_FLAG_LEN         16
 
 typedef enum 
 {
@@ -71,8 +72,8 @@ typedef struct
 
 typedef struct 
 {
-  netdp_ipaddr_t dest_ip;
-  uint32_t gateway_addr;
+  netdp_ipaddr_t dest;
+  uint32_t gateway;
 }netdp_route_conf_t;
 
 typedef union
@@ -97,8 +98,10 @@ typedef struct
 
 typedef struct
 {
-//    char ifname[16];
-//    netdp_ipaddr_t ipaddr[10];  
+  netdp_ipaddr_t dest;
+  uint32_t gateway;
+  char rt_flags[NETDP_RT_FLAG_LEN];
+  char ifname[NETDP_IFNAME_LEN_MAX];
 }netdp_route_show_t;
 
 

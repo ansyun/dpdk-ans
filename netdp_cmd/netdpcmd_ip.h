@@ -61,7 +61,7 @@ struct netdpcmd_quit_result
 };
 
 /* ip addr/route add/del/show */
-struct netdpcmd_ip_addr_result {
+struct netdpcmd_iproute_result {
   cmdline_fixed_string_t name;  /* ip */
   cmdline_fixed_string_t type;   /* addr/route */
   cmdline_fixed_string_t action; /* add/del/show */
@@ -71,7 +71,7 @@ struct netdpcmd_ip_addr_result {
 
   cmdline_fixed_string_t via;  /* via */
   cmdline_ipaddr_t destip;       /* dest network */
-  cmdline_ipaddr_t nexthop;       /* nexthot*/
+  cmdline_ipaddr_t gateway;       /* nexthot*/
 
 };
 

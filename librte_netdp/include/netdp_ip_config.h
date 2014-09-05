@@ -98,13 +98,13 @@
 
 
 struct walkarg {
-        int     w_op;
-  int     w_arg;
-  int     w_given;
-  int     w_needed;
-        int     w_tmemsize;
-        caddr_t w_where;
-        caddr_t w_tmem;
+    int     w_op;
+    int     w_arg;
+    int     w_given;
+    int     w_needed;
+    int     w_tmemsize;
+    caddr_t w_where;
+    caddr_t w_tmem;
 };
 
 
