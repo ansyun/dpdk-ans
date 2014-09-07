@@ -77,7 +77,7 @@
 #define NETDP_ENET_IFF_RUNNING           0x40        /* resources allocated */
 #define NETDP_ENET_IFF_NOARP              0x80         /* no address resolution protocol */
 #define NETDP_ENET_IFF_PPROMISC         0x100       /* Receive all packets.  */
-#define NETDP_ENET_IFF_STATICARP       0x80000  /* static ARP */
+#define NETDP_ENET_IFF_STATICARP       0x80000   /* static ARP */
 
 /**
  * Add an interface.

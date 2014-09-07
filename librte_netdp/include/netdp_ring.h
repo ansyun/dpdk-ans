@@ -93,7 +93,7 @@ typedef struct
 {
     char ifname[NETDP_IFNAME_LEN_MAX];
     unsigned char ifaddr[6];
-    netdp_ipaddr_t ip[NETDP_IP_PER_IF_MAX];  /* only show ten ip address*/
+    netdp_ipaddr_t ip[NETDP_IP_PER_IF_MAX];  /* only show 20 ip address per iface */
 }netdp_ipaddr_show_t;
 
 typedef struct
@@ -119,8 +119,22 @@ typedef struct
     netdp_show_data_t   msg_data;
 }netdp_conf_ack_t;
 
-
+/**
+ * Create NETDP_SEC_2_PRI and NETDP_CTRL_PRI_2_SEC rte_ring.
+ * Create NETDP_CTRL_MSG_POLL message pool.
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
 int netdp_ring_init(void); 
-void netdp_ring_handle();
+
+/**
+ * Dequeue message from NETDP_SEC_2_PRI rte_ring, and then handle it.
+ * Only handle one message for each loop.
+ *
+ * @return  
+ *
+ */
+void netdp_message_handle();
 
 #endif /* __NETDP_RING_H__ */

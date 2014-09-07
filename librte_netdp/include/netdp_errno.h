@@ -165,17 +165,17 @@
 /* quotas & mush */
 #ifndef _POSIX_SOURCE
 #define NETDP_EPROCLIM  67    /* Too many processes */
-#define NETDP_EUSERS    68    /* Too many users */
-#define NETDP_EDQUOT    69    /* Disc quota exceeded */
+#define NETDP_EUSERS      68    /* Too many users */
+#define NETDP_EDQUOT     69    /* Disc quota exceeded */
 
 /* Network File System */
-#define NETDP_ESTALE    70    /* Stale NFS file handle */
+#define NETDP_ESTALE      70    /* Stale NFS file handle */
 #define NETDP_EREMOTE   71    /* Too many levels of remote in path */
 #define NETDP_EBADRPC   72    /* RPC struct is bad */
-#define NETDP_ERPCMISMATCH  73    /* RPC version wrong */
-#define NETDP_EPROGUNAVAIL  74    /* RPC prog. not avail */
+#define NETDP_ERPCMISMATCH    73    /* RPC version wrong */
+#define NETDP_EPROGUNAVAIL    74    /* RPC prog. not avail */
 #define NETDP_EPROGMISMATCH 75    /* Program version wrong */
-#define NETDP_EPROCUNAVAIL  76    /* Bad procedure for program */
+#define NETDP_EPROCUNAVAIL    76    /* Bad procedure for program */
 #endif /* _POSIX_SOURCE */
 
 #define NETDP_ENOLCK    77    /* No locks available */
@@ -183,22 +183,22 @@
 
 #ifndef _POSIX_SOURCE
 #define NETDP_EFTYPE    79    /* Inappropriate file type or format */
-#define NETDP_EAUTH   80    /* Authentication error */
+#define NETDP_EAUTH     80    /* Authentication error */
 #define NETDP_ENEEDAUTH 81    /* Need authenticator */
-#define NETDP_EIDRM   82    /* Identifier removed */
-#define NETDP_ENOMSG    83    /* No message of desired type */
+#define NETDP_EIDRM          82    /* Identifier removed */
+#define NETDP_ENOMSG       83    /* No message of desired type */
 #define NETDP_EOVERFLOW 84    /* Value too large to be stored in data type */
-#define NETDP_ECANCELED 85    /* Operation canceled */
-#define NETDP_EILSEQ    86    /* Illegal byte sequence */
-#define NETDP_ENOATTR   87    /* Attribute not found */
+#define NETDP_ECANCELED  85    /* Operation canceled */
+#define NETDP_EILSEQ         86    /* Illegal byte sequence */
+#define NETDP_ENOATTR      87    /* Attribute not found */
 
 #define NETDP_EDOOFUS   88    /* Programming error */
 #endif /* _POSIX_SOURCE */
 
-#define NETDP_EBADMSG   89    /* Bad message */
+#define NETDP_EBADMSG    89    /* Bad message */
 #define NETDP_EMULTIHOP 90    /* Multihop attempted */
-#define NETDP_ENOLINK   91    /* Link has been severed */
-#define NETDP_EPROTO    92    /* Protocol error */
+#define NETDP_ENOLINK     91    /* Link has been severed */
+#define NETDP_EPROTO       92    /* Protocol error */
 
 #ifndef _POSIX_SOURCE
 #define NETDP_ENOTCAPABLE 93    /* Capabilities insufficient */
@@ -221,5 +221,6 @@
 
 #define  NETDP_ECTRLRING        1000
 #define  NETDP_EMSGPOOL         1001
+#define  NETDP_EIPFRAG            2000
 
 #endif

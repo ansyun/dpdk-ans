@@ -1338,7 +1338,7 @@ main_loop(__attribute__((unused)) void *dummy)
 		cur_tsc = rte_rdtsc();
         
               /* add by netdp_team ---start */
-              netdp_ring_handle();
+              netdp_message_handle();
               /* add by netdp_team ---end */
               
 		/*
@@ -1390,7 +1390,7 @@ main_loop(__attribute__((unused)) void *dummy)
 					if (ol_flag & PKT_RX_IPV4_HDR ) {
 
                         			/* add by netdp_team ---start */
-				              netdp_enet_input(pkts_burst[j], portid);
+				              netdp_packet_handle(pkts_burst[j], portid);
                 
 						/*
 						simple_ipv4_fwd_4pkts(&pkts_burst[j],
@@ -1401,7 +1401,7 @@ main_loop(__attribute__((unused)) void *dummy)
 					} else if (ol_flag & PKT_RX_IPV6_HDR) {
 
                                    	/* add by netdp_team ---start */
-				              netdp_enet_input(pkts_burst[j], portid);
+				              netdp_packet_handle(pkts_burst[j], portid);
                                          /*
 						simple_ipv6_fwd_4pkts(&pkts_burst[j],
 									portid, qconf);
@@ -1411,10 +1411,10 @@ main_loop(__attribute__((unused)) void *dummy)
 					} else {
 
                                         	/* add by netdp_team ---start */
-				              netdp_enet_input(pkts_burst[j], portid);
-				              netdp_enet_input(pkts_burst[j+1], portid);
-				              netdp_enet_input(pkts_burst[j+2], portid);
-				              netdp_enet_input(pkts_burst[j+3], portid);
+				              netdp_packet_handle(pkts_burst[j], portid);
+				              netdp_packet_handle(pkts_burst[j+1], portid);
+				              netdp_packet_handle(pkts_burst[j+2], portid);
+				              netdp_packet_handle(pkts_burst[j+3], portid);
 
     ¡¤                                /*
 						l3fwd_simple_forward(pkts_burst[j],
@@ -1433,7 +1433,7 @@ main_loop(__attribute__((unused)) void *dummy)
 				for (; j < nb_rx ; j++) {
 
                                    /* add by netdp_team ---start */
-				       netdp_enet_input(pkts_burst[j], portid);
+				       netdp_packet_handle(pkts_burst[j], portid);
                                    /*
 					l3fwd_simple_forward(pkts_burst[j],
 								portid, qconf);
@@ -1519,7 +1519,7 @@ main_loop(__attribute__((unused)) void *dummy)
 
 
 				/* add by netdp_team ---start */
-				netdp_enet_input(pkts_burst[j], portid);
+				netdp_packet_handle(pkts_burst[j], portid);
 				//l3fwd_simple_forward(pkts_burst[j], portid, qconf);
 				/* add by netdp_team ---end */
 			}
@@ -1528,7 +1528,7 @@ main_loop(__attribute__((unused)) void *dummy)
 			for (; j < nb_rx; j++) {
 
 				/* add by netdp_team ---start */
-				netdp_enet_input(pkts_burst[j], portid);
+				netdp_packet_handle(pkts_burst[j], portid);
 				//l3fwd_simple_forward(pkts_burst[j], portid, qconf);
 				/* add by netdp_team ---end */
 			}
