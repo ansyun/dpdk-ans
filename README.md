@@ -2,7 +2,7 @@
 --------------
 Netdp is porting from [FreeBSD](http://freebsd.org) TCP/IP stack, and provide a userspace TCP/IP stack for use with the Intel [dpdk](http://dpdk.org/). 
 
-- librte_netdp: TCP/IP stack static library. netdp use dpdk mbuf, ring, memzone, mempool, spinlock. so zero copy between dpdk and netdp. 
+- librte_netdp: TCP/IP stack static library. netdp use dpdk mbuf, ring, memzone, mempool, spinlock. so zero copy mbuf between dpdk and netdp. 
  
 - netdp_cmd: Command for configure netdp tcp/ip stack.
  
