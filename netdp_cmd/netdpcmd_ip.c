@@ -147,6 +147,9 @@ cmdline_parse_token_string_t netdpcmd_route_via =
 cmdline_parse_token_ipaddr_t netdpcmd_route_nexthop =
   TOKEN_IPV4_INITIALIZER(struct netdpcmd_iproute_result, gateway);
 
+cmdline_parse_token_string_t netdpcmd_arp_type =
+  TOKEN_STRING_INITIALIZER(struct netdpcmd_iproute_result, type, "arp");
+
 
 /*********************************************************
 *
@@ -597,6 +600,95 @@ cmdline_parse_inst_t netdpcmd_route_show = {
 
 /*********************************************************
 *
+*    arp show
+*
+*
+**********************************************************/
+static void netdpcmd_arp_show_parsed(void *parsed_result,
+             struct cmdline *cl,
+             __attribute__((unused)) void *data)
+{
+    int i = 0;
+    int ret = 0;
+    int flag = 0;
+    netdp_conf_req_t conf_req;
+    netdp_conf_ack_t conf_ack;
+    struct netdpcmd_iproute_result *res = parsed_result;
+    struct in_addr ipaddr;
+    int mask_len;
+    char str[32];
+ 
+    conf_req.msg_type = NETDP_MSG_TYPE_ARP;
+    conf_req.msg_action= NETDP_MSG_ACTION_SHOW;
+        
+     ret = netdpcmd_ring_send((void *) &conf_req, sizeof(conf_req));
+
+    while(1)
+    {
+        
+        memset(&conf_ack, 0, sizeof(conf_ack));
+
+         ret = netdpcmd_ring_recv((void *) &conf_ack, sizeof(conf_ack));
+
+        if(ret != NETDPCMD_RECV_MSG)
+        {
+           // cmdline_printf(cl, "No reply\n");
+            return;
+        }
+
+        if((conf_ack.status != 0) || (conf_ack.msg_action != NETDP_MSG_ACTION_SHOW))
+        {
+             cmdline_printf(cl, "Show arp failed,  error code %d \n", conf_ack.status);
+             return;
+        }
+
+        if(flag == 0)
+        {
+             cmdline_printf(cl, "\nNETDP ARP table\n");
+             cmdline_printf(cl, "%-17s", "Address");
+             cmdline_printf(cl, "%-10s", "HWtype");
+             cmdline_printf(cl, "%-20s", "HWaddress");
+             cmdline_printf(cl, "%-16s\n", "Iface");
+             flag = 1;
+        }
+        ipaddr.s_addr =  conf_ack.msg_data.arp_show.ipaddr;
+        sprintf(str, NIPQUAD_FMT, NIPQUAD(ipaddr));
+        cmdline_printf(cl, "%-17s", str );
+        
+        cmdline_printf(cl, "%-10s", conf_ack.msg_data.arp_show.iftype);
+
+        sprintf(str, "%02X:%02X:%02X:%02X:%02X:%02X", 
+            conf_ack.msg_data.arp_show.ifaddr[0],
+            conf_ack.msg_data.arp_show.ifaddr[1],
+            conf_ack.msg_data.arp_show.ifaddr[2],
+            conf_ack.msg_data.arp_show.ifaddr[3],
+            conf_ack.msg_data.arp_show.ifaddr[4],
+            conf_ack.msg_data.arp_show.ifaddr[5]);
+        
+        cmdline_printf(cl, "%-20s", str );
+
+        cmdline_printf(cl,  "%-16s\n", conf_ack.msg_data.arp_show.ifname);
+        
+    }
+    return;
+    
+}
+
+cmdline_parse_inst_t netdpcmd_arp_show = {
+  .f = netdpcmd_arp_show_parsed,            /* function to call */
+  .data = NULL,                                   /* 2nd arg of func */
+  .help_str = "ip arp show ",
+  .tokens = {                                    /* token list, NULL terminated */
+    (void *)&netdpcmd_name,
+    (void *)&netdpcmd_arp_type,
+    (void *)&netdpcmd_action_show,
+    NULL,
+  },
+};
+
+
+/*********************************************************
+*
 *    quit
 *
 *
@@ -670,6 +762,7 @@ cmdline_parse_ctx_t ip_main_ctx[] = {
   (cmdline_parse_inst_t *)&netdpcmd_route_add,
   (cmdline_parse_inst_t *)&netdpcmd_route_del,
   (cmdline_parse_inst_t *)&netdpcmd_route_show,
+  (cmdline_parse_inst_t *)&netdpcmd_arp_show,
   (cmdline_parse_inst_t *)&netdpcmd_help,
   (cmdline_parse_inst_t *)&netdpcmd_quit,
   NULL,

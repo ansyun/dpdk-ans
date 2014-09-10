@@ -48,6 +48,7 @@ typedef enum
 {
    NETDP_MSG_TYPE_IPADDR,
    NETDP_MSG_TYPE_ROUTE,
+   NETDP_MSG_TYPE_ARP,
 } netdp_msg_type_e;
 
 typedef enum 
@@ -76,10 +77,15 @@ typedef struct
   uint32_t gateway;
 }netdp_route_conf_t;
 
+typedef struct 
+{
+}netdp_arp_conf_t;
+
 typedef union
 {
    netdp_ipaddr_conf_t   ipaddr_conf;
    netdp_route_conf_t     route_conf;
+   netdp_arp_conf_t        arp_conf;
 }netdp_conf_data_t;
 
 typedef struct
@@ -104,11 +110,19 @@ typedef struct
   char ifname[NETDP_IFNAME_LEN_MAX];
 }netdp_route_show_t;
 
+typedef struct
+{
+    uint32_t ipaddr;
+    char  iftype[8];
+    char ifname[NETDP_IFNAME_LEN_MAX];
+    unsigned char ifaddr[6];
+}netdp_arp_show_t;
 
 typedef union
 {
    netdp_ipaddr_show_t   ipaddr_show;
    netdp_route_show_t    route_show;
+   netdp_arp_show_t       arp_show;
 }netdp_show_data_t;
 
 typedef struct

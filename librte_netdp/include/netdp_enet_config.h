@@ -237,4 +237,5 @@ int netdp_intf_add_alias_ipaddr(caddr_t name, int ip_addr);
 
 int netdp_intf_del_alias_ipaddr(caddr_t name, int ip_addr);
 
+
 #endif

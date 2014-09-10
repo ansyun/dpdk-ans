@@ -1333,6 +1333,9 @@ main_loop(__attribute__((unused)) void *dummy)
 			portid, queueid);
 	}
 
+ 	uint64_t timer_prev_tsc = 0, timer_cur_tsc, timer_diff_tsc;
+       #define TIMER_RESOLUTION_CYCLES 20000000ULL /* around 10ms at 2 Ghz */
+
 	while (1) {
 
 		cur_tsc = rte_rdtsc();
@@ -1340,6 +1343,23 @@ main_loop(__attribute__((unused)) void *dummy)
               /* add by netdp_team ---start */
               netdp_message_handle();
               /* add by netdp_team ---end */
+
+		/*
+		 * Call the timer handler on each core: as we don't
+		 * need a very precise timer, so only call
+		 * rte_timer_manage() every ~10ms (at 2Ghz). In a real
+		 * application, this will enhance performances as
+		 * reading the HPET timer is not efficient.
+		 */
+
+		timer_cur_tsc = rte_rdtsc();
+		timer_diff_tsc = timer_cur_tsc - timer_prev_tsc;
+		if (timer_diff_tsc > TIMER_RESOLUTION_CYCLES) {
+			rte_timer_manage();
+			timer_prev_tsc = timer_cur_tsc;
+		}
+
+
               
 		/*
 		 * TX burst queue drain
@@ -2352,6 +2372,10 @@ MAIN(int argc, char **argv)
 		rte_exit(EXIT_FAILURE, "check_port_config failed\n");
 
 
+      	/* init RTE timer library */
+	rte_timer_subsystem_init();
+
+
 	/* add by netdp_team ---start */
 	printf("start to init netdp\r\n");
 	netdp_ring_init();
@@ -2438,7 +2462,7 @@ MAIN(int argc, char **argv)
 
 		printf("add IP on device\r\n");
 
-		netdp_intf_add_ipaddr((caddr_t)ifname, 0x02020206, 0x00ffffff);  
+		netdp_intf_add_ipaddr((caddr_t)ifname, 0x02020202, 0x00ffffff);  
               netdp_intf_add_ipaddr((caddr_t)ifname, 0x02020203, 0x00ffffff);  
 	      /* add by netdp_team ---end */
 	

@@ -96,7 +96,6 @@
           /* 0x1000000 and up unassigned */
 
 
-
 struct walkarg {
     int     w_op;
     int     w_arg;
@@ -205,5 +204,17 @@ int netdp_route_show_all(void);
  */
 
 int netdp_route_show(uint32_t net_ipaddr, uint32_t netmask);
+
+/**
+ * Displays the routing table information for a given network.
+ *
+ * @param len      buffer length
+ * @param buf      buffer to store mac table
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
+int  netdp_arp_show(int *len, caddr_t buf);
+
 
 #endif 
