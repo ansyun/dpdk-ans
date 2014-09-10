@@ -22,7 +22,8 @@ Support feature:
  - ICMP
  - Commands for adding, deleting, showing IP address
  - Commands for adding, deleting, showing static route
-
+ - Commands for showing ARP table
+ - 
 Next Planning
 - Porting UDP from FreeBSD to netdp
 - Porting TCP from FreeBSD to netdp
