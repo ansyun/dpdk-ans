@@ -9,15 +9,15 @@ Netdp is porting from [FreeBSD](http://freebsd.org) TCP/IP stack, and provide a 
 - netdp_test: Example application with netdp for testing netdp tcp/ip stack
 
 Support environment
-  - EAL is based on dpdk-1.7.0
+  - EAL is based on dpdk-1.7.1
   - Development enviroment is based on x86_64-native-linuxapp-gcc
   - TCP/IP stack is based on FreeBSD 10.0-RELEASE
 
 Support feature:
  - Netdp initialize
  - Ether layer
- - ARP
- - IP layer
+ - ARP, ARP timeout
+ - IP layer, IP fragmentation and reassemble
  - Routing
  - ICMP
  - Commands for adding, deleting, showing IP address
