@@ -35,7 +35,9 @@ You can get more information and instructions from wiki page.
 
 ####Support
 -------
+BSD LICENSE, you may use netdp freely.
+
 For free support, please use netdp team mail list at zimeiw@163.com.
 
-If someone has interest to implement some commands to configure ethernet, IP and routing, please contact us.
+If someone has interest to develop on netdp or need some hooks in netdp for packets handling, please contact us.
 
