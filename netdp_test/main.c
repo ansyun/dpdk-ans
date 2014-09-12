@@ -81,7 +81,7 @@
 #include <rte_spinlock.h>
 
 #include "netdp_init.h"
-#include "netdp_ring.h"
+#include "netdp_msg.h"
 #include "netdp_enet_config.h"
 #include "netdp_ip_config.h"
 

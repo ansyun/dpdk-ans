@@ -40,9 +40,35 @@ typedef void (*netdp_alloc_mbuf_cb)(uint8_t lcore_id, struct rte_mbuf **m);
 
 typedef int (*netdp_send_packet_cb)(struct rte_mbuf *m, uint8_t port);
 
-
+/**
+ * 
+ *
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
 int netdp_init(void);
+
+/**
+ * 
+ *
+ * @param send_cb     
+ * @param alloc_cb   a
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
 int netdp_register(netdp_send_packet_cb send_cb, netdp_alloc_mbuf_cb alloc_cb);
-uint64_t netdp_packet_handle(struct rte_mbuf *m, uint8_t portid);
+
+/**
+ * 
+ *
+ * @param m      
+ * @param portid   
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
+ uint64_t netdp_packet_handle(struct rte_mbuf *m, uint8_t portid);
 
 #endif /* __NETDP_INIT_H__ */

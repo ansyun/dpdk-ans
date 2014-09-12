@@ -84,7 +84,7 @@
 
 #include "netdpcmd_ip.h"
 #include "netdp_errno.h"
-#include "netdp_ring.h"
+#include "netdp_msg.h"
 
 
 uint32_t netmask_len2int(int mask_len)
@@ -307,63 +307,72 @@ static void netdpcmd_ip_show_parsed(void *parsed_result,
              struct cmdline *cl,
              __attribute__((unused)) void *data)
 {
-    int i = 0;
+    int data_len = 0;
     int ret = 0;
     netdp_conf_req_t conf_req;
-    netdp_conf_ack_t conf_ack;
+    netdp_conf_ack_t *conf_ack;
+    char msg_buf[NETDP_RING_MSG_SIZE];
+    int msg_len = NETDP_RING_MSG_SIZE;
     struct netdpcmd_iproute_result *res = parsed_result;
     struct in_addr ipaddr;
     int mask_len;
- 
+    netdp_ipaddr_show_t   *ipaddr_show;
+    char ifname[NETDP_IFNAME_LEN_MAX];
+
     conf_req.msg_type = NETDP_MSG_TYPE_IPADDR;
     conf_req.msg_action= NETDP_MSG_ACTION_SHOW;
-        
+    memset(ifname, 0, sizeof(ifname));
+      
      ret = netdpcmd_ring_send((void *) &conf_req, sizeof(conf_req));
 
     while(1)
     {
         
-        memset(&conf_ack, 0, sizeof(conf_ack));
+        memset(msg_buf, 0, sizeof(msg_buf));
 
-         ret = netdpcmd_ring_recv((void *) &conf_ack, sizeof(conf_ack));
+         ret = netdpcmd_ring_recv((void *) msg_buf, msg_len);
 
         if(ret != NETDPCMD_RECV_MSG)
         {
            // cmdline_printf(cl, "No reply\n");
             return;
         }
-
-        if((conf_ack.status != 0) || (conf_ack.msg_action != NETDP_MSG_ACTION_SHOW))
+        
+        conf_ack = (netdp_conf_ack_t *)msg_buf;
+        
+        if((conf_ack->status != 0) || (conf_ack->msg_action != NETDP_MSG_ACTION_SHOW) || (conf_ack->data_len == 0))
         {
-             cmdline_printf(cl, "Show IP address failed,  error code %d \n", conf_ack.status);
+             cmdline_printf(cl, "Show IP address failed,  error code %d \n", conf_ack->status);
              return;
         }
-        
-        cmdline_printf(cl, "\n%s\t", conf_ack.msg_data.ipaddr_show.ifname);
-        cmdline_printf(cl, "HWaddr %02x:%02x:%02x:%02x:%02x:%02x\n", 
-            conf_ack.msg_data.ipaddr_show.ifaddr[0],
-            conf_ack.msg_data.ipaddr_show.ifaddr[1],
-            conf_ack.msg_data.ipaddr_show.ifaddr[2],
-            conf_ack.msg_data.ipaddr_show.ifaddr[3],
-            conf_ack.msg_data.ipaddr_show.ifaddr[4],
-            conf_ack.msg_data.ipaddr_show.ifaddr[5]
-            );
-        
 
-        for(i = 0; i < NETDP_IP_PER_IF_MAX; i++ )
+        data_len = 0;
+        while(data_len < conf_ack->data_len)
         {
-            memset(&ipaddr, 0, sizeof(ipaddr));
+            ipaddr_show = (netdp_ipaddr_show_t *)((void *)&(conf_ack->msg_data.ipaddr_show) + data_len);
+            if(0 != strcmp(ifname, ipaddr_show->ifname))
+            {
+                strcpy(ifname, ipaddr_show->ifname);
+                cmdline_printf(cl, "\n%s\t", ipaddr_show->ifname);
+                cmdline_printf(cl, "HWaddr %02x:%02x:%02x:%02x:%02x:%02x\n", 
+                    ipaddr_show->ifaddr[0], ipaddr_show->ifaddr[1], ipaddr_show->ifaddr[2],
+                    ipaddr_show->ifaddr[3], ipaddr_show->ifaddr[4], ipaddr_show->ifaddr[5]);
+            }
+            
+            data_len += sizeof(netdp_ipaddr_show_t);
 
-            if(conf_ack.msg_data.ipaddr_show.ip[i].ip_addr == 0)
+            if(ipaddr_show->ip.ip_addr == 0)
                 continue;
             
-            ipaddr.s_addr =  conf_ack.msg_data.ipaddr_show.ip[i].ip_addr;
-            mask_len =  netmask_int2len(ntohl(conf_ack.msg_data.ipaddr_show.ip[i].netmask));
+            memset(&ipaddr, 0, sizeof(ipaddr));
+            ipaddr.s_addr =  ipaddr_show->ip.ip_addr;
+            mask_len =  netmask_int2len(ntohl(ipaddr_show->ip.netmask));
             cmdline_printf(cl, "\tinet addr:" NIPQUAD_FMT "/%d\n", NIPQUAD(ipaddr), mask_len);
 
-        }
+        } 
 
     }
+    
     return;
  }
 
@@ -542,7 +551,7 @@ static void netdpcmd_route_show_parsed(void *parsed_result,
             return;
         }
 
-        if((conf_ack.status != 0) || (conf_ack.msg_action != NETDP_MSG_ACTION_SHOW))
+        if((conf_ack.status != 0) || (conf_ack.msg_action != NETDP_MSG_ACTION_SHOW) || (conf_ack.data_len == 0))
         {
              cmdline_printf(cl, "Show route failed,  error code %d \n", conf_ack.status);
              return;
@@ -611,13 +620,18 @@ static void netdpcmd_arp_show_parsed(void *parsed_result,
     int i = 0;
     int ret = 0;
     int flag = 0;
+    int data_len = 0;
     netdp_conf_req_t conf_req;
-    netdp_conf_ack_t conf_ack;
+    netdp_conf_ack_t *conf_ack;
+    netdp_arp_show_t *arp_show;
     struct netdpcmd_iproute_result *res = parsed_result;
     struct in_addr ipaddr;
+    char msg_buf[NETDP_RING_MSG_SIZE];
+    int msg_len = NETDP_RING_MSG_SIZE;
     int mask_len;
     char str[32];
- 
+    uint8_t netdp_enet_zeroaddr[NETDP_IFADDR_LEN] = {0x0,0x0,0x0,0x0,0x0,0x0};
+
     conf_req.msg_type = NETDP_MSG_TYPE_ARP;
     conf_req.msg_action= NETDP_MSG_ACTION_SHOW;
         
@@ -626,9 +640,9 @@ static void netdpcmd_arp_show_parsed(void *parsed_result,
     while(1)
     {
         
-        memset(&conf_ack, 0, sizeof(conf_ack));
+        memset(msg_buf, 0, sizeof(msg_buf));
 
-         ret = netdpcmd_ring_recv((void *) &conf_ack, sizeof(conf_ack));
+         ret = netdpcmd_ring_recv((void *) msg_buf, sizeof(msg_buf));
 
         if(ret != NETDPCMD_RECV_MSG)
         {
@@ -636,9 +650,11 @@ static void netdpcmd_arp_show_parsed(void *parsed_result,
             return;
         }
 
-        if((conf_ack.status != 0) || (conf_ack.msg_action != NETDP_MSG_ACTION_SHOW))
+        conf_ack = (netdp_conf_ack_t *)msg_buf;
+        
+        if((conf_ack->status != 0) || (conf_ack->msg_action != NETDP_MSG_ACTION_SHOW) ||( conf_ack->data_len == 0))
         {
-             cmdline_printf(cl, "Show arp failed,  error code %d \n", conf_ack.status);
+             cmdline_printf(cl, "Show arp failed,  error code %d \n", conf_ack->status);
              return;
         }
 
@@ -651,24 +667,33 @@ static void netdpcmd_arp_show_parsed(void *parsed_result,
              cmdline_printf(cl, "%-16s\n", "Iface");
              flag = 1;
         }
-        ipaddr.s_addr =  conf_ack.msg_data.arp_show.ipaddr;
-        sprintf(str, NIPQUAD_FMT, NIPQUAD(ipaddr));
-        cmdline_printf(cl, "%-17s", str );
-        
-        cmdline_printf(cl, "%-10s", conf_ack.msg_data.arp_show.iftype);
 
-        sprintf(str, "%02X:%02X:%02X:%02X:%02X:%02X", 
-            conf_ack.msg_data.arp_show.ifaddr[0],
-            conf_ack.msg_data.arp_show.ifaddr[1],
-            conf_ack.msg_data.arp_show.ifaddr[2],
-            conf_ack.msg_data.arp_show.ifaddr[3],
-            conf_ack.msg_data.arp_show.ifaddr[4],
-            conf_ack.msg_data.arp_show.ifaddr[5]);
-        
-        cmdline_printf(cl, "%-20s", str );
+        data_len = 0;
+        while(data_len < conf_ack->data_len)
+        {
+            arp_show = (netdp_arp_show_t *)((void *)&(conf_ack->msg_data.arp_show) + data_len);
+            ipaddr.s_addr =  arp_show->ipaddr;
+            sprintf(str, NIPQUAD_FMT, NIPQUAD(ipaddr));
+            cmdline_printf(cl, "%-17s", str );
+            
+            cmdline_printf(cl, "%-10s", arp_show->iftype);
 
-        cmdline_printf(cl,  "%-16s\n", conf_ack.msg_data.arp_show.ifname);
-        
+            if(!bcmp((caddr_t)(arp_show->ifaddr), netdp_enet_zeroaddr, NETDP_IFADDR_LEN))
+            {
+                cmdline_printf(cl, "%-20s", "(incomplete)" );
+            }
+            else
+            {
+                sprintf(str, "%02X:%02X:%02X:%02X:%02X:%02X", 
+                    arp_show->ifaddr[0], arp_show->ifaddr[1], arp_show->ifaddr[2],
+                    arp_show->ifaddr[3], arp_show->ifaddr[4], arp_show->ifaddr[5]);
+                
+                cmdline_printf(cl, "%-20s", str );
+            }
+            cmdline_printf(cl,  "%-16s\n", arp_show->ifname);
+
+            data_len += sizeof(netdp_arp_show_t);
+        }
     }
     return;
     
@@ -733,6 +758,7 @@ static void netdpcmd_help_parsed(__attribute__((unused)) void *parsed_result,
            "ip route add DESTIP via NEXTHOP\n"
            "ip route del DESTIP\n"
            "ip route show\n"
+           "ip arp show\n"
            "help\n"
            "quit\n"
            );

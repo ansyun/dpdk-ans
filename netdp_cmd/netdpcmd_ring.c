@@ -84,7 +84,7 @@
 
 #include "netdpcmd_ip.h"
 #include "netdp_errno.h"
-#include "netdp_ring.h"
+#include "netdp_msg.h"
 #include "netdpcmd_ring.h"
 
 struct rte_ring *netdpcmd_ring_tx;
