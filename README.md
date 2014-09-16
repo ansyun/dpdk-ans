@@ -41,3 +41,4 @@ For free support, please use netdp team mail list at zimeiw@163.com.
 
 If someone has interest to develop on netdp or need some hooks in netdp for packets handling, please contact us.
 
+If someone has interest to porting some other protocol(PPoE/PPP, firewall...) to DPDK, and create some other lib, please contact us. we could discuss the interface between netdp and new lib.
