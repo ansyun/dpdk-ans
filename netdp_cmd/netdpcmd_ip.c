@@ -526,8 +526,12 @@ static void netdpcmd_route_show_parsed(void *parsed_result,
     int i = 0;
     int ret = 0;
     int flag = 0;
+    int data_len = 0;
     netdp_conf_req_t conf_req;
-    netdp_conf_ack_t conf_ack;
+    netdp_conf_ack_t *conf_ack;
+    netdp_route_show_t *route_show;
+    char msg_buf[NETDP_RING_MSG_SIZE];
+    int msg_len = NETDP_RING_MSG_SIZE;
     struct netdpcmd_iproute_result *res = parsed_result;
     struct in_addr ipaddr;
     int mask_len;
@@ -541,19 +545,21 @@ static void netdpcmd_route_show_parsed(void *parsed_result,
     while(1)
     {
         
-        memset(&conf_ack, 0, sizeof(conf_ack));
+        memset(msg_buf, 0, sizeof(msg_buf));
 
-         ret = netdpcmd_ring_recv((void *) &conf_ack, sizeof(conf_ack));
+         ret = netdpcmd_ring_recv((void *) msg_buf, sizeof(msg_buf));
 
         if(ret != NETDPCMD_RECV_MSG)
         {
            // cmdline_printf(cl, "No reply\n");
             return;
         }
+        
+        conf_ack = (netdp_conf_ack_t *)msg_buf;
 
-        if((conf_ack.status != 0) || (conf_ack.msg_action != NETDP_MSG_ACTION_SHOW) || (conf_ack.data_len == 0))
+        if((conf_ack->status != 0) || (conf_ack->msg_action != NETDP_MSG_ACTION_SHOW) || ( conf_ack->data_len == 0))
         {
-             cmdline_printf(cl, "Show route failed,  error code %d \n", conf_ack.status);
+             cmdline_printf(cl, "Show route failed,  error code %d \n", conf_ack->status);
              return;
         }
 
@@ -567,29 +573,38 @@ static void netdpcmd_route_show_parsed(void *parsed_result,
              cmdline_printf(cl, "%-16s\n", "Iface");
              flag = 1;
         }
-        ipaddr.s_addr =  conf_ack.msg_data.route_show.dest.ip_addr;
-        sprintf(ip_str, NIPQUAD_FMT, NIPQUAD(ipaddr));
-        cmdline_printf(cl, "%-17s", ip_str );
+
+        data_len = 0;
+        while(data_len < conf_ack->data_len)
+        {
         
-        if(conf_ack.msg_data.route_show.gateway == 0)
-        {
-            cmdline_printf(cl, "%-17s", "*" );
-        }
-        else
-        {
-            ipaddr.s_addr =  conf_ack.msg_data.route_show.gateway;
+            route_show = (netdp_route_show_t *)((void *)&(conf_ack->msg_data.route_show) + data_len);
+            ipaddr.s_addr =  route_show->dest.ip_addr;
             sprintf(ip_str, NIPQUAD_FMT, NIPQUAD(ipaddr));
             cmdline_printf(cl, "%-17s", ip_str );
-        }
             
-        ipaddr.s_addr =  conf_ack.msg_data.route_show.dest.netmask;
-        sprintf(ip_str, NIPQUAD_FMT, NIPQUAD(ipaddr));
-        cmdline_printf(cl, "%-17s", ip_str );
+            if(route_show->gateway == 0)
+            {
+                cmdline_printf(cl, "%-17s", "*" );
+            }
+            else
+            {
+                ipaddr.s_addr = route_show->gateway;
+                sprintf(ip_str, NIPQUAD_FMT, NIPQUAD(ipaddr));
+                cmdline_printf(cl, "%-17s", ip_str );
+            }
+                
+            ipaddr.s_addr =  route_show->dest.netmask;
+            sprintf(ip_str, NIPQUAD_FMT, NIPQUAD(ipaddr));
+            cmdline_printf(cl, "%-17s", ip_str );
 
-        cmdline_printf(cl,  "%-8s", conf_ack.msg_data.route_show.rt_flags);
+            cmdline_printf(cl,  "%-8s", route_show->rt_flags);
 
-        cmdline_printf(cl,  "%-16s\n", conf_ack.msg_data.route_show.ifname);
-        
+            cmdline_printf(cl,  "%-16s\n", route_show->ifname);
+
+            data_len += sizeof(netdp_route_show_t);
+
+        }
     }
     return;
     

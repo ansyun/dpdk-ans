@@ -2455,15 +2455,23 @@ MAIN(int argc, char **argv)
 
 
        	/* add by netdp_team ---start */
-		printf("add eth3 device\r\n");
-		
-		uint8_t *ifname = "eth3";
+		uint8_t ifname[16];
+
+              memset(ifname, 0, sizeof(ifname));
+
+              sprintf(ifname, "eth%d", portid);
+
+		printf("add %s device\r\n", ifname);
+
 		netdp_intf_add(portid,  ifname, &ports_eth_addr[portid]);
 
-		printf("add IP on device\r\n");
+              int ip_addr = 0x02020202;
 
-		netdp_intf_add_ipaddr((caddr_t)ifname, 0x02020202, 0x00ffffff);  
-              netdp_intf_add_ipaddr((caddr_t)ifname, 0x02020203, 0x00ffffff);  
+              ip_addr += portid;
+                
+              printf("add IP %x on device\r\n", ip_addr);
+      
+		netdp_intf_add_ipaddr((caddr_t)ifname, ip_addr, 0x00ffffff);  
 	      /* add by netdp_team ---end */
 	
 	}
