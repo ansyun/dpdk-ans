@@ -2306,29 +2306,6 @@ check_all_ports_link_status(uint8_t port_num, uint32_t port_mask)
 	}
 }
 
-/* add by netdp_team ---start */
-void alloc_mbuf(uint8_t lcore_id, struct rte_mbuf **m)
-{
-   int socketid = 0;
-
-   if (numa_on)
-   	socketid = rte_lcore_to_socket_id(lcore_id);
-   else
-   	socketid = 0;
-
-   // Allocate a work queue entry
-   if(NULL == pktmbuf_pool[socketid] )
-   {
-   	printf("arprequest: pool is null  %d \r\n", socketid);
-	*m = NULL;
-	return;
-   }
-   
- *m = rte_pktmbuf_alloc(pktmbuf_pool[socketid]);
-
-   return ;
-}
-/* add by netdp_team ---end */
 
 int
 MAIN(int argc, char **argv)
@@ -2374,15 +2351,19 @@ MAIN(int argc, char **argv)
 
       	/* init RTE timer library */
 	rte_timer_subsystem_init();
-
+        
+	/* init memory */
+	ret = init_mem(NB_MBUF);
+	if (ret < 0)
+		rte_exit(EXIT_FAILURE, "init_mem failed\n");
 
 	/* add by netdp_team ---start */
 	printf("start to init netdp\r\n");
 	netdp_ring_init();
-	netdp_init();
+	netdp_init(pktmbuf_pool, NB_SOCKETS);
 
 	printf("register callback\r\n");
-       netdp_register(send_single_packet,  alloc_mbuf);
+       netdp_register(send_single_packet);
 	/* add by netdp_team ---end */
 
 	nb_lcores = rte_lcore_count();
@@ -2423,10 +2404,6 @@ MAIN(int argc, char **argv)
 		ether_addr_copy(&ports_eth_addr[portid],
 			(struct ether_addr *)(val_eth + portid) + 1);
 
-		/* init memory */
-		ret = init_mem(NB_MBUF);
-		if (ret < 0)
-			rte_exit(EXIT_FAILURE, "init_mem failed\n");
 
 		/* init one TX queue per couple (lcore,port) */
 		queueid = 0;

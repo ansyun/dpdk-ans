@@ -109,10 +109,10 @@ int netdpcmd_ring_init(void)
         return NETDP_ECTRLRING;
     }
 
-    netdpcmd_message_pool = rte_mempool_lookup(NETDP_MSG_POLL_NAME);
+    netdpcmd_message_pool = rte_mempool_lookup(NETDP_MSG_POOL_NAME);
      if(NULL == netdpcmd_message_pool)
     {
-        printf("Lookup message pool(%s) failed \n", NETDP_MSG_POLL_NAME);
+        printf("Lookup message pool(%s) failed \n", NETDP_MSG_POOL_NAME);
         return NETDP_EMSGPOOL;
     }
         

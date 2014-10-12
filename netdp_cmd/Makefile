@@ -38,7 +38,7 @@ RTE_TARGET ?= x86_64-native-linuxapp-gcc
 
 include $(RTE_SDK)/mk/rte.vars.mk
 
-NETDPLIB_PATH = $(RTE_NETDP)/librte_netdp
+ODP_PATH = $(RTE_ODP)
 
 # binary name
 APP = netdpcmd
@@ -48,6 +48,6 @@ SRCS-y := netdpcmd_main.c netdpcmd_ip.c netdpcmd_ring.c
 
 CFLAGS += -O3
 #CFLAGS += $(WERROR_FLAGS)
-CFLAGS += -I $(NETDPLIB_PATH)/include/
+CFLAGS += -I$(ODP_PATH)/include
 
 include $(RTE_SDK)/mk/rte.extapp.mk
