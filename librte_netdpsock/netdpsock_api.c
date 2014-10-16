@@ -1,3 +1,4 @@
+
 /*-
  *   BSD LICENSE
  *
@@ -32,84 +33,86 @@
  */
 
 
-#ifndef __NETDP_SOCKET_INTF_H__
-#define __NETDP_SOCKET_INTF_H__
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <errno.h>
+#include <netinet/in.h>
+#include <termios.h>
+#ifndef __linux__
+  #ifdef __FreeBSD__
+    #include <sys/socket.h>
+  #else
+    #include <net/socket.h>
+  #endif
+#endif
 
-#define NETDP_SOCK_RING_MZ       "SOCK_RING_MZ"
+#include <cmdline_rdline.h>
+#include <cmdline_parse.h>
+#include <cmdline_parse_ipaddr.h>
+#include <cmdline_parse_num.h>
+#include <cmdline_parse_string.h>
+#include <cmdline.h>
+#include <cmdline_socket.h>
+
+#include <rte_memory.h>
+#include <rte_memzone.h>
+#include <rte_tailq.h>
+#include <rte_eal.h>
+#include <rte_debug.h>
+#include <rte_log.h>
+
+#include "netdp_errno.h"
+#include "netdp_socket_intf.h"
 
 
-#define NETDP_CTRL_MSG_POOL     "CTRLRING_MSGPOOL"
-#define NETDP_CTRL_APP_2_ODP   "CTRLRING_APP2ODP"
-#define NETDP_CTRL_ODP_2_APP   "DATASRING_ODP2APP"
-#define NETDP_DATA_MSG_POOL    "DATARING_MSG2POOL"
-#define NETDP_DATA_APP_2_ODP  "DATARING_APP2ODP"
-#define NETDP_DATA_ODP_2_APP  "DATARING_ODP2APP"
+char netdpsock_flag = 0;
 
-#define NETDP_SUPPORT_APP_MAX 32
-#define NETDP_NAME_LEN    20
-
-#define NETDP_SOCK_CTRL_MSG_SIZE   128
-#define NETDP_SOCK_DATA_MSG_SIZE   64
-
-#define NETDP_SOCK_CTRL_MSG_NUM   64
-#define NETDP_SOCK_DATA_MSG_NUM   1024
-
-
-/**
- *
- *
- */
-typedef enum 
+/**********************************************************************
+*@description:
+* 
+*
+*@parameters:
+* [in]: 
+* [in]: 
+*
+*@return values: 
+*
+**********************************************************************/
+int netdpsock_init()
 {
-   NETDP_SOCK_RING_UNUSED,
-   NETDP_SOCK_RING_USED,
-} netdp_sock_ring_tag_e;
+    int ret;
+    int     param_num = 7;
+    char *param[] = {"netdpsock",
+                               "-c",
+                               "1",
+                               "-n",
+                               "1",
+                               "--socket-mem=1",
+                               "--proc-type=secondary",
+                               NULL};
 
-/**
- *
- *
- */
-typedef struct 
+
+    if(netdpsock_flag != 0)
+        return NETDP_EOK;
+    
+    rte_set_log_level(RTE_LOG_ERR);
+    ret = rte_eal_init(param_num, param);
+    if (ret < 0)
+        return ret;
+
+    ret = netdpsock_ring_init();
+    if(ret != 0)
+        return ret;
+    
+}
+
+
+
+int netdpsock_socket(int domain, int type, int protocol)
 {
-    char app_name[NETDP_NAME_LEN];
-    char ctrl_msg_pool[NETDP_NAME_LEN];
-    char ctrl_ring_tx[NETDP_NAME_LEN];
-    char ctrl_ring_rx[NETDP_NAME_LEN];
-    char data_msg_pool[NETDP_NAME_LEN];
-    char data_ring_tx[NETDP_NAME_LEN];
-    char data_ring_rx[NETDP_NAME_LEN];
-    netdp_sock_ring_tag_e ring_tag;
-}netdp_sock_ring_conf_t;
 
+}
 
-/**
- *
- *
- */
- typedef struct 
-{
-    struct rte_mempool *ctrl_msg_pool;
-    struct rte_ring *ctrl_ring_tx;
-    struct rte_ring *ctrl_ring_rx;  ;
-    struct rte_mempool *data_msg_pool;
-    struct rte_ring *data_ring_tx;
-    struct rte_ring *data_ring_rx;  ;
-}netdp_sock_ring_t;
-
-/**
- *
- *
- */
-typedef enum 
-{
-   NETDP_SOCK_CTRL_CREATE,
-   NETDP_SOCK_CTRL_BIND,
-   NETDP_SOCK_CTRL_CONNECT,
-   NETDP_SOCK_CTRL_CLOSE,
-} netdp_sock_ctrl_type_e;
-
-
-
-
-
-#endif /* __NETDP_SOCKET_INTF_H__ */

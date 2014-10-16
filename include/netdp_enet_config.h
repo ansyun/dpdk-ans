@@ -101,34 +101,6 @@ int netdp_intf_add(uint8_t port, uint8_t *if_name, struct ether_addr *mac_addr);
  */
 int netdp_intf_del(uint8_t port);
 
-
-/**
- * Displays the interface information (L2 and L3 addresses).  
- * The maximum size of information displayed is bound by the value of BUF_SIZE
- *
- * @return  0 - SUCCESS, non-zero - FAILURE
- *
- */
-
-int netdp_intf_show(void);
-
-
-
-/**
- * Retrieves the interface information.
- * The maximum size of information displayed is bound by the value of BUF_SIZE
- *
- * @param len           input - length of buf; output - length of retrieved information
- * @param buf           pointer to location where the retrieved information is stored
- *
- * @return  0 - SUCCESS, non-zero - FAILURE
- *
- */
-
-int netdp_intf_get(int *len, caddr_t buf);
-
-
-
 /**
  * Retrieves MTU value for an interface.
  *
@@ -139,7 +111,7 @@ int netdp_intf_get(int *len, caddr_t buf);
  *
  */
 
-int netdp_intf_get_mtu(caddr_t name, int *len);
+int netdp_intf_get_mtu(caddr_t name, int *mtu);
 
 
 
@@ -153,7 +125,7 @@ int netdp_intf_get_mtu(caddr_t name, int *len);
  *
  */
 
-int netdp_intf_set_mtu(caddr_t name, int *len);
+int netdp_intf_set_mtu(caddr_t name, int *mtu);
 
 
 
@@ -209,33 +181,6 @@ int netdp_intf_add_ipaddr(caddr_t name, int ip_addr, int netmask);
  *
  */
 int netdp_intf_del_ipaddr(caddr_t name, int ip_addr, int netmask);
-
-
-/**
- * Add alias IP address for an interface. The address is added with a mask of 255.255.255.255
- *
- * @param name      name of the interface for which the alias IP address is set
- * @param ip_addr   alias IP address to add
- *
- * @return  0 - SUCCESS, non-zero - FAILURE
- *
- */
-
-int netdp_intf_add_alias_ipaddr(caddr_t name, int ip_addr);
-
-
-
-/**
- * Delete alias IP address for an interface.
- *
- * @param name      name of the interface for which the alias IP address is deleted.
- * @param ip_addr   alias IP address to delete 
- *
- * @return  0 - SUCCESS, non-zero - FAILURE
- *
- */
-
-int netdp_intf_del_alias_ipaddr(caddr_t name, int ip_addr);
 
 
 #endif

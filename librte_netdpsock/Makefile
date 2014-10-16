@@ -38,21 +38,20 @@ include $(RTE_SDK)/mk/rte.vars.mk
 ODP_PATH = $(RTE_ODP)
 
 # library name
-SHARED = librte_netdpsock.so
+LIB =librte_netdpsock.a
 
 CFLAGS += -O3
 # CFLAGS += $(WERROR_FLAGS)
 CFLAGS += -I$(ODP_PATH)/include
 
 # all source are stored in SRCS-y
-SRCS-y := netdpsock_api.c     netdpsock_msg.c\
+SRCS-y := netdpsock_api.c netdpsock_ring.c
 
 
 # install this header file
 SYMLINK-y-include := 
 
 # this lib needs eal
-LDLIBS += -lrte_mbuf -lrte_eal -lrte_mempool -lrte_ring -lrte_malloc
-LDLIBS+=-lm -lrt -ldl -lpthread
+DEPDIRS-y += lib/librte_eal lib/librte_malloc 
 
-include $(RTE_SDK)/mk/rte.extshared.mk
+include $(RTE_SDK)/mk/rte.lib.mk

@@ -32,84 +32,19 @@
  */
 
 
-#ifndef __NETDP_SOCKET_INTF_H__
-#define __NETDP_SOCKET_INTF_H__
-
-#define NETDP_SOCK_RING_MZ       "SOCK_RING_MZ"
+#ifndef _NETDPSOCK_RING_H_
+#define _NETDPSOCK_RING_H_
 
 
-#define NETDP_CTRL_MSG_POOL     "CTRLRING_MSGPOOL"
-#define NETDP_CTRL_APP_2_ODP   "CTRLRING_APP2ODP"
-#define NETDP_CTRL_ODP_2_APP   "DATASRING_ODP2APP"
-#define NETDP_DATA_MSG_POOL    "DATARING_MSG2POOL"
-#define NETDP_DATA_APP_2_ODP  "DATARING_APP2ODP"
-#define NETDP_DATA_ODP_2_APP  "DATARING_ODP2APP"
-
-#define NETDP_SUPPORT_APP_MAX 32
-#define NETDP_NAME_LEN    20
-
-#define NETDP_SOCK_CTRL_MSG_SIZE   128
-#define NETDP_SOCK_DATA_MSG_SIZE   64
-
-#define NETDP_SOCK_CTRL_MSG_NUM   64
-#define NETDP_SOCK_DATA_MSG_NUM   1024
+#define NETDPSOCK_RECV_MSG         1
+#define NETDPSOCK_NONRECV_MSG  2
 
 
-/**
- *
- *
- */
-typedef enum 
-{
-   NETDP_SOCK_RING_UNUSED,
-   NETDP_SOCK_RING_USED,
-} netdp_sock_ring_tag_e;
+extern int netdpsock_ring_init(void); 
 
-/**
- *
- *
- */
-typedef struct 
-{
-    char app_name[NETDP_NAME_LEN];
-    char ctrl_msg_pool[NETDP_NAME_LEN];
-    char ctrl_ring_tx[NETDP_NAME_LEN];
-    char ctrl_ring_rx[NETDP_NAME_LEN];
-    char data_msg_pool[NETDP_NAME_LEN];
-    char data_ring_tx[NETDP_NAME_LEN];
-    char data_ring_rx[NETDP_NAME_LEN];
-    netdp_sock_ring_tag_e ring_tag;
-}netdp_sock_ring_conf_t;
+extern int netdpsock_ring_recv(void *buff, int buff_len);
+
+extern int netdpsock_ring_send(void *buff, int buff_len);
 
 
-/**
- *
- *
- */
- typedef struct 
-{
-    struct rte_mempool *ctrl_msg_pool;
-    struct rte_ring *ctrl_ring_tx;
-    struct rte_ring *ctrl_ring_rx;  ;
-    struct rte_mempool *data_msg_pool;
-    struct rte_ring *data_ring_tx;
-    struct rte_ring *data_ring_rx;  ;
-}netdp_sock_ring_t;
-
-/**
- *
- *
- */
-typedef enum 
-{
-   NETDP_SOCK_CTRL_CREATE,
-   NETDP_SOCK_CTRL_BIND,
-   NETDP_SOCK_CTRL_CONNECT,
-   NETDP_SOCK_CTRL_CLOSE,
-} netdp_sock_ctrl_type_e;
-
-
-
-
-
-#endif /* __NETDP_SOCKET_INTF_H__ */
+#endif /* _NETDPSOCK_RING_H_ */

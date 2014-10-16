@@ -223,7 +223,8 @@
 
 #define  NETDP_ECTRLRING        1000
 #define  NETDP_EMSGPOOL         1001
-#define  NETDP_ESOCKET            1002
+#define  NETDP_EMZ                   1002
+#define  NETDP_ESOCKET            1003
 #define  NETDP_EIPFRAG            2000
 
 #define NETDP_ERRMEM        NETDP_ENOMEM   /* Out of memory error.     */
