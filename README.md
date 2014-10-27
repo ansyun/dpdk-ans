@@ -15,7 +15,7 @@ Support environment
 
 Support feature:
  - Netdp initialize
- - Ether layer
+ - Ether
  - ARP, ARP timeout
  - IP layer, IP fragmentation and reassemble
  - Routing
@@ -23,11 +23,14 @@ Support feature:
  - Commands for adding, deleting, showing IP address
  - Commands for adding, deleting, showing static route
  - Commands for showing ARP table
- 
+ - UDP
+ - UDP socket
+ - Netdp socket lib for application
+ - 
 Next Planning
-- Porting UDP from FreeBSD to netdp
 - Porting TCP from FreeBSD to netdp
 - Porting socket from FreeBSD to netdp
+- Open data plane.
 
 ####[Wiki Page](https://github.com/dpdk-net/netdp/wiki)
 -------
@@ -37,4 +40,4 @@ You can get more information and instructions from wiki page.
 -------
 BSD LICENSE, you may use netdp freely.
 
-For free support, please use netdp team mail list at zimeiw@163.com.
+For free support, please use netdp team mail list at zimeiw@163.com. or QQ group:86883521
