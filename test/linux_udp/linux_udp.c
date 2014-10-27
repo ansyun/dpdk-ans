@@ -31,83 +31,51 @@
  *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
-#ifndef __NETDP_SOCKET_INTF_H__
-#define __NETDP_SOCKET_INTF_H__
+int main(int argc, char **argv)
+{
+    int sockfd;
+    int loop = 0;
+    struct sockaddr_in servaddr;
+    struct sockaddr_in remote_addr;
 
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-#define NETDP_SUPPORT_APP_MAX 2
-#define NETDP_APP_NAME0  "NETDPAPP0"
-#define NETDP_APP_NAME1  "NETDPAPP1"
+    bzero(&servaddr, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_port = htons(9999);
 
+    bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
-/**
- *  Init netdp socket lib and register a user to opendp
- *
- * @param  app_name : application name.  
- *
- * @return  
- *
- */
-int netdpsock_init(char *app_name);
-
-/**
- *  creates  an endpoint for communication and returns a descriptor.
- *
- * @param       
- * @param 
- *
- * @return  
- *
- */
-int netdpsock_socket(int domain, int type, int protocol);
-
-/**
- * binds a local IP address.
- *
- * @param       
- * @param 
- *
- * @return  
- *
- */
-int netdpsock_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+    bzero(&remote_addr, sizeof(remote_addr));
+    remote_addr.sin_family = AF_INET;
+    remote_addr.sin_port = htons(8888);
+    remote_addr.sin_addr.s_addr = inet_addr("2.2.2.2");
 
 
-/**
- *  send user data via socket.
- *
- * @param       
- * @param 
- *
- * @return  
- *
- */
-ssize_t netdpsock_sendto(int sockfd, const void *buf, size_t len, int flags,
-                      const struct sockaddr *dest_addr, socklen_t addrlen);
+    int n;
+    char recvline[1024];
+    char sendline[100];
 
-/**
- * receive user data from socket.
- *
- * @param  sockfd : which socket does the user data belong to.     
- * @param 
- *
- * @return  
- *
- */
-ssize_t netdpsock_recvfrom(int *sockfd, void *buf, size_t len, int flags,
-                struct sockaddr *src_addr, socklen_t *addrlen);
+    while(loop < 100000)
+    {
 
-/**
- * close a socket.
- *
- * @param       
- * @param 
- *
- * @return  
- *
- */
-int netdpsock_close(int fd);
+        sprintf(sendline, "Hello, dpdk_udp, num:%d !", loop);
 
+        sendto(sockfd, sendline, strlen(sendline), 0, (struct sockaddr *)&remote_addr, sizeof(remote_addr));
 
-#endif /* __NETDP_SOCKET_INTF_H__ */
+        n = recvfrom(sockfd, recvline, 1024, 0, NULL, NULL);
+
+        printf("%s\n", recvline);
+
+        loop++;
+}
+
+   close(sockfd);
+    
+}

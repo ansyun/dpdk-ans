@@ -136,14 +136,6 @@ typedef struct
     netdp_show_data_t   msg_data;
 }netdp_conf_ack_t;
 
-/**
- * Create NETDP_SEC_2_PRI and NETDP_CTRL_PRI_2_SEC rte_ring.
- * Create NETDP_CTRL_MSG_POLL message pool.
- *
- * @return  0 - SUCCESS, non-zero - FAILURE
- *
- */
-int netdp_ring_init(void); 
 
 /**
  * Dequeue message from NETDP_SEC_2_PRI rte_ring, and then handle it.

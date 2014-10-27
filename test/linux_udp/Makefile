@@ -33,25 +33,19 @@ ifeq ($(RTE_SDK),)
 $(error "Please define RTE_SDK environment variable")
 endif
 
-ifeq ($(RTE_ODP),)
-$(error "Please define RTE_ODP environment variable")
-endif
-
 # Default target, can be overriden by command line or environment
 RTE_TARGET ?= x86_64-native-linuxapp-gcc
 
 include $(RTE_SDK)/mk/rte.vars.mk
 
-ODP_PATH = $(RTE_ODP)
-
 # binary name
-APP = netdpcmd
+APP = linux_udp
 
 # all source are stored in SRCS-y
-SRCS-y := netdpcmd_main.c netdpcmd_ip.c netdpcmd_ring.c
+SRCS-y := linux_udp.c 
 
 CFLAGS += -O3
 #CFLAGS += $(WERROR_FLAGS)
-CFLAGS += -I$(ODP_PATH)/include
+
 
 include $(RTE_SDK)/mk/rte.extapp.mk
