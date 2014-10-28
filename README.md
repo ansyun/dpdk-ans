@@ -15,7 +15,7 @@ Support environment
 
 Support feature:
  - Netdp initialize
- - Ether
+ - Ether, zero copy between NIC and netdp TCP/IP stack.
  - ARP, ARP timeout
  - IP layer, IP fragmentation and reassemble
  - Routing
@@ -24,8 +24,8 @@ Support feature:
  - Commands for adding, deleting, showing static route
  - Commands for showing ARP table
  - UDP
- - UDP socket
- - Netdp socket lib for application
+ - Socket layer
+ - Netdp socket lib for application, zero copy between netdp and application.
  - 
 Next Planning
 - Porting TCP from FreeBSD to netdp
