@@ -31,6 +31,9 @@ Next Planning
 - Porting TCP from FreeBSD to netdp
 - Porting socket from FreeBSD to netdp
 - Open data plane.
+- VxVLAN.
+- Performance testing.
+- IPFW
 
 ####[Wiki Page](https://github.com/dpdk-net/netdp/wiki)
 -------
