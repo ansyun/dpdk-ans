@@ -62,7 +62,7 @@ int main(int argc, char **argv)
     char recvline[1024];
     char sendline[100];
 
-    while(loop < 100000)
+    while(loop < 30000)
     {
 
         sprintf(sendline, "Hello, dpdk_udp, num:%d !", loop);

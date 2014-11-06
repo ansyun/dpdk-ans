@@ -81,7 +81,7 @@ for(i = 0; i < 10; i++)
 int main(void)
 {
     int ret;
-    int i ;
+    int i = 0 ;
     int fd, recvfd = 0;
     char send_data[2048];
     struct timeval start, end;
@@ -90,7 +90,7 @@ int main(void)
 
     int interval;
 
-    ret = netdpsock_init(NETDP_APP_NAME0);
+    ret = netdpsock_init("dpdk_udp");
     if(ret != 0)
         printf("init sock ring failed \n");
 
@@ -122,12 +122,12 @@ int main(void)
 
     char recv_buf[2038];
     int recv_len; 
-    while(i < 100000)
+    while(i < 200000)
     {
 
         sprintf(send_data, "Hello, linux_udp, num:%d !", i);
 
-        netdpsock_sendto(fd, send_data, strlen(send_data), 0, &remote_addr,  sizeof(remote_addr));
+        netdpsock_sendto(fd, send_data, strlen(send_data), 0, (struct sockaddr *)&remote_addr,  sizeof(remote_addr));
 
         recv_len = netdpsock_recvfrom(&recvfd, recv_buf, 2048, 0, NULL, NULL);
 

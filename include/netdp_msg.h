@@ -144,6 +144,6 @@ typedef struct
  * @return  
  *
  */
-void netdp_message_handle();
+void netdp_message_handle(unsigned lcore_id);
 
 #endif /* __NETDP_MSG_H__ */

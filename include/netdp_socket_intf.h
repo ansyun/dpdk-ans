@@ -36,11 +36,6 @@
 #define __NETDP_SOCKET_INTF_H__
 
 
-#define NETDP_SUPPORT_APP_MAX 2
-#define NETDP_APP_NAME0  "NETDPAPP0"
-#define NETDP_APP_NAME1  "NETDPAPP1"
-
-
 /**
  *  Init netdp socket lib and register a user to opendp
  *

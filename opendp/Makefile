@@ -48,7 +48,7 @@ ODP_PATH = $(RTE_ODP)
 APP = opendp
 
 # all source are stored in SRCS-y
-SRCS-y := main.c
+SRCS-y := odp_param.c odp_main.c
 
 CFLAGS += -O3 $(USER_FLAGS)
 #CFLAGS += $(WERROR_FLAGS)

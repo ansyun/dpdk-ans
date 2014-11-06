@@ -35,17 +35,28 @@
 #ifndef __NETDP_INIT_H__
 #define __NETDP_INIT_H__
 
+/**
+ *
+ *
+ */
+struct netdp_init_config 
+{
+    uint32_t max_sock_conn;
+    uint32_t max_udp_conn;
+    uint32_t max_sock_app;
+} __rte_cache_aligned;
+
 
 typedef int (*netdp_send_packet_cb)(struct rte_mbuf *m, uint8_t port);
 
 /**
  * @param pktmbuf_pool 
- *@param nb_sockets 
+ *@param sockets_nb 
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-int netdp_init(struct rte_mempool **pktmbuf_pool, int nb_sockets);
+int netdp_initialize(int sockets_nb, int lcores_nb, struct rte_mempool **pktmbuf_pool, struct netdp_init_config *user_conf);
 
 /**
  * 
@@ -55,6 +66,16 @@ int netdp_init(struct rte_mempool **pktmbuf_pool, int nb_sockets);
  *
  */
 int netdp_register(netdp_send_packet_cb send_cb);
+
+/**
+ * 
+ * @param app_name     
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
+int netdp_app_register(char *app_name);
+
 
 /**
  * 
