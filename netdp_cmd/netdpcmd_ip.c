@@ -324,7 +324,7 @@ static void netdpcmd_ip_show_parsed(void *parsed_result,
     memset(ifname, 0, sizeof(ifname));
       
      ret = netdpcmd_ring_send((void *) &conf_req, sizeof(conf_req));
-
+     
     while(1)
     {
         
