@@ -26,6 +26,9 @@ Support feature:
  - UDP
  - Socket layer
  - Netdp socket lib for application, zero copy between netdp and application.
+ - Packets ZERO copy between application and NETDP.
+ - No lock in UDP stack and socket layer.
+ - Running on multiple cores.
  - 
 Next Planning
 - Porting TCP from FreeBSD to netdp
