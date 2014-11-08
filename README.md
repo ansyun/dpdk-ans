@@ -3,7 +3,9 @@
 Netdp is porting from [FreeBSD](http://freebsd.org) TCP/IP stack, and provide a userspace TCP/IP stack for use with the Intel [dpdk](http://dpdk.org/). 
 
 - librte_netdp: TCP/IP stack static library. netdp use dpdk mbuf, ring, memzone, mempool, timer, spinlock. so zero copy mbuf between dpdk and netdp. 
- 
+
+- librte_netdpsock: Netdp socket lib for application, zero copy between netdp and application.
+
 - netdp_cmd: Command for configure netdp tcp/ip stack.
  
 - netdp_test: Example application with netdp for testing netdp tcp/ip stack
@@ -25,8 +27,6 @@ Support feature:
  - Commands for showing ARP table
  - UDP
  - Socket layer
- - Netdp socket lib for application, zero copy between netdp and application.
- - Packets ZERO copy between application and NETDP.
  - No lock in UDP stack and socket layer.
  - Running on multiple cores.
  - 
