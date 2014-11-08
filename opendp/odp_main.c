@@ -607,7 +607,7 @@ static void odp_init_timer()
 **********************************************************************/
 static int odp_main_loop(__attribute__((unused)) void *dummy)
 {
-   unsigned nb_ports;
+    unsigned nb_ports;
     int i, j, nb_rx;
     unsigned lcore_id;
     uint64_t prev_tsc, diff_tsc, cur_tsc;
@@ -639,7 +639,7 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
     }
 
     nb_ports = rte_eth_dev_count();
-    printf("nb ports %d \n", nb_ports);
+    printf("nb ports %d hz: %ld \n", nb_ports, rte_get_tsc_hz());
 
     while (1)
     {
@@ -712,10 +712,12 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
             /* Prefetch and forward already prefetched packets */
             for (j = 0; j < (nb_rx - PREFETCH_OFFSET); j++) 
             {
-                rte_prefetch0(rte_pktmbuf_mtod(pkts_burst[	j + PREFETCH_OFFSET], void *));
+                rte_prefetch0(rte_pktmbuf_mtod(pkts_burst[j + PREFETCH_OFFSET], void *));
 
                 /* add by netdp_team ---start */
+
                 netdp_packet_handle(pkts_burst[j], portid);
+
                 /* add by netdp_team ---end */
             }
 
@@ -724,7 +726,9 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
             {
 
                 /* add by netdp_team ---start */
+
                 netdp_packet_handle(pkts_burst[j], portid);
+                
                 /* add by netdp_team ---end */
             }
 

@@ -122,7 +122,7 @@ int main(void)
 
     char recv_buf[2038];
     int recv_len; 
-    while(i < 200000)
+    while(i < 2000000)
     {
 
         sprintf(send_data, "Hello, linux_udp, num:%d !", i);
@@ -131,9 +131,12 @@ int main(void)
 
         recv_len = netdpsock_recvfrom(&recvfd, recv_buf, 2048, 0, NULL, NULL);
 
-        printf("Recv: %s \n", recv_buf);
-        
         i++;
+
+        if((i % 100000)  == 0 )
+            printf("Recv: %s \n", recv_buf);
+        
+        
     }
 
     netdpsock_close(fd);
