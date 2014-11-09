@@ -68,6 +68,29 @@ int netdpsock_socket(int domain, int type, int protocol);
  */
 int netdpsock_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
+/**
+ * connect to remote IP address.
+ *
+ * @param       
+ * @param 
+ *
+ * @return  
+ *
+ */
+ int netdpsock_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+
+/**
+ *  sendto user data via socket.
+ *
+ * @param       
+ * @param 
+ *
+ * @return  
+ *
+ */
+ssize_t netdpsock_sendto(int sockfd, const void *buf, size_t len, int flags,
+                      const struct sockaddr *dest_addr, socklen_t addrlen);
+
 
 /**
  *  send user data via socket.
@@ -78,8 +101,7 @@ int netdpsock_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
  * @return  
  *
  */
-ssize_t netdpsock_sendto(int sockfd, const void *buf, size_t len, int flags,
-                      const struct sockaddr *dest_addr, socklen_t addrlen);
+ssize_t netdpsock_send(int sockfd, const void *buf, size_t len, int flags);
 
 /**
  * receive user data from socket.
