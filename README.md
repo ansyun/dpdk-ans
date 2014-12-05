@@ -40,7 +40,7 @@ Next Planning
 
 ####[Wiki Page](https://github.com/dpdk-net/netdp/wiki)
 -------
-You can get more information and instructions from wiki page.
+You can get more information and instructions from [wiki page](https://github.com/dpdk-net/netdp/wiki).
 
 ####Support
 -------
