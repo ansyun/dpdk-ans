@@ -85,13 +85,12 @@
 
 #include "odp_main.h"
 #include "odp_param.h"
-
+#include "odp_kni.h"
 
 static struct odp_user_config  odp_user_conf;
 static struct odp_lcore_config odp_lcore_conf[RTE_MAX_LCORE];
 
-static struct rte_mempool *odp_pktmbuf_pool[MAX_NB_SOCKETS];
-
+struct rte_mempool *odp_pktmbuf_pool[MAX_NB_SOCKETS];
 
 static struct odp_lcore_params odp_lcore_params_default[] = 
 {
@@ -594,6 +593,7 @@ static void odp_init_timer()
     rte_timer_subsystem_init();
     return;
 }
+
 /**********************************************************************
 *@description:
 * 
@@ -731,9 +731,10 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
                 
                 /* add by netdp_team ---end */
             }
-
         }
-        
+
+        /* to support KNI, at 2014-12-15 */
+        odp_kni_main();
     }
 }
 
@@ -777,6 +778,12 @@ int main(int argc, char **argv)
     if (ret < 0)
     	rte_exit(EXIT_FAILURE, "Invalid ODP parameters\n");
 
+    /* netdp team add: for test at 2014-12-15 */
+    unsigned kni_ports[1] = {0};
+    odp_kni_config_set(0,1,kni_ports);
+    odp_kni_config(argc,argv);
+    /* end at 2014-12-15 */
+
     if(odp_user_conf.jumbo_frame_on)
     {
         odp_port_conf.rxmode.jumbo_frame = 1;
@@ -812,6 +819,10 @@ int main(int argc, char **argv)
     if (ret < 0)
     	rte_exit(EXIT_FAILURE, "Init ports failed\n");
 
+    /* add by netdp_team: support KNI interface at 2014-12-15 */
+    ret = odp_kni_init();
+    if (ret < 0)
+	rte_exit(EXIT_FAILURE, "Init KNI failed\n");
 
     /* add by netdp_team ---start */
     odp_init_timer();
@@ -885,5 +896,4 @@ int main(int argc, char **argv)
     	if (rte_eal_wait_lcore(lcore_id) < 0)
     		return -1;
     }
-
 }
