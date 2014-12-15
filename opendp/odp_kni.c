@@ -130,6 +130,19 @@ static int odp_kni_config_from_argv(int argc, char * argv[])
 	return 0;
 }
 
+/* KNI Module Interface */
+int odp_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned port_id)
+{
+	if(unlikely(kni_port_params_array[port_id] == NULL))
+		return -ENOENT;
+
+	struct rte_ring * ring = kni_port_params_array[port_id]->ring;
+	if(unlikely(ring == NULL))
+		return -ENOENT;
+
+	return rte_ring_enqueue_bulk(ring,(void **)mbufs,nb_mbufs);
+}
+
 int odp_kni_config_set(unsigned lcore_id, unsigned nb_ports, unsigned * ports)
 {
 	for(int i = 0; i < nb_ports; i++)

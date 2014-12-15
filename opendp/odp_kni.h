@@ -39,5 +39,10 @@ int odp_kni_destory();
 void odp_kni_main();
 int odp_kni_config_set(unsigned lcore_id, unsigned nb_ports, unsigned * ports);
 
+/** Use by NETDP Stack, 
+ *	send packets which cannot be proceed to network stack
+ */
+int odp_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned port_id);
+
 #endif
 
