@@ -33,15 +33,18 @@
 #ifndef __ODP_KNI_H__
 #define __ODP_KNI_H__
 
-int odp_kni_config(int argc, char * argv[]);
-int odp_kni_init();
-int odp_kni_destory();
-void odp_kni_main();
-int odp_kni_config_set(unsigned lcore_id, unsigned nb_ports, unsigned * ports);
+#include <rte_mempool.h>
+#include "odp_main.h"
 
-/** Use by NETDP Stack, 
- *	send packets which cannot be proceed to network stack
- */
+/* Load Configure Information for ODP KNI module */
+int odp_kni_config(struct odp_user_config * common_config, struct rte_mempool * pktmbuf_pool[]);
+/* Init ODP KNI module */
+int odp_kni_init();
+/* Destory ODP KNI module */
+int odp_kni_destory();
+/* Run ODP KNI module, should be called at main loop each lcore */
+void odp_kni_main();
+/* send packets which cannot be proceed to network stack */
 int odp_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned port_id);
 
 #endif

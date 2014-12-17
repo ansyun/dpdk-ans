@@ -40,6 +40,7 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <getopt.h>
+#include <assert.h>
 
 #include <netinet/in.h>
 #include <linux/if.h>
@@ -75,27 +76,24 @@
 #include <rte_malloc.h>
 #include <rte_kni.h>
 
+#include "odp_kni.h"
+
 #ifndef ODP_KNI_MAX_INGRESS_LCORE
 #define ODP_KNI_MAX_INGRESS_LCORE	RTE_MAX_LCORE
 #endif
 
 #ifndef ODP_KNI_RING_SIZE
-#define ODP_KNI_RING_SIZE	4096
+#define ODP_KNI_RING_SIZE		4096
 #endif
 
 #define PKT_BURST_SZ            32
 #define MAX_PACKET_SZ           2048
-#define RTE_LOGTYPE_APP 	RTE_LOGTYPE_USER1
+#define RTE_LOGTYPE_APP 		RTE_LOGTYPE_USER1
 
 
 struct kni_port_params {
-	uint8_t port_id;/* Port ID */
-	unsigned lcore_id;
-#if 0
-	uint32_t nb_lcore_k; /* Number of lcores for KNI multi kernel threads */
-	uint32_t nb_kni; /* Number of KNI devices to be created */
-	unsigned lcore_k[KNI_MAX_KTHREAD]; /* lcore ID list for kthreads */
-#endif
+	uint8_t port_id;	/* Port ID */
+	unsigned lcore_id;	/* lcore ID bind to port */
 	struct rte_kni  * kni; /* KNI context pointers */
 	struct rte_ring * ring; /* Ring used to recieve packets from other cores */
 
@@ -111,24 +109,13 @@ struct kni_lcore_params
 struct kni_port_params  * kni_port_params_array[RTE_MAX_ETHPORTS];
 struct kni_lcore_params * kni_lcore_params_array[RTE_MAX_LCORE];
 
-// TODO: It is not good enough for implementing like this.
-extern struct rte_mempool *odp_pktmbuf_pool[];
+//TODO:
+static struct rte_mempool ** odp_pktmbuf_pool;
 
 //static struct kni_interface_stats kni_stats[RTE_MAX_ETHPORTS];
 static int kni_change_mtu(uint8_t port_id, unsigned new_mtu);
 static int kni_config_network_interface(uint8_t port_id, uint8_t if_up);
 static int odp_kni_alloc(uint8_t port_id);
-
-
-static int odp_kni_config_from_files(char * fcfg_path)
-{
-	return 0;
-}
-
-static int odp_kni_config_from_argv(int argc, char * argv[])
-{
-	return 0;
-}
 
 /* KNI Module Interface */
 int odp_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned port_id)
@@ -143,25 +130,31 @@ int odp_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned 
 	return rte_ring_enqueue_bulk(ring,(void **)mbufs,nb_mbufs);
 }
 
-int odp_kni_config_set(unsigned lcore_id, unsigned nb_ports, unsigned * ports)
+int odp_kni_config(struct odp_user_config * common_config, struct rte_mempool * pktmbuf_pool[])
 {
-	for(int i = 0; i < nb_ports; i++)
-	{
-		unsigned port_id = ports[i];
+	uint32_t portmask    = common_config->port_mask;
+	unsigned lcore_item  = 0;
 
-		if(kni_port_params_array[port_id] != NULL)
+	// Link mbufs pool from outside modules.
+	odp_pktmbuf_pool = pktmbuf_pool;
+
+	// Bind params between lcores and KNI .
+	for(unsigned port_id = 0; port_id < RTE_MAX_ETHPORTS; port_id++)
+	{
+		if((portmask & (1 << port_id)) == 0)
 			continue;
+
+		assert(kni_port_params_array[port_id] == NULL);
+
+		unsigned lcore_id = lcore_item >= common_config->lcore_param_nb 
+							? common_config->lcore_param[lcore_item = 0].lcore_id : common_config->lcore_param[lcore_item++].lcore_id;
 
 		kni_port_params_array[port_id] = rte_zmalloc(NULL,sizeof(struct kni_port_params),0);
 		kni_port_params_array[port_id]->port_id  = port_id;
 		kni_port_params_array[port_id]->lcore_id = lcore_id;
+
+		printf("DEBUG: port_id=%d,lcore_id=%d\n",port_id,lcore_id);
 	}
-
-	return 0;
-}
-
-int odp_kni_config(int argc, char * argv[])
-{
 
 	for(int i = 0; i < RTE_MAX_ETHPORTS; i++)
 	{
