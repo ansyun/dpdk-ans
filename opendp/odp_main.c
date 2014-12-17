@@ -89,8 +89,7 @@
 
 static struct odp_user_config  odp_user_conf;
 static struct odp_lcore_config odp_lcore_conf[RTE_MAX_LCORE];
-
-struct rte_mempool *odp_pktmbuf_pool[MAX_NB_SOCKETS];
+static struct rte_mempool *odp_pktmbuf_pool[MAX_NB_SOCKETS];
 
 static struct odp_lcore_params odp_lcore_params_default[] = 
 {
@@ -778,11 +777,8 @@ int main(int argc, char **argv)
     if (ret < 0)
     	rte_exit(EXIT_FAILURE, "Invalid ODP parameters\n");
 
-    /* netdp team add: for test at 2014-12-15 */
-    unsigned kni_ports[1] = {0};
-    odp_kni_config_set(0,1,kni_ports);
-    odp_kni_config(argc,argv);
-    /* end at 2014-12-15 */
+    /* netdp team add: for test at 2014-12-17 */
+    odp_kni_config(&odp_user_conf, odp_pktmbuf_pool);
 
     if(odp_user_conf.jumbo_frame_on)
     {
@@ -822,7 +818,7 @@ int main(int argc, char **argv)
     /* add by netdp_team: support KNI interface at 2014-12-15 */
     ret = odp_kni_init();
     if (ret < 0)
-	rte_exit(EXIT_FAILURE, "Init KNI failed\n");
+	   rte_exit(EXIT_FAILURE, "Init KNI failed\n");
 
     /* add by netdp_team ---start */
     odp_init_timer();
