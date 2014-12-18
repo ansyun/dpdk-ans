@@ -38,7 +38,7 @@ $(error "Please define RTE_ODP environment variable")
 endif
 
 # Default target, can be overriden by command line or environment
-RTE_TARGET ?= x86_64-default-linuxapp-gcc
+RTE_TARGET ?= x86_64-native-linuxapp-gcc
 
 include $(RTE_SDK)/mk/rte.vars.mk
 
@@ -48,9 +48,9 @@ ODP_PATH = $(RTE_ODP)
 APP = opendp
 
 # all source are stored in SRCS-y
-SRCS-y := odp_param.c odp_main.c
+SRCS-y := odp_param.c odp_main.c odp_kni.c
 
-CFLAGS += -O3 $(USER_FLAGS)
+CFLAGS += -O3 -std=gnu99 $(USER_FLAGS)
 #CFLAGS += $(WERROR_FLAGS)
 CFLAGS += -I$(ODP_PATH)/include
 
