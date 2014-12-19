@@ -65,6 +65,8 @@
 #ifndef __NETDP_IP_INTF_H__ 
 #define __NETDP_IP_INTF_H__
 
+#define NETDP_MBUF_DONE            0
+#define NETDP_MBUF_CONTINUE    1
 
 #define NETDP_IP_RTF_UP     0x1   /* route usable */
 #define NETDP_IP_RTF_GATEWAY    0x2   /* destination is a gateway */
@@ -154,6 +156,13 @@ int netdp_add_route(uint32_t dest_ipaddr, uint8_t gateway_valid, uint32_t gatewa
 
 int netdp_del_route(uint32_t dest_ipaddr, uint32_t netmask, int flags);
 
+/**
+ * Displays the routing table information.
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
 
+int netdp_route_show_all(void);
 
 #endif 

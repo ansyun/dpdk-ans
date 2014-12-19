@@ -62,6 +62,7 @@
 #include <rte_interrupts.h>
 #include <rte_pci.h>
 #include <rte_random.h>
+#include <rte_timer.h>
 #include <rte_debug.h>
 #include <rte_ether.h>
 #include <rte_ethdev.h>
@@ -604,8 +605,31 @@ static void odp_init_timer()
 *@return values: 
 *
 **********************************************************************/
+static inline void odp_to_linux(unsigned port_id, struct rte_mbuf *m)
+{
+    int ret = 0;
+
+    ret = odp_kni_sendpkt_burst(&m, 1, port_id);
+    if(ret != 0 )
+        rte_pktmbuf_free(m);
+    
+    return;
+}
+
+/**********************************************************************
+*@description:
+* 
+*
+*@parameters:
+* [in]: 
+* [in]: 
+*
+*@return values: 
+*
+**********************************************************************/
 static int odp_main_loop(__attribute__((unused)) void *dummy)
 {
+    int ret;
     unsigned nb_ports;
     int i, j, nb_rx;
     unsigned lcore_id;
@@ -715,8 +739,10 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
 
                 /* add by netdp_team ---start */
 
-                netdp_packet_handle(pkts_burst[j], portid);
-
+                ret = netdp_packet_handle(pkts_burst[j], portid);
+                if(ret == NETDP_MBUF_CONTINUE)
+                    odp_to_linux(portid, pkts_burst[j]);
+      
                 /* add by netdp_team ---end */
             }
 
@@ -726,8 +752,10 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
 
                 /* add by netdp_team ---start */
 
-                netdp_packet_handle(pkts_burst[j], portid);
-                
+                ret = netdp_packet_handle(pkts_burst[j], portid);
+               if(ret == NETDP_MBUF_CONTINUE)
+                   odp_to_linux(portid, pkts_burst[j]);
+          
                 /* add by netdp_team ---end */
             }
         }

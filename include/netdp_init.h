@@ -86,6 +86,6 @@ int netdp_app_register(char *app_name);
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
- uint64_t netdp_packet_handle(struct rte_mbuf *m, uint8_t portid);
+ int netdp_packet_handle(struct rte_mbuf *m, uint8_t portid);
 
 #endif /* __NETDP_INIT_H__ */

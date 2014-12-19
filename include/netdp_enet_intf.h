@@ -180,5 +180,15 @@ int netdp_intf_add_ipaddr(caddr_t name, int ip_addr, int netmask);
  */
 int netdp_intf_del_ipaddr(caddr_t name, int ip_addr, int netmask);
 
+/**
+ * Displays the interface information (L2 and L3 addresses).  
+ * The maximum size of information displayed is bound by the value of BUF_SIZE
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
+
+int netdp_intf_show(void);
+
 
 #endif
