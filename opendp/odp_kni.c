@@ -41,6 +41,8 @@
 #include <errno.h>
 #include <getopt.h>
 #include <assert.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
 
 #include <netinet/in.h>
 #include <linux/if.h>
@@ -230,6 +232,32 @@ kni_free_kni(uint8_t port_id)
 	return 0;
 }
 
+
+static int odp_kni_iface_up(const char * eth_name)
+{
+	struct ifreq ifr;
+	int sockfd;
+
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+	if(sockfd < 0)
+		return sockfd;
+
+	memset(&ifr,0,sizeof(ifr));
+	strcpy(ifr.ifr_name,eth_name);
+
+	ioctl(sockfd, SIOCGIFFLAGS, &ifr);
+
+	if (ifr.ifr_flags & IFF_UP) {
+		ifr.ifr_flags |= IFF_UP;
+	}
+
+	ioctl(sockfd, SIOCSIFFLAGS, &ifr);
+
+	close(sockfd);
+	return 0;
+}
+
 /* Alloc KNI Devices for PORT_ID */
 static int odp_kni_alloc(uint8_t port_id)
 {
@@ -280,6 +308,8 @@ static int odp_kni_alloc(uint8_t port_id)
 	
 	if(!params[port_id]->ring)
 		rte_exit(EXIT_FAILURE, "Fail to create ring for kni %s",ring_name);
+
+	odp_kni_iface_up(conf.name);
 
 	return 0;
 }
