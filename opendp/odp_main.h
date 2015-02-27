@@ -127,4 +127,5 @@ struct odp_lcore_config
 
 #define TIMER_RESOLUTION_CYCLES 20000000ULL /* around 10ms at 2 Ghz */
 
+
 #endif /* _ODP_MAIN_H_ */

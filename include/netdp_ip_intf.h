@@ -121,7 +121,7 @@ int netdp_add_default_route(uint32_t gateway_addr);
  *
  */
 
-int netdp_del_default_route();
+int netdp_del_default_route(void);
 
 
 

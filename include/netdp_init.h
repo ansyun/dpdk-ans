@@ -35,28 +35,32 @@
 #ifndef __NETDP_INIT_H__
 #define __NETDP_INIT_H__
 
+#define MAX_NB_SOCKETS 8
+
+
 /**
  *
  *
  */
 struct netdp_init_config 
 {
-    uint32_t max_sock_conn;
-    uint32_t max_udp_conn;
-    uint32_t max_sock_app;
+    uint64_t lcore_mask;          /* lcore which used to run netdp */
+    uint32_t max_sock_conn;   /* support max sock connection */
+    uint32_t max_udp_conn;   /* support max udp connection */
+    uint32_t max_sock_app;   /* support max sock application */
+    struct rte_mempool *pktmbuf_pool[MAX_NB_SOCKETS];  /* mbuf pools for each sockets */
 } __rte_cache_aligned;
 
 
 typedef int (*netdp_send_packet_cb)(struct rte_mbuf *m, uint8_t port);
 
 /**
- * @param pktmbuf_pool 
- *@param sockets_nb 
+ * @param user_conf   : user config.
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-int netdp_initialize(int sockets_nb, int lcores_nb, struct rte_mempool **pktmbuf_pool, struct netdp_init_config *user_conf);
+int netdp_initialize(struct netdp_init_config *user_conf);
 
 /**
  * 

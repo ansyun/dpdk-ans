@@ -276,6 +276,8 @@ static int odp_init_mbuf_pool(unsigned nb_mbuf, struct odp_user_config  *user_co
     unsigned lcore_id;
     char str[64];
 
+    memset(odp_pktmbuf_pool, 0, sizeof(odp_pktmbuf_pool));
+
     for (lcore_id = 0; lcore_id < RTE_MAX_LCORE; lcore_id++) 
     {
         if (rte_lcore_is_enabled(lcore_id) == 0)
@@ -779,6 +781,7 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
 **********************************************************************/
 int main(int argc, char **argv)
 {
+    int i;
     int ret;
     unsigned nb_ports;
     unsigned lcore_id;
@@ -817,9 +820,6 @@ int main(int argc, char **argv)
 
     odp_user_conf.lcore_nb = rte_lcore_count();
 
-    printf("sockets number:%d, lcore number:%d \n", odp_user_conf.socket_nb, odp_user_conf.lcore_nb);
-
-
     if (odp_check_lcore_params(&odp_user_conf) < 0)
         rte_exit(EXIT_FAILURE, "check_lcore_params failed\n");
 
@@ -850,12 +850,19 @@ int main(int argc, char **argv)
 
     /* add by netdp_team ---start */
     odp_init_timer();
-    
+    printf("sockets number:%d, lcore number:%d \n", odp_user_conf.socket_nb, odp_user_conf.lcore_nb);
+
     printf("start to init netdp \n");
     init_conf.max_sock_conn = 4096;
     init_conf.max_udp_conn = 2048;
     init_conf.max_sock_app = 10;
-    ret = netdp_initialize(odp_user_conf.socket_nb, odp_user_conf.lcore_nb, odp_pktmbuf_pool, &init_conf);
+    init_conf.lcore_mask = 0x1;
+    for(i = 0 ; i < MAX_NB_SOCKETS; i++)
+    {
+        init_conf.pktmbuf_pool[i] = odp_pktmbuf_pool[i];
+    }
+    
+    ret = netdp_initialize(&init_conf);
     if (ret != 0)
    	rte_exit(EXIT_FAILURE, "Init netdp fialed \n");
 
