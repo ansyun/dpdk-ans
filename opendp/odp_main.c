@@ -43,7 +43,7 @@
 #include <getopt.h>
 
 #include <rte_common.h>
-#include <rte_common_vect.h>
+#include <rte_vect.h>
 #include <rte_byteorder.h>
 #include <rte_log.h>
 #include <rte_memory.h>
@@ -360,6 +360,8 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
     uint8_t queue, socketid;
     uint32_t n_tx_queue, nb_lcores, nb_mbuf;
     struct ether_addr eth_addr;
+    struct rte_eth_dev_info dev_info;
+    struct rte_eth_txconf *txconf;
 
 
     nb_lcores = rte_lcore_count();
@@ -414,7 +416,6 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
 
             printf("\t lcore id:%u, tx queue id:%d, socket id:%d \n", lcore_id, queueid, socketid);
             
-
             ret = rte_eth_tx_queue_setup(portid, queueid, ODP_TX_DESC_DEFAULT, socketid, &odp_tx_conf);
             if (ret < 0)
             	rte_exit(EXIT_FAILURE, "rte_eth_tx_queue_setup: err=%d, " "port=%d\n", ret, portid);
@@ -742,8 +743,6 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
                 /* add by netdp_team ---start */
 
                 ret = netdp_packet_handle(pkts_burst[j], portid);
-                if(ret == NETDP_MBUF_CONTINUE)
-                    odp_to_linux(portid, pkts_burst[j]);
       
                 /* add by netdp_team ---end */
             }
@@ -755,15 +754,11 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
                 /* add by netdp_team ---start */
 
                 ret = netdp_packet_handle(pkts_burst[j], portid);
-               if(ret == NETDP_MBUF_CONTINUE)
-                   odp_to_linux(portid, pkts_burst[j]);
           
                 /* add by netdp_team ---end */
             }
         }
 
-        /* to support KNI, at 2014-12-15 */
-        odp_kni_main();
     }
 }
 
@@ -809,7 +804,7 @@ int main(int argc, char **argv)
     	rte_exit(EXIT_FAILURE, "Invalid ODP parameters\n");
 
     /* netdp team add: for test at 2014-12-17 */
-    odp_kni_config(&odp_user_conf, odp_pktmbuf_pool);
+    //odp_kni_config(&odp_user_conf, odp_pktmbuf_pool);
 
     if(odp_user_conf.jumbo_frame_on)
     {
@@ -823,16 +818,17 @@ int main(int argc, char **argv)
     if (odp_check_lcore_params(&odp_user_conf) < 0)
         rte_exit(EXIT_FAILURE, "check_lcore_params failed\n");
 
+
     ret = odp_init_lcore_rx_queues(&odp_user_conf, odp_lcore_conf);
     if (ret < 0)
     	rte_exit(EXIT_FAILURE, "init_lcore_rx_queues failed\n");
 
-    if (rte_eal_pci_probe() < 0)
-    	rte_exit(EXIT_FAILURE, "Cannot probe PCI\n");
+    
 
     nb_ports = rte_eth_dev_count();
     if (nb_ports > RTE_MAX_ETHPORTS)
     	nb_ports = RTE_MAX_ETHPORTS;
+
 
     ret = odp_check_port_config(nb_ports, &odp_user_conf);
     if (ret < 0)
@@ -843,19 +839,22 @@ int main(int argc, char **argv)
     if (ret < 0)
     	rte_exit(EXIT_FAILURE, "Init ports failed\n");
 
+
     /* add by netdp_team: support KNI interface at 2014-12-15 */
+    /*
     ret = odp_kni_init();
     if (ret < 0)
 	   rte_exit(EXIT_FAILURE, "Init KNI failed\n");
-
+    */
+    
     /* add by netdp_team ---start */
     odp_init_timer();
     printf("sockets number:%d, lcore number:%d \n", odp_user_conf.socket_nb, odp_user_conf.lcore_nb);
 
     printf("start to init netdp \n");
     init_conf.max_sock_conn = 4096;
-    init_conf.max_udp_conn = 2048;
-    init_conf.max_sock_app = 10;
+    init_conf.max_udp_conn = 128;
+    init_conf.max_sock_app = 6;
     init_conf.lcore_mask = 0x1;
     for(i = 0 ; i < MAX_NB_SOCKETS; i++)
     {
