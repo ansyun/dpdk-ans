@@ -120,6 +120,9 @@ int main(void)
     remote_addr.sin_port   = htons(9999);  
     remote_addr.sin_addr.s_addr = htonl(0x02020205); 
 
+    printf("start dpdk udp application \n");
+
+
     char recv_buf[2038];
     int recv_len; 
     while(i < 2000000)
@@ -133,7 +136,7 @@ int main(void)
 
         i++;
 
-        if((i % 100000)  == 0 )
+     //   if((i % 100000)  == 0 )
             printf("Recv: %s \n", recv_buf);
         
         

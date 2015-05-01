@@ -911,7 +911,7 @@ int main(int argc, char **argv)
     int route_ret = 0;
     printf("add static route \r\n");
 
-    route_ret = netdp_add_route(0x00030303, 1, 0x03020202, 0x00ffffff, NETDP_IP_RTF_GATEWAY);
+    route_ret = netdp_add_route(0x00030303, 1, 0x05020202, 0x00ffffff, NETDP_IP_RTF_GATEWAY);
 
     netdp_route_show_all();
 

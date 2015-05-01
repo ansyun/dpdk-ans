@@ -57,17 +57,18 @@ int main(int argc, char **argv)
     remote_addr.sin_port = htons(8888);
     remote_addr.sin_addr.s_addr = inet_addr("2.2.2.2");
 
-
+    printf("start linux udp application \n");
+    
     int n;
     char recvline[1024];
-    char sendline[100];
+    char sendline[1024];
 
-    while(loop < 30000)
+    while(loop < 300000)
     {
 
         sprintf(sendline, "Hello, dpdk_udp, num:%d !", loop);
 
-        sendto(sockfd, sendline, strlen(sendline), 0, (struct sockaddr *)&remote_addr, sizeof(remote_addr));
+        sendto(sockfd, sendline, strlen(sendline) + 1, 0, (struct sockaddr *)&remote_addr, sizeof(remote_addr));
 
         n = recvfrom(sockfd, recvline, 1024, 0, NULL, NULL);
 
