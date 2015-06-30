@@ -97,6 +97,7 @@ struct odp_user_config
 {
     uint8_t socket_nb;
     uint8_t lcore_nb;
+    uint32_t core_mask;
     uint32_t port_mask;
     uint8_t promiscuous_on;        /*  Ports set in promiscuous mode off by default. */
     uint8_t numa_on ;                  /* NUMA is enabled by default. */

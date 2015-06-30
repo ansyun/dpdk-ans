@@ -849,13 +849,13 @@ int main(int argc, char **argv)
     
     /* add by netdp_team ---start */
     odp_init_timer();
-    printf("sockets number:%d, lcore number:%d \n", odp_user_conf.socket_nb, odp_user_conf.lcore_nb);
+    printf("core mask: %x, sockets number:%d, lcore number:%d \n", odp_user_conf.core_mask, odp_user_conf.socket_nb, odp_user_conf.lcore_nb);
 
     printf("start to init netdp \n");
     init_conf.max_sock_conn = 4096;
     init_conf.max_udp_conn = 128;
     init_conf.max_sock_app = 6;
-    init_conf.lcore_mask = 0x1;
+    init_conf.lcore_mask = odp_user_conf.core_mask;
     for(i = 0 ; i < MAX_NB_SOCKETS; i++)
     {
         init_conf.pktmbuf_pool[i] = odp_pktmbuf_pool[i];

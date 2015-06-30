@@ -298,11 +298,12 @@ static int odp_parse_config(const char *q_arg, struct odp_user_config *user_conf
     	user_conf->lcore_param[user_conf->lcore_param_nb].port_id = (uint8_t)int_fld[FLD_PORT];
     	user_conf->lcore_param[user_conf->lcore_param_nb].queue_id = (uint8_t)int_fld[FLD_QUEUE];
     	user_conf->lcore_param[user_conf->lcore_param_nb].lcore_id = (uint8_t)int_fld[FLD_LCORE];
+
+       user_conf->core_mask = (user_conf->core_mask | (1 <<user_conf->lcore_param[user_conf->lcore_param_nb].lcore_id));
         
     	++user_conf->lcore_param_nb;
     }
     
-//    lcore_params = lcore_params_array;
     return 0;
 }
 
