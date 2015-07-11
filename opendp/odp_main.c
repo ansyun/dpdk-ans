@@ -612,6 +612,12 @@ static inline void odp_to_linux(unsigned port_id, struct rte_mbuf *m)
 {
     int ret = 0;
 
+    if(odp_user_conf.kni_on != 1)
+    {
+        rte_pktmbuf_free(m);
+        return;
+    }
+
     ret = odp_kni_sendpkt_burst(&m, 1, port_id);
     if(ret != 0 )
         rte_pktmbuf_free(m);
@@ -716,8 +722,6 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
             prev_tsc = cur_tsc;
         }
 
-
-
         /*
         * Read packet from RX queues
         */
@@ -743,6 +747,8 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
                 /* add by netdp_team ---start */
 
                 ret = netdp_packet_handle(pkts_burst[j], portid);
+                if(ret == NETDP_MBUF_CONTINUE)
+                    odp_to_linux(portid, pkts_burst[j]);
       
                 /* add by netdp_team ---end */
             }
@@ -754,11 +760,17 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
                 /* add by netdp_team ---start */
 
                 ret = netdp_packet_handle(pkts_burst[j], portid);
+               if(ret == NETDP_MBUF_CONTINUE)
+                   odp_to_linux(portid, pkts_burst[j]);
           
                 /* add by netdp_team ---end */
             }
         }
 
+        /* to support KNI, at 2014-12-15 */
+        if(odp_user_conf.kni_on == 1)
+            odp_kni_main();
+        
     }
 }
 
@@ -803,8 +815,6 @@ int main(int argc, char **argv)
     if (ret < 0)
     	rte_exit(EXIT_FAILURE, "Invalid ODP parameters\n");
 
-    /* netdp team add: for test at 2014-12-17 */
-    //odp_kni_config(&odp_user_conf, odp_pktmbuf_pool);
 
     if(odp_user_conf.jumbo_frame_on)
     {
@@ -841,11 +851,9 @@ int main(int argc, char **argv)
 
 
     /* add by netdp_team: support KNI interface at 2014-12-15 */
-    /*
-    ret = odp_kni_init();
-    if (ret < 0)
-	   rte_exit(EXIT_FAILURE, "Init KNI failed\n");
-    */
+    if(odp_user_conf.kni_on == 1)
+        odp_kni_config(&odp_user_conf, odp_pktmbuf_pool);
+
     
     /* add by netdp_team ---start */
     odp_init_timer();

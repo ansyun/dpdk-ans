@@ -38,8 +38,6 @@
 
 /* Load Configure Information for ODP KNI module */
 int odp_kni_config(struct odp_user_config * common_config, struct rte_mempool * pktmbuf_pool[]);
-/* Init ODP KNI module */
-int odp_kni_init();
 /* Destory ODP KNI module */
 int odp_kni_destory();
 /* Run ODP KNI module, should be called at main loop each lcore */

@@ -137,13 +137,4 @@ typedef struct
 }netdp_conf_ack_t;
 
 
-/**
- * Dequeue message from NETDP_SEC_2_PRI rte_ring, and then handle it.
- * Only handle one message for each loop.
- *
- * @return  
- *
- */
-void netdp_message_handle(unsigned lcore_id);
-
 #endif /* __NETDP_MSG_H__ */

@@ -93,12 +93,12 @@ int odp_check_port_config(const unsigned nb_ports, struct odp_user_config *user_
     unsigned portid;
     uint16_t i;
 
-printf("param nb %d ports %d \n", user_conf->lcore_param_nb, nb_ports);
+    printf("param nb %d ports %d \n", user_conf->lcore_param_nb, nb_ports);
 
     for (i = 0; i < user_conf->lcore_param_nb; i++) 
     {
         portid = user_conf->lcore_param[i].port_id;
-printf("port id %d \n ", portid);
+        printf("port id %d \n ", portid);
         
         if ((user_conf->port_mask & (1 << portid)) == 0) 
         {
@@ -176,6 +176,7 @@ static void odp_print_usage(const char *prgname)
 		"  -P : enable promiscuous mode\n"
 		"  --config (port,queue,lcore): rx queues configuration\n"
 		"  --no-numa: optional, disable numa awareness\n"
+		"  --enable-kni: optional, disable kni awareness\n"
 		"  --enable-jumbo: enable jumbo frame"
 		" which max packet len is PKTLEN in decimal (64-9600)\n",
 		prgname);
@@ -329,6 +330,7 @@ int odp_parse_args(int argc, char **argv, struct odp_user_config *user_conf)
     static struct option lgopts[] = {
     	{CMD_LINE_OPT_CONFIG, 1, 0, 0},
     	{CMD_LINE_OPT_NO_NUMA, 0, 0, 0},
+    	{CMD_LINE_OPT_ENABLE_KNI, 0, 0, 0},
     	{CMD_LINE_OPT_ENABLE_JUMBO, 0, 0, 0},
     	{NULL, 0, 0, 0}
     };
@@ -351,11 +353,12 @@ int odp_parse_args(int argc, char **argv, struct odp_user_config *user_conf)
         			return -1;
         		}
         		break;
+                
         	case 'P':
         		printf("Promiscuous mode selected\n");
         		user_conf->promiscuous_on = 1;
         		break;
-
+           
         	/* long options */
         	case 0:
         		if (!strncmp(lgopts[option_index].name, CMD_LINE_OPT_CONFIG, sizeof (CMD_LINE_OPT_CONFIG))) 
@@ -375,6 +378,12 @@ int odp_parse_args(int argc, char **argv, struct odp_user_config *user_conf)
         			user_conf->numa_on = 0;
         		}
 
+        		if (!strncmp(lgopts[option_index].name, CMD_LINE_OPT_ENABLE_KNI, sizeof(CMD_LINE_OPT_ENABLE_KNI))) 
+    		       {
+        			printf("KNI is enable \n");
+        			user_conf->kni_on = 1;
+        		}
+                
         		if (!strncmp(lgopts[option_index].name, CMD_LINE_OPT_ENABLE_JUMBO, sizeof (CMD_LINE_OPT_ENABLE_JUMBO))) 
     		       {
         			struct option lenopts = {"max-pkt-len", required_argument, 0, 0};

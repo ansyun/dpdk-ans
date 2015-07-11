@@ -92,4 +92,15 @@ int netdp_app_register(char *app_name);
  */
  int netdp_packet_handle(struct rte_mbuf *m, uint8_t portid);
 
+
+/**
+ * Dequeue message from NETDP_SEC_2_PRI rte_ring, and then handle it.
+ * Only handle one message for each loop.
+ *
+ * @return  
+ *
+ */
+void netdp_message_handle(unsigned lcore_id);
+
+
 #endif /* __NETDP_INIT_H__ */
