@@ -52,7 +52,7 @@ SRCS-y := odp_param.c odp_main.c odp_kni.c
 
 CFLAGS += -O3 -std=gnu99 $(USER_FLAGS)
 #CFLAGS += $(WERROR_FLAGS)
-CFLAGS += -I$(ODP_PATH)/include
+CFLAGS += -I$(ODP_PATH)/librte_netdp/include
 
 LDLIBS += $(ODP_PATH)/librte_netdp/librte_netdp.a 
 

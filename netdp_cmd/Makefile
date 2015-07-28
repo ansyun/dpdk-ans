@@ -52,6 +52,7 @@ SRCS-y := netdpcmd_main.c netdpcmd_ip.c netdpcmd_ring.c
 
 CFLAGS += -O3
 #CFLAGS += $(WERROR_FLAGS)
-CFLAGS += -I$(ODP_PATH)/include
+CFLAGS += -I$(ODP_PATH)/librte_netdp/include
+CFLAGS += -I$(ODP_PATH)/shared
 
 include $(RTE_SDK)/mk/rte.extapp.mk

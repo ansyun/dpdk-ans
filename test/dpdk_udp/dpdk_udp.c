@@ -50,7 +50,7 @@
 
 #include <sys/time.h>
 
-#include "netdp_socket_intf.h"
+#include "netdpsock_intf.h"
 
 /*
 for(i = 0; i < 10; i++)
