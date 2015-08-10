@@ -43,7 +43,6 @@ Support feature:
  - 
 Next Planning
 - Porting TCP from FreeBSD to netdp
-- Porting socket from FreeBSD to netdp
 - Open data plane.
 - VxVLAN.
 - Performance testing.
