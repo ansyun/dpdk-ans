@@ -39,12 +39,12 @@
 /**
  *  Init netdp socket lib and register a user to opendp
  *
- * @param  app_name : application name.  
+ * @param  app_id : random digit without 0, different process shall has differnet app id.  
  *
  * @return  
  *
  */
-int netdpsock_init(char *app_name);
+int netdpsock_init(unsigned int app_id);
 
 /**
  *  creates  an endpoint for communication and returns a descriptor.
@@ -80,7 +80,7 @@ int netdpsock_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
  int netdpsock_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 /**
- *  sendto user data via socket.
+ *  sendto user data via socket. This is nonblocking function.
  *
  * @param       
  * @param 
@@ -93,7 +93,7 @@ ssize_t netdpsock_sendto(int sockfd, const void *buf, size_t len, int flags,
 
 
 /**
- *  send user data via socket.
+ *  send user data via socket. This is nonblocking function.
  *
  * @param       
  * @param 
@@ -104,15 +104,15 @@ ssize_t netdpsock_sendto(int sockfd, const void *buf, size_t len, int flags,
 ssize_t netdpsock_send(int sockfd, const void *buf, size_t len, int flags);
 
 /**
- * receive user data from socket.
+ * receive user data from socket. This function is designed as nonblocking function, so shall not set socket as nonblocking.
  *
- * @param  sockfd : which socket does the user data belong to.     
+ * @param       
  * @param 
  *
  * @return  
  *
- */
-ssize_t netdpsock_recvfrom(int *sockfd, void *buf, size_t len, int flags,
+ */      
+ssize_t netdpsock_recvfrom(int sockfd, void *buf, size_t len, int flags,
                 struct sockaddr *src_addr, socklen_t *addrlen);
 
 /**
@@ -125,6 +125,40 @@ ssize_t netdpsock_recvfrom(int *sockfd, void *buf, size_t len, int flags,
  *
  */
 int netdpsock_close(int fd);
+
+
+/**
+ * create a epoll socket.
+ *
+ * @param       
+ * @param 
+ *
+ * @return  
+ *
+ */
+ int netdpsock_epoll_create(int size);
+
+/**
+ * update epoll socket event.
+ *
+ * @param       
+ * @param 
+ *
+ * @return  
+ *
+ */
+ int netdpsock_epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
+
+/**
+ * waiting epoll socket event. Only support Edge  Triggered,  and ignore timeout, wait indefinitely if no event.
+ *
+ * @param       
+ * @param 
+ *
+ * @return  
+ *
+ */
+ int netdpsock_epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
 
 
 #endif /* __NETDP_SOCKET_INTF_H__ */

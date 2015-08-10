@@ -40,6 +40,8 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <termios.h>
+#include <sys/epoll.h>
+
 #ifndef __linux__
   #ifdef __FreeBSD__
     #include <sys/socket.h>
@@ -78,27 +80,43 @@ for(i = 0; i < 10; i++)
 }
 */
 
+struct epoll_event events[20];
+
 int main(void)
 {
     int ret;
     int i = 0 ;
     int fd, recvfd = 0;
+    int epfd;
+    int data_num =0;
     char send_data[2048];
     struct timeval start, end;
     struct sockaddr_in addr_in;  
     struct sockaddr_in remote_addr;  
+    struct epoll_event event;
+    char recv_buf[2038];
+    int recv_len; 
 
     int interval;
 
-    ret = netdpsock_init("dpdk_udp");
+    ret = netdpsock_init(0x8888);
     if(ret != 0)
         printf("init sock ring failed \n");
 
-    
+
+    /* create epoll socket */
+    epfd = netdpsock_epoll_create(0);
+    if(epfd < 0)
+    {
+        printf("create epoll socket failed \n");
+        return -1;
+    }
+
     fd = netdpsock_socket(AF_INET, SOCK_DGRAM, 0);	
     if(fd < 0)
     {
         printf("create socket failed \n");
+        netdpsock_close(epfd);
         return -1;
     }
 
@@ -112,6 +130,7 @@ int main(void)
     {
         printf("bind socket failed \n");
         netdpsock_close(fd);
+        netdpsock_close(epfd);
         return -1;
     }
 
@@ -120,28 +139,69 @@ int main(void)
     remote_addr.sin_port   = htons(9999);  
     remote_addr.sin_addr.s_addr = htonl(0x02020205); 
 
-    printf("start dpdk udp application \n");
 
+    event.data.fd = fd;  
+    event.events = EPOLLIN | EPOLLET;  
 
-    char recv_buf[2038];
-    int recv_len; 
-    while(i < 2000000)
+    ret = netdpsock_epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
+    if(ret != 0)
     {
-
-        sprintf(send_data, "Hello, linux_udp, num:%d !", i);
-
-        netdpsock_sendto(fd, send_data, strlen(send_data), 0, (struct sockaddr *)&remote_addr,  sizeof(remote_addr));
-
-        recv_len = netdpsock_recvfrom(&recvfd, recv_buf, 2048, 0, NULL, NULL);
-
-        i++;
-
-     //   if((i % 100000)  == 0 )
-            printf("Recv: %s \n", recv_buf);
-        
-        
+        printf("epoll ctl failed \n");
+        netdpsock_close(fd);
+        netdpsock_close(epfd);
+        return -1;
     }
 
+    printf("start dpdk udp application \n");
+
+    int event_num = 0;
+    memset(send_data, 0, sizeof(send_data));
+    
+    while(1)
+    {
+        event_num = netdpsock_epoll_wait (epfd, events, 20, -1);
+        for(i = 0; i < event_num; i++)
+        {
+            if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))  
+            {  
+                printf("socket(%d) error\n", events[i].data.fd);
+                close (events[i].data.fd);  
+                continue;  
+            }   
+            else if (events[i].events & EPOLLIN)
+            {
+                while(1)
+                {
+                    recv_len = netdpsock_recvfrom(events[i].data.fd, recv_buf, 2048, 0, NULL, NULL);
+                    if(recv_len == 0)
+                    {
+                       // printf("no data in socket \n");
+                        break;
+                    }
+
+                    printf("Recv: %s \n", recv_buf);
+
+                    data_num++;
+                    sprintf(send_data, "Hello, linux_udp, num:%d !", data_num);
+
+                    netdpsock_sendto(events[i].data.fd, send_data, strlen(send_data) + 1, 0, (struct sockaddr *)&remote_addr,  sizeof(remote_addr));
+                }
+            
+            }
+            else
+            {
+                printf("unknow event %x, fd:%d \n", events[i].events, events[i].data.fd);
+            }
+
+            
+        }
+    
+    }
+
+
+
     netdpsock_close(fd);
+    netdpsock_close(epfd);
+
     return 0;
 }

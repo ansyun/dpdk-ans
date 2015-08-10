@@ -47,7 +47,6 @@ struct netdp_init_config
     uint64_t lcore_mask;          /* lcore which used to run netdp */
     uint32_t max_sock_conn;   /* support max sock connection */
     uint32_t max_udp_conn;   /* support max udp connection */
-    uint32_t max_sock_app;   /* support max sock application */
     struct rte_mempool *pktmbuf_pool[MAX_NB_SOCKETS];  /* mbuf pools for each sockets */
 } __rte_cache_aligned;
 
@@ -70,16 +69,6 @@ int netdp_initialize(struct netdp_init_config *user_conf);
  *
  */
 int netdp_register(netdp_send_packet_cb send_cb);
-
-/**
- * 
- * @param app_name     
- *
- * @return  0 - SUCCESS, non-zero - FAILURE
- *
- */
-int netdp_app_register(char *app_name);
-
 
 /**
  * 

@@ -860,9 +860,8 @@ int main(int argc, char **argv)
     printf("core mask: %x, sockets number:%d, lcore number:%d \n", odp_user_conf.lcore_mask, odp_user_conf.socket_nb, odp_user_conf.lcore_nb);
 
     printf("start to init netdp \n");
-    init_conf.max_sock_conn = 4096;
+    init_conf.max_sock_conn = 5000;
     init_conf.max_udp_conn = 128;
-    init_conf.max_sock_app = 6;
     init_conf.lcore_mask = odp_user_conf.lcore_mask;
     for(i = 0 ; i < MAX_NB_SOCKETS; i++)
     {
@@ -911,8 +910,6 @@ int main(int argc, char **argv)
 
     /* add by netdp_team for testing ---start */
 
-    netdp_app_register("dpdk_udp");
-  
     printf("Show interface \n");
     netdp_intf_show();
 
