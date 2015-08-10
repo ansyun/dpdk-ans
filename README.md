@@ -37,6 +37,7 @@ Support feature:
  - Commands for showing ARP table
  - UDP
  - Socket layer
+ - Support epoll
  - No lock in UDP stack and socket layer.
  - Running on multiple cores.
  - 
