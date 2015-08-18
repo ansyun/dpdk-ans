@@ -54,31 +54,6 @@
 
 #include "netdpsock_intf.h"
 
-/*
-for(i = 0; i < 10; i++)
-{
-    gettimeofday(&start, NULL);
-
-    ret = socket(AF_INET, SOCK_DGRAM, 0);	
-
-    gettimeofday(&end, NULL);
-    interval = 1000000*(end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec);
-
-    printf("stardard socket, interval = %fms\n", interval/1000.0);
-}
-
-for(i = 0; i < 10; i++)
-{
-    gettimeofday(&start, NULL);
-
-    ret = netdpsock_socket(AF_INET, SOCK_DGRAM, 0);	
-
-    gettimeofday(&end, NULL);
-    interval = 1000000*(end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec);
-
-    printf("netdp socket, interval = %fms\n", interval/1000.0);
-}
-*/
 
 struct epoll_event events[20];
 
@@ -96,8 +71,6 @@ int main(void)
     struct epoll_event event;
     char recv_buf[2038];
     int recv_len; 
-
-    int interval;
 
     ret = netdpsock_init(0x8888);
     if(ret != 0)
@@ -160,12 +133,18 @@ int main(void)
     while(1)
     {
         event_num = netdpsock_epoll_wait (epfd, events, 20, -1);
+        if(event_num <= 0)
+        {
+            printf("epoll_wait failed \n");
+            continue;
+        }
+            
         for(i = 0; i < event_num; i++)
         {
             if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))  
             {  
-                printf("socket(%d) error\n", events[i].data.fd);
-                close (events[i].data.fd);  
+                printf("dpdk socket(%d) error\n", events[i].data.fd);
+                netdp_close (events[i].data.fd);  
                 continue;  
             }   
             else if (events[i].events & EPOLLIN)
@@ -179,7 +158,7 @@ int main(void)
                         break;
                     }
 
-                    printf("Recv: %s \n", recv_buf);
+              //      printf("Recv: %s \n", recv_buf);
 
                     data_num++;
                     sprintf(send_data, "Hello, linux_udp, num:%d !", data_num);

@@ -46,7 +46,6 @@ struct netdp_init_config
 {
     uint64_t lcore_mask;          /* lcore which used to run netdp */
     uint32_t max_sock_conn;   /* support max sock connection */
-    uint32_t max_udp_conn;   /* support max udp connection */
     struct rte_mempool *pktmbuf_pool[MAX_NB_SOCKETS];  /* mbuf pools for each sockets */
 } __rte_cache_aligned;
 

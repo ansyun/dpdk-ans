@@ -35,16 +35,70 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/epoll.h>
+
+#define UDP_REMOTE_PORT_START 8888
+
+struct epoll_event events[20];
+
+int sockfd;
+int remote_port_num = 100;
+
+void udp_send_thread()  
+{  
+    int i;
+    int data_num = 0;
+    char sendline[1024];
+    struct sockaddr_in remote_addr;
+
+    bzero(&remote_addr, sizeof(remote_addr));
+    while(1)
+    {
+        for(i = 0; i < remote_port_num; i++)
+        {
+            remote_addr.sin_family = AF_INET;
+            remote_addr.sin_port = htons(UDP_REMOTE_PORT_START + i);
+            remote_addr.sin_addr.s_addr = inet_addr("2.2.2.2");
+
+            sprintf(sendline, "Hello, dpdk_udp, num:%d !", data_num);
+
+            sendto(sockfd, sendline, strlen(sendline) + 1, 0, (struct sockaddr *)&remote_addr, sizeof(remote_addr));
+        }
+        data_num++;
+  //      sleep(1);
+    }
+    
+}
+
 
 int main(int argc, char **argv)
 {
-    int sockfd;
+    int i;
+    int flags, ret;  
+    int epfd;
     int loop = 0;
+    struct epoll_event event;
     struct sockaddr_in servaddr;
-    struct sockaddr_in remote_addr;
+    pthread_t id;  
+
+
+    /* create epoll socket */
+    epfd = epoll_create(10);
+    if(epfd < 0)
+    {
+        printf("create epoll socket failed \n");
+        return -1;
+    }
 
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-
+    if(sockfd < 0)
+    {
+        printf("create udp socket failed \n");
+        return -1;
+    }
+    
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -52,31 +106,84 @@ int main(int argc, char **argv)
 
     bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
-    bzero(&remote_addr, sizeof(remote_addr));
-    remote_addr.sin_family = AF_INET;
-    remote_addr.sin_port = htons(8888);
-    remote_addr.sin_addr.s_addr = inet_addr("2.2.2.2");
+    flags = fcntl (sockfd, F_GETFL, 0);  
+    if (flags == -1)  
+    {  
+        printf("fcntl get udp socket flag failed \n");
+        return -1;
+    }  
+
+    flags |= O_NONBLOCK;  
+    ret = fcntl (sockfd, F_SETFL, flags);  
+    if (ret == -1)  
+    {  
+        printf("fcntl set udp socket flag failed \n");
+        return -1;
+    }  
+
+    event.data.fd = sockfd;  
+    event.events = EPOLLIN | EPOLLET;  
+
+    ret = epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &event);
+    if(ret != 0)
+    {
+        printf("epoll ctl failed \n");
+        return -1;
+    }
 
     printf("start linux udp application \n");
-    
-    int n;
-    char recvline[1024];
-    char sendline[1024];
 
-    while(loop < 300000)
+      
+    ret=pthread_create(&id, NULL, (void *) udp_send_thread, NULL);  
+    if(ret!=0)  
+    {  
+        printf ("Create pthread error!\n");  
+        return 0;  
+    }  
+    
+    char recvline[1024];
+
+    int event_num = 0;
+    int recv_len = 0;
+    
+    while(1)
     {
 
-        sprintf(sendline, "Hello, dpdk_udp, num:%d !", loop);
+        event_num = epoll_wait (epfd, events, 20, -1);
+        for(i = 0; i < event_num; i++)
+        {
+            if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))  
+            {  
+                printf("socket(%d) error\n", events[i].data.fd);
+                close (events[i].data.fd);  
+                continue;  
+            }   
+            else if (events[i].events & EPOLLIN)
+            {
+                while(1)
+                {
+                    recv_len = recvfrom(events[i].data.fd, recvline, 1024, 0, NULL, NULL);
+                    if(recv_len <= 0)
+                    {
+                       // printf("no data in socket \n");
+                        break;
+                    }
 
-        sendto(sockfd, sendline, strlen(sendline) + 1, 0, (struct sockaddr *)&remote_addr, sizeof(remote_addr));
+                    printf("Recv: %s \n", recvline);
+                }
+            
+            }
+            else
+            {
+                printf("unknow event %x, fd:%d \n", events[i].events, events[i].data.fd);
+            }
+            
+        }
+    
+    }
 
-        n = recvfrom(sockfd, recvline, 1024, 0, NULL, NULL);
-
-        printf("%s\n", recvline);
-
-        loop++;
-}
 
    close(sockfd);
+   close(epfd);
     
 }

@@ -861,7 +861,6 @@ int main(int argc, char **argv)
 
     printf("start to init netdp \n");
     init_conf.max_sock_conn = 5000;
-    init_conf.max_udp_conn = 128;
     init_conf.lcore_mask = odp_user_conf.lcore_mask;
     for(i = 0 ; i < MAX_NB_SOCKETS; i++)
     {
