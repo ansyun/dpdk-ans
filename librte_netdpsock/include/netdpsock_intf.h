@@ -39,12 +39,12 @@
 /**
  *  Init netdp socket lib and register a user to opendp
  *
- * @param  app_id : random digit without 0, different process shall has differnet app id.  
+ * @param   
  *
  * @return  
  *
  */
-int netdpsock_init(unsigned int app_id);
+int netdpsock_init();
 
 /**
  *  creates  an endpoint for communication and returns a descriptor.

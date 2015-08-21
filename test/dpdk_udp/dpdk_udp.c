@@ -72,7 +72,7 @@ int main(void)
     char recv_buf[2038];
     int recv_len; 
 
-    ret = netdpsock_init(0x8888);
+    ret = netdpsock_init();
     if(ret != 0)
         printf("init sock ring failed \n");
 
@@ -144,7 +144,7 @@ int main(void)
             if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))  
             {  
                 printf("dpdk socket(%d) error\n", events[i].data.fd);
-                netdp_close (events[i].data.fd);  
+                netdpsock_close (events[i].data.fd);  
                 continue;  
             }   
             else if (events[i].events & EPOLLIN)

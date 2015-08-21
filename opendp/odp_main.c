@@ -871,8 +871,7 @@ int main(int argc, char **argv)
     if (ret != 0)
    	rte_exit(EXIT_FAILURE, "Init netdp fialed \n");
 
-    printf("register callback\r\n");
-    
+  
     netdp_register(odp_send_single_packet);
     /* add by netdp_team ---end */
 

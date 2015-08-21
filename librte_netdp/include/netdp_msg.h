@@ -39,7 +39,7 @@
 #define NETDP_SEC_2_PRI           "NETDP_CTRL_SEC_2_PRI"
 #define NETDP_PRI_2_SEC           "NETDP_CTRL_PRI_2_SEC"
 
-#define NETDP_RING_MSG_SIZE   512
+#define NETDP_RING_MSG_SIZE   256
 #define NETDP_IFNAME_LEN_MAX   16
 #define NETDP_IP_PER_IF_MAX      20
 #define NETDP_RT_FLAG_LEN         16
