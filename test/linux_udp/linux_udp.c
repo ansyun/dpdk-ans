@@ -38,8 +38,12 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/epoll.h>
+#include <errno.h>
+
 
 #define UDP_REMOTE_PORT_START 8888
+#define SEND_MAX_SIZE  500
+#define RECV_MAX_SIZE  20480
 
 struct epoll_event events[20];
 
@@ -50,7 +54,7 @@ void udp_send_thread()
 {  
     int i;
     int data_num = 0;
-    char sendline[1024];
+    char sendline[SEND_MAX_SIZE] = {2};
     struct sockaddr_in remote_addr;
 
     bzero(&remote_addr, sizeof(remote_addr));
@@ -63,11 +67,11 @@ void udp_send_thread()
             remote_addr.sin_addr.s_addr = inet_addr("2.2.2.2");
 
             sprintf(sendline, "Hello, dpdk_udp, num:%d !", data_num);
-
-            sendto(sockfd, sendline, strlen(sendline) + 1, 0, (struct sockaddr *)&remote_addr, sizeof(remote_addr));
+            sendline[SEND_MAX_SIZE -1] = 0;
+            sendto(sockfd, sendline, sizeof(sendline) , 0, (struct sockaddr *)&remote_addr, sizeof(remote_addr));
         }
         data_num++;
-  //      sleep(1);
+        usleep(2000);
     }
     
 }
@@ -141,7 +145,7 @@ int main(int argc, char **argv)
         return 0;  
     }  
     
-    char recvline[1024];
+    char recvline[RECV_MAX_SIZE];
 
     int event_num = 0;
     int recv_len = 0;
@@ -162,14 +166,19 @@ int main(int argc, char **argv)
             {
                 while(1)
                 {
-                    recv_len = recvfrom(events[i].data.fd, recvline, 1024, 0, NULL, NULL);
-                    if(recv_len <= 0)
+                    recv_len = recvfrom(events[i].data.fd, recvline, RECV_MAX_SIZE, 0, NULL, NULL);
+                    if((recv_len <= 0) && (EAGAIN != errno))  
                     {
-                       // printf("no data in socket \n");
+                        printf("socke error, recv_len:%d, errno:%d \n", recv_len, errno);
+                        break;
+                    }
+                    else if((recv_len <= 0) && (EAGAIN == errno))
+                    {
+                 //       printf("no data in socket, recv_len:%d, errno:%d \n", recv_len, errno);
                         break;
                     }
 
-                    printf("Recv: %s \n", recvline);
+                    printf("Data len: %d Recv: %s \n", recv_len, recvline);
                 }
             
             }

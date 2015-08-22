@@ -57,6 +57,10 @@
 #define UDP_SOCK_NUM   100
 #define UDP_PORT_START 8888
 
+#define UDP_SEND_MAX_SIZE  500
+#define UDP_RECV_MAX_SIZE  20480
+
+
 struct udp_sock
 {
     int fd;
@@ -128,8 +132,8 @@ struct udp_sock *udp_sock_find(int fd)
 int udp_sock_handle(int epfd, struct epoll_event *event, int curr_event, int sum_event)
 {
     int ret;
-    char send_data[2048];
-    char recv_buf[2038];
+    char send_data[UDP_SEND_MAX_SIZE] = {3};
+    char recv_buf[UDP_RECV_MAX_SIZE];
     int recv_len; 
     socklen_t addrlen = 0;
     struct sockaddr dest_addr;
@@ -156,7 +160,7 @@ int udp_sock_handle(int epfd, struct epoll_event *event, int curr_event, int sum
             
         while(1)
         {
-            recv_len = netdpsock_recvfrom(event->data.fd, recv_buf, 2048, 0, &dest_addr, &addrlen);
+            recv_len = netdpsock_recvfrom(event->data.fd, recv_buf, UDP_RECV_MAX_SIZE, 0, &dest_addr, &addrlen);
             if(recv_len == 0)
             {
                // printf("no data in socket \n");
@@ -174,8 +178,9 @@ int udp_sock_handle(int epfd, struct epoll_event *event, int curr_event, int sum
             sock->packets_nb++;
             
             sprintf(send_data, "Hello, linux_udp, fd:%d, num:%d !", event->data.fd, sock->packets_nb);
-
-            netdpsock_sendto(event->data.fd, send_data, strlen(send_data) + 1, 0, &dest_addr, addrlen);
+            send_data[UDP_SEND_MAX_SIZE -1] = 0;
+            
+            netdpsock_sendto(event->data.fd, send_data, sizeof(send_data), 0, &dest_addr, addrlen);
 
         }
 
