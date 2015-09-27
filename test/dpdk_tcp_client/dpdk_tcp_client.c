@@ -72,15 +72,17 @@ void tcp_send_thread()
 
     while(1)
     {
-        data_num++;
-        sprintf(send_data, "Hello, linux tcp server, num:%d !", data_num);
-        send_len = 0;
-        
-        send_len = netdpsock_send(fd, send_data, 2000, 0);
-        data_len += send_len;
+        if(fd > 0)
+        {
+            data_num++;
+            sprintf(send_data, "Hello, linux tcp server, num:%d !", data_num);
+            send_len = 0;
+            
+            send_len = netdpsock_send(fd, send_data, 2000, 0);
+            data_len += send_len;
 
-        printf("send len %d, data num %d, data len:%d \n", send_len, data_num, data_len);
-
+            printf("send len %d, data num %d, data len:%d \n", send_len, data_num, data_len);
+        }
         usleep(20000);
     }
     
@@ -172,6 +174,7 @@ int main(void)
             {  
                 printf("dpdk socket(%d) error\n", events[i].data.fd);
                 netdpsock_close (events[i].data.fd);  
+                fd = -1;
                 continue;  
             }   
             else if (events[i].events & EPOLLIN)
