@@ -35,9 +35,8 @@
 #ifndef __NETDP_SOCKET_INTF_H__
 #define __NETDP_SOCKET_INTF_H__
 
-
 /**
- *  Init netdp socket lib and register a user to opendp
+ *  Init netdp socket lib and register a user to opendp. One process shall only call it once.
  *
  * @param   
  *
@@ -49,57 +48,66 @@ int netdpsock_init();
 /**
  *  creates  an endpoint for communication and returns a descriptor.
  *
- * @param       
- * @param 
+ * @param domain      
  *
+ * @param type
+ *
+ * @param protocol
+ *  
  * @return  
- *
+ * On success, a file descriptor for the new socket is returned.  On error, -1 is returned, and errno is set appropriately.
  */
 int netdpsock_socket(int domain, int type, int protocol);
 
 /**
  * binds a local IP address.
  *
- * @param       
- * @param 
+ * @param sockfd
+ *
+ * @param addr
+ *
+ * @param addrlen
  *
  * @return  
- *
+ * On success, zero is returned.  On error, -1 is returned, and errno is set appropriately.
  */
 int netdpsock_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 /**
  * connect to remote IP address.
  *
- * @param       
- * @param 
+ * @param sockfd      
+ *
+ * @param addr
+ *
+ * @param addrlen
  *
  * @return  
- *
+ * If the connection or binding succeeds, zero is returned.  On error, -1 is returned, and errno is set appropriately.
  */
  int netdpsock_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 /**
- *  sendto user data via socket. This is nonblocking function.
+ *  sendto user data via socket. This is nonblocking function, so shall check EAGAIN.
  *
  * @param       
  * @param 
  *
  * @return  
- *
+ *   On success, these calls return the number of characters sent.  On error, -1 is returned, and errno is set appropriately.
  */
 ssize_t netdpsock_sendto(int sockfd, const void *buf, size_t len, int flags,
                       const struct sockaddr *dest_addr, socklen_t addrlen);
 
 
 /**
- *  send user data via socket. This is nonblocking function.
+ *  send user data via socket. This is nonblocking function, so shall check EAGAIN.
  *
  * @param       
  * @param 
  *
  * @return  
- *
+ *  On success, these calls return the number of characters sent.  On error, -1 is returned, and errno is set appropriately.
  */
 ssize_t netdpsock_send(int sockfd, const void *buf, size_t len, int flags);
 
@@ -110,7 +118,8 @@ ssize_t netdpsock_send(int sockfd, const void *buf, size_t len, int flags);
  * @param 
  *
  * @return  
- *
+ *  These calls return the number of bytes received, or -1 if an error occurred.  In the event of an error, errno is set to indicate the error.  
+ *  The return value will be 0 when the peer has performed an orderly shutdown.
  */      
 ssize_t netdpsock_recvfrom(int sockfd, void *buf, size_t len, int flags,
                 struct sockaddr *src_addr, socklen_t *addrlen);
@@ -122,7 +131,7 @@ ssize_t netdpsock_recvfrom(int sockfd, void *buf, size_t len, int flags,
  * @param 
  *
  * @return  
- *
+ * Returns zero on success.  On error, -1 is returned, and errno is set appropriately.
  */
 int netdpsock_close(int fd);
 
@@ -150,7 +159,7 @@ int netdpsock_close(int fd);
  int netdpsock_epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
 
 /**
- * waiting epoll socket event. Only support Edge  Triggered,  and ignore timeout, wait indefinitely if no event.
+ * Waiting epoll socket event. Only support Edge  Triggered,  and ignore timeout, wait indefinitely if no event.
  *
  * @param       
  * @param 
