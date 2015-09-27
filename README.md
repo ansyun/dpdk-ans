@@ -15,15 +15,9 @@ Support environment
   - Development enviroment is based on x86_64-native-linuxapp-gcc
   - TCP/IP stack is based on FreeBSD 10.0-RELEASE
   - linux version：
-Linux ubuntu 3.11.0-15-generic #25~precise1-Ubuntu SMP Thu Jan 30 17:39:31 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux
+3.16.0-30-generic
   - gcc version：
-Using built-in specs.
-COLLECT_GCC=gcc
-COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/4.6/lto-wrapper
-Target: x86_64-linux-gnu
-Configured with: ../src/configure -v --with-pkgversion='Ubuntu/Linaro 4.6.3-1ubuntu5' --with-bugurl=file:///usr/share/doc/gcc-4.6/README.Bugs --enable-languages=c,c++,fortran,objc,obj-c++ --prefix=/usr --program-suffix=-4.6 --enable-shared --enable-linker-build-id --with-system-zlib --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --with-gxx-include-dir=/usr/include/c++/4.6 --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --enable-gnu-unique-object --enable-plugin --enable-objc-gc --disable-werror --with-arch-32=i686 --with-tune=generic --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
-Thread model: posix
-gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5)
+gcc version 4.8.4 (Ubuntu 4.8.4-2ubuntu1~14.04)
 
 Support feature:
  - Netdp initialize
@@ -40,11 +34,11 @@ Support feature:
  - Support epoll
  - No lock in UDP stack and socket layer.
  - Running on multiple cores.
+ - Support tcp client(draft version, only run in one lcore)
  - 
 Next Planning
 - Porting TCP from FreeBSD to netdp
-- Open data plane.
-- VxVLAN.
+- RSS
 - Performance testing.
 - IPFW
 
