@@ -34,11 +34,10 @@ Support feature:
  - Support epoll
  - No lock in UDP stack and socket layer.
  - Running on multiple cores.
- - Support tcp client(draft version, only run in one lcore)
+ - Support tcp client and tcp server(draft version, only run in one lcore)
  - 
 Next Planning
-- Porting TCP from FreeBSD to netdp
-- RSS
+- TCP RSS
 - Performance testing.
 - IPFW
 
