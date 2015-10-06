@@ -31,35 +31,39 @@
  *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdarg.h>
+#include <stdio.h>     
+#include <sys/types.h>     
+#include <sys/socket.h>     
+#include <netinet/in.h>     
+#include <arpa/inet.h>   
+#include <stdlib.h>  
+#include <string.h>  
+#include <sys/epoll.h>  
+#include <fcntl.h>
 #include <errno.h>
-#include <netinet/in.h>
-#include <termios.h>
-#include <sys/epoll.h>
-
-#ifndef __linux__
-  #ifdef __FreeBSD__
-    #include <sys/socket.h>
-  #else
-    #include <net/socket.h>
-  #endif
-#endif
-
-#include <sys/time.h>
-
-#include "netdpsock_intf.h"
-#include "netdp_errno.h"
-
 
 int fd = -1;
 
 #define TCP_CLIENT_SEND_LEN 2000
 
 struct epoll_event events[20];
+
+void set_nonblocking(int sockfd) 
+{ 
+    int opts; 
+
+    opts = fcntl(sockfd, F_GETFL); 
+    if(opts < 0) 
+    { 
+        printf("fcntl(F_GETFL) failed \n"); 
+    } 
+    
+    opts = (opts | O_NONBLOCK); 
+    if(fcntl(sockfd, F_SETFL, opts) < 0)
+    { 
+        printf("fcntl(F_SETFL) failed\n"); 
+    } 
+} 
 
 void tcp_send_thread()  
 {  
@@ -76,12 +80,14 @@ void tcp_send_thread()
             data_num++;
             sprintf(send_data, "Hello, linux tcp server, num:%d !", data_num);
             send_len = 0;
-            
-            send_len = netdpsock_send(fd, send_data, 2000, 0);
+
+   //         if(data_num == 1)
+                send_len = send(fd, send_data, 2000, 0);
             data_len += send_len;
 
             printf("send len %d, data num %d, data len:%d \n", send_len, data_num, data_len);
         }
+
         usleep(20000);
     }
     
@@ -101,49 +107,46 @@ int main(void)
     int recv_len; 
     pthread_t id;  
 
-    ret = netdpsock_init();
-    if(ret != 0)
-        printf("init sock ring failed \n");
-
     /* create epoll socket */
-    epfd = netdpsock_epoll_create(0);
+    epfd = epoll_create(10);
     if(epfd < 0)
     {
         printf("create epoll socket failed \n");
         return -1;
     }
 
-    fd = netdpsock_socket(AF_INET, SOCK_STREAM, 0);	
+    fd = socket(AF_INET, SOCK_STREAM, 0);	
     if(fd < 0)
     {
         printf("create socket failed \n");
-        netdpsock_close(epfd);
+        close(epfd);
         return -1;
     }
 
     memset(&remote_addr, 0, sizeof(remote_addr));      
     remote_addr.sin_family = AF_INET;  
     remote_addr.sin_port   = htons(8000);  
-    remote_addr.sin_addr.s_addr = htonl(0x02020205); 
-//    remote_addr.sin_addr.s_addr = htonl(0x03030303); 
+    remote_addr.sin_addr.s_addr = htonl(0x02020202); 
 
-    if(netdpsock_connect(fd, (struct sockaddr *)&remote_addr, sizeof(struct sockaddr)) < 0)     
+    if(connect(fd, (struct sockaddr *)&remote_addr, sizeof(struct sockaddr)) < 0)     
     {     
         printf("onnect to server failed \n");
-        netdpsock_close(fd);
-        netdpsock_close(epfd);
+        close(fd);
+        close(epfd);
         return -1;  
     } 
+
+    set_nonblocking(fd);
     
     event.data.fd = fd;  
     event.events = EPOLLIN | EPOLLET;  
 
-    ret = netdpsock_epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
+    ret = epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
     if(ret != 0)
     {
         printf("epoll ctl failed \n");
-        netdpsock_close(fd);
-        netdpsock_close(epfd);
+        close(fd);
+        close(epfd);
         return -1;
     }
 
@@ -160,7 +163,7 @@ int main(void)
     
     while(1)
     {
-        event_num = netdpsock_epoll_wait (epfd, events, 20, -1);
+        event_num = epoll_wait (epfd, events, 20, -1);
         if(event_num <= 0)
         {
             printf("epoll_wait failed \n");
@@ -171,8 +174,8 @@ int main(void)
         {
             if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))  
             {  
-                printf("dpdk socket(%d) error\n", events[i].data.fd);
-                netdpsock_close (events[i].data.fd);  
+                printf("linux socket(%d) error\n", events[i].data.fd);
+                close (events[i].data.fd);  
                 fd = -1;
                 continue;  
             }   
@@ -180,17 +183,19 @@ int main(void)
             {
                 while(1)
                 {
-                    recv_len = netdpsock_recvfrom(events[i].data.fd, recv_buf, 5000, 0, NULL, NULL);
-                    if((recv_len < 0) && (errno == NETDP_EAGAIN))
+                    recv_len = recvfrom(events[i].data.fd, recv_buf, 5000, 0, NULL, NULL);
+                    if((recv_len < 0) && (errno == EAGAIN))
                     {
                        // printf("no data in socket \n");
 
                         break;
                     }
-                    else if(recv_len < 0)
+                    else if(recv_len <= 0)
                     {
                          // socket error
-                         //netdpsock_close(fd);
+                         printf("socket error: %d, errno %d \n", recv_len, errno);
+
+                         close(fd);
                          break;
 
                     }
@@ -212,8 +217,9 @@ int main(void)
 
 
 
-    netdpsock_close(fd);
-    netdpsock_close(epfd);
+    close(fd);
+    close(epfd);
 
     return 0;
 }
+  

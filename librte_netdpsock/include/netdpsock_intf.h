@@ -95,6 +95,7 @@ int netdpsock_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
  *
  * @return  
  *   On success, these calls return the number of characters sent.  On error, -1 is returned, and errno is set appropriately.
+ *   If errno is EAGAIN, no buffer for sending data.
  */
 ssize_t netdpsock_sendto(int sockfd, const void *buf, size_t len, int flags,
                       const struct sockaddr *dest_addr, socklen_t addrlen);
@@ -108,6 +109,7 @@ ssize_t netdpsock_sendto(int sockfd, const void *buf, size_t len, int flags,
  *
  * @return  
  *  On success, these calls return the number of characters sent.  On error, -1 is returned, and errno is set appropriately.
+ *   If errno is EAGAIN, no buffer for sending data.
  */
 ssize_t netdpsock_send(int sockfd, const void *buf, size_t len, int flags);
 
@@ -119,10 +121,47 @@ ssize_t netdpsock_send(int sockfd, const void *buf, size_t len, int flags);
  *
  * @return  
  *  These calls return the number of bytes received, or -1 if an error occurred.  In the event of an error, errno is set to indicate the error.  
- *  The return value will be 0 when the peer has performed an orderly shutdown.
+ *  If errno is EAGAIN, no data are present to be received.
  */      
 ssize_t netdpsock_recvfrom(int sockfd, void *buf, size_t len, int flags,
                 struct sockaddr *src_addr, socklen_t *addrlen);
+
+
+/**
+ * receive user data from socket. This function is designed as nonblocking function, so shall not set socket as nonblocking.
+ *
+ * @param       
+ * @param 
+ *
+ * @return  
+ *  These calls return the number of bytes received, or -1 if an error occurred.  In the event of an error, errno is set to indicate the error.  
+ *  If errno is EAGAIN, no data are present to be received.
+ */ 
+ssize_t netdpsock_recv(int sockfd, void *buf, size_t len, int flags);
+
+
+/**
+ * Listen for connections on a socket
+ *
+ * @param       
+ * @param 
+ *
+ * @return  
+ * On success, zero is returned.  On error, -1 is returned, and errno is set appropriately.
+ */
+int netdpsock_listen(int sockfd, int backlog);
+
+/**
+ * Accept a new socket.
+ *
+ * @param       
+ * @param 
+ *
+ * @return  
+ * On success, these system calls return a nonnegative integer that is a descriptor for the accepted socket.  On error, -1 is returned, and errno is set appropriately.
+ * If errno is EAGAIN, no connections are present to be accepted.
+ */
+int netdpsock_accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 
 /**
  * close a socket.
