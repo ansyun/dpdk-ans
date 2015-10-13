@@ -208,5 +208,27 @@ int netdpsock_close(int fd);
  */
  int netdpsock_epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
 
+/**
+ * This is dummy API, always return 0, it is still not implemented.
+ *
+ * @param       
+ * @param 
+ *
+ * @return  
+ *
+ */
+int netdpsock_getsockopt(int sockfd, int level, int optname, void *optval, socklen_t *optlen);
+
+/**
+ * This is dummy API, always return 0, it is still not implemented.
+ *
+ * @param       
+ * @param 
+ *
+ * @return  
+ *
+ */
+int netdpsock_setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
+
 
 #endif /* __NETDP_SOCKET_INTF_H__ */

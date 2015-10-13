@@ -35,7 +35,9 @@
 #ifndef __NETDP_INIT_H__
 #define __NETDP_INIT_H__
 
-#define MAX_NB_SOCKETS 8
+#define NETDP_MAX_NB_SOCKETS 8
+
+#define NETDP_RSS_KEY_SIZE 40
 
 
 /**
@@ -44,9 +46,10 @@
  */
 struct netdp_init_config 
 {
-    uint64_t lcore_mask;          /* lcore which used to run netdp */
-    uint32_t max_sock_conn;   /* support max sock connection */
-    struct rte_mempool *pktmbuf_pool[MAX_NB_SOCKETS];  /* mbuf pools for each sockets */
+    uint64_t lcore_mask;                                                                   /* lcore which used to run netdp */
+    uint32_t max_sock_conn;                                                            /* support max sock connection */
+    struct rte_mempool *pktmbuf_pool[NETDP_MAX_NB_SOCKETS];  /* mbuf pools for each sockets */
+    uint8_t rss_key[NETDP_RSS_KEY_SIZE];
 } __rte_cache_aligned;
 
 

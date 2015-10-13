@@ -114,8 +114,7 @@ static struct rte_eth_conf odp_port_conf =
 	{
 		.rss_conf = 
              {
-			.rss_key = NULL,
-			.rss_hf = ETH_RSS_IP,
+			.rss_hf = ETH_RSS_IP | ETH_RSS_TCP,
 		},
 	},
 	.txmode = 
@@ -151,6 +150,15 @@ static struct rte_eth_txconf odp_tx_conf =
 			ETH_TXQ_FLAGS_NOXSUMUDP |
 			ETH_TXQ_FLAGS_NOXSUMTCP)
 
+};
+
+static uint8_t rss_intel_key[NETDP_RSS_KEY_SIZE] =
+{
+	0x6D, 0x5A, 0x56, 0xDA, 0x25, 0x5B, 0x0E, 0xC2,
+	0x41, 0x67, 0x25, 0x3D, 0x43, 0xA3, 0x8F, 0xB0,
+	0xD0, 0xCA, 0x2B, 0xCB, 0xAE, 0x7B, 0x30, 0xB4,
+	0x77, 0xCB, 0x2D, 0xA3, 0x80, 0x30, 0xF2, 0x0C,
+	0x6A, 0x42, 0xB7, 0x3B, 0xBE, 0xAC, 0x01, 0xFA,
 };
 
 /**********************************************************************
@@ -866,6 +874,8 @@ int main(int argc, char **argv)
     {
         init_conf.pktmbuf_pool[i] = odp_pktmbuf_pool[i];
     }
+
+    rte_memcpy(init_conf.rss_key, rss_intel_key, sizeof(rss_intel_key));
     
     ret = netdp_initialize(&init_conf);
     if (ret != 0)
