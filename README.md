@@ -29,12 +29,10 @@ Support feature:
  - Commands for adding, deleting, showing IP address
  - Commands for adding, deleting, showing static route
  - Commands for showing ARP table
- - UDP
- - Socket layer
- - Support epoll
- - No lock in UDP stack and socket layer.
- - Running on multiple cores.
- - Support tcp client and tcp server(draft version, only run in one lcore)
+ - UDP protocol
+ - Socket layer, share memory.
+ - Socket API, socket/close/send/recv/epoll.
+ - TCP protocol, no lock, hash table, per tcp stack per lcore.(currently only run in one lcore, will enhance it)
  - 
 Next Planning
 - TCP RSS
