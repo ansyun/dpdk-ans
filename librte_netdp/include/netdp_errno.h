@@ -230,7 +230,6 @@
 #define  NETDP_EIPFRAG          2000
 
 
-
 #define NETDP_ERRMEM        NETDP_ENOMEM   /* Out of memory error.     */
 #define NETDP_ERRBUF        NETDP_ENOBUFS    /* Buffer error.            */
 #define NETDP_ERRTIMEOUT    NETDP_EWOULDBLOCK    /* Timeout.                 */
