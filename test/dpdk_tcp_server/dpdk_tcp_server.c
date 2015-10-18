@@ -186,11 +186,16 @@ int main(int argc, char * argv[])
         nfds=netdpsock_epoll_wait(epoll_fd, events, MAX_EVENTS, -1);  
         if(nfds==-1)  
         {  
-            printf("start epoll_wait failed");  
+            printf("start epoll_wait failed \n");  
             netdpsock_close(server_sockfd);
             netdpsock_close(epoll_fd);
             return 1;     
         }  
+        else if(nfds == 0)
+        {
+            printf("epoll timeout \n");
+            continue;
+        }
         
         int i;  
         for(i = 0; i < nfds; i++)  

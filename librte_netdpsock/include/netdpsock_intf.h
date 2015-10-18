@@ -201,10 +201,13 @@ int netdpsock_close(int fd);
  * Waiting epoll socket event. Only support Edge  Triggered,  and ignore timeout, wait indefinitely if no event.
  *
  * @param       
- * @param 
+ * @param timeout
+ * The timeout argument specifies the minimum number of milliseconds that netdpsock_epoll_wait() will block. Specifying a timeout of -1 causes epoll_wait() to block indefinitely, 
+ * while specifying a timeout equal to zero cause epoll_wait() to return immediately, even if no events are available.
  *
  * @return  
- *
+ * When successful, netdpsock_epoll_wait() returns the number of file descriptors ready for read, or zero if no file descriptor became ready during the requested timeout milliseconds.   
+ * When  an  error  occurs,  netdpsock_epoll_wait() returns -1 and errno is set appropriately. *
  */
  int netdpsock_epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
 
