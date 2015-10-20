@@ -62,7 +62,7 @@
 #include "netdpsock_intf.h"
 #include "netdp_errno.h"
 
-#define MAX_FLOW_NUM 10000
+#define MAX_FLOW_NUM 200000
 #define BUFFER_SIZE 5000
 #define MAX_EVENTS 50
 char *http_200 = "HTTP/1.0 200 OK\r\n"
@@ -195,6 +195,9 @@ int main(int argc, char * argv[])
             } else if (events[i].events == EPOLLOUT) { //epollout write
                 int LEN = strlen(http_200);
                 netdpsock_send(sockid, http_200, LEN, 0);
+                netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
+                netdpsock_close(sockid);
+            }else if (events[i].events == EPOLLHUP) { //remote close the socket
                 netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
                 netdpsock_close(sockid);
             }
