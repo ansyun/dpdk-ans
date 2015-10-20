@@ -35,6 +35,7 @@ Support feature:
  - TCP protocol, no lock, hash table, per tcp stack per lcore.(currently only run in one lcore, will enhance it)
  - 
 Next Planning
+- Enhance TCP Flow control and Congestion control
 - TCP RSS
 - Performance testing.
 - IPFW
