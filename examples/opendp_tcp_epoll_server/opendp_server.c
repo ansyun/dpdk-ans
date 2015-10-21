@@ -75,6 +75,8 @@
 #include <sched.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <numa.h>
+#include <sys/syscall.h> 
 
 #define MAX_FLOW_NUM 200000
 #define BUFFER_SIZE 5000
@@ -88,6 +90,19 @@ char *http_200 = "HTTP/1.0 200 OK\r\n"
                  "\r\n"
                  "<html><body><h1>200 OK</h1>\nEverything is fine.\n</body></html>\n";
 
+
+/*----------------------------------------------------------------------------*/
+int 
+GetNumCPUs() 
+{
+	return sysconf(_SC_NPROCESSORS_ONLN);
+}
+/*----------------------------------------------------------------------------*/
+pid_t 
+Gettid()
+{
+	return syscall(__NR_gettid);
+}
 /*----------------------------------------------------------------------------*/
 static int
 HandleReadEvent(int epoll_fd, struct epoll_event ev)
@@ -110,7 +125,7 @@ HandleReadEvent(int epoll_fd, struct epoll_event ev)
 
 	ev.events = EPOLLIN | EPOLLOUT;
 	netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
-	printf("read and close sockid:%d\n", sockid);
+	printf("read and close sockid:%d\n", sockid); //test purpose
 	return rd;
 }
 /*----------------------------------------------------------------------------*/
@@ -125,9 +140,9 @@ int RunServerThread(void *arg)
 	int sin_size;
 	int do_accept;
 
-	/*initialize thread*/
+	/*initialize thread bind cpu*/
 	cpu_set_t cpus;
-	size_t n = 1;
+	size_t n = GetNumCPUs();
 	if (core < 0 || core >= (int) n) {
 		errno = -EINVAL;
 		exit(-1);
@@ -135,9 +150,7 @@ int RunServerThread(void *arg)
 
 	CPU_ZERO(&cpus);
 	CPU_SET((unsigned)core, &cpus);
-	sched_setaffinity(0, sizeof(cpus), &cpus);
-
-
+	sched_setaffinity(Gettid(), sizeof(cpus), &cpus);
 
 	ret = netdpsock_init();
 	if (ret != 0)
