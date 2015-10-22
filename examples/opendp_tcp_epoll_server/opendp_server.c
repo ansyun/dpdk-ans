@@ -80,7 +80,7 @@
 
 #define MAX_FLOW_NUM 200000
 #define BUFFER_SIZE 5000
-#define MAX_EVENTS 50
+#define MAX_EVENTS 512
 #define MAX_CPUS 8
 static pthread_t app_thread[MAX_CPUS];
 char *http_200 = "HTTP/1.0 200 OK\r\n"
