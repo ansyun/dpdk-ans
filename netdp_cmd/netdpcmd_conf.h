@@ -75,6 +75,13 @@ struct netdpcmd_iproute_result {
 
 };
 
+/* set log level */
+struct netdpcmd_log_result {
+  cmdline_fixed_string_t name;  /* log */
+  cmdline_fixed_string_t type;   /* level */
+  cmdline_fixed_string_t action; /* set */
+  cmdline_fixed_string_t level; /* err/info */
+};
 
 extern cmdline_parse_ctx_t ip_main_ctx[];
 

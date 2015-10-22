@@ -51,6 +51,7 @@ typedef enum
    NETDP_MSG_TYPE_IPADDR,
    NETDP_MSG_TYPE_ROUTE,
    NETDP_MSG_TYPE_ARP,
+   NETDP_MSG_TYPE_LOG,
 } netdp_msg_type_e;
 
 typedef enum 
@@ -58,6 +59,7 @@ typedef enum
    NETDP_MSG_ACTION_ADD,
    NETDP_MSG_ACTION_DEL,
    NETDP_MSG_ACTION_SHOW,
+   NETDP_MSG_ACTION_SET,
 } netdp_msg_action_e;
 
 typedef struct 
@@ -83,11 +85,18 @@ typedef struct
 {
 }netdp_arp_conf_t;
 
+typedef struct 
+{
+  uint32_t level;
+}netdp_log_conf_t;
+
 typedef union
 {
    netdp_ipaddr_conf_t   ipaddr_conf;
    netdp_route_conf_t     route_conf;
    netdp_arp_conf_t        arp_conf;
+   netdp_log_conf_t        log_conf;
+
 }netdp_conf_data_t;
 
 typedef struct
@@ -135,6 +144,5 @@ typedef struct
     netdp_msg_action_e msg_action;
     netdp_show_data_t   msg_data;
 }netdp_conf_ack_t;
-
 
 #endif /* __NETDP_MSG_H__ */

@@ -48,7 +48,7 @@ ODP_PATH = $(RTE_ODP)
 APP = netdpcmd
 
 # all source are stored in SRCS-y
-SRCS-y := netdpcmd_main.c netdpcmd_ip.c netdpcmd_ring.c
+SRCS-y := netdpcmd_main.c netdpcmd_conf.c netdpcmd_ring.c
 
 CFLAGS += -O3
 #CFLAGS += $(WERROR_FLAGS)

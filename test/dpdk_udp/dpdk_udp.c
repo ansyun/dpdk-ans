@@ -53,6 +53,7 @@
 #include <sys/time.h>
 
 #include "netdpsock_intf.h"
+#include "netdp_errno.h"
 
 
 struct epoll_event events[20];
@@ -152,18 +153,36 @@ int main(void)
                 while(1)
                 {
                     recv_len = netdpsock_recvfrom(events[i].data.fd, recv_buf, 2048, 0, NULL, NULL);
-                    if(recv_len == 0)
+
+                    if(recv_len > 0)  
+                    {  
+                        printf("Recv: %s \n", recv_buf);
+
+                        data_num++;
+                        sprintf(send_data, "Hello, linux_udp, num:%d !", data_num);
+
+                        netdpsock_sendto(events[i].data.fd, send_data, strlen(send_data) + 1, 0, (struct sockaddr *)&remote_addr,  sizeof(remote_addr));
+                    } 
+                    else if(recv_len < 0)
                     {
-                       // printf("no data in socket \n");
+                        if (errno == NETDP_EAGAIN)   
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            printf("remote close the socket, errno %d \n", errno);
+                            netdpsock_close(events[i].data.fd);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        printf("remote close the socket, len %d \n", recv_len);
+                        netdpsock_close(events[i].data.fd);
                         break;
                     }
 
-              //      printf("Recv: %s \n", recv_buf);
-
-                    data_num++;
-                    sprintf(send_data, "Hello, linux_udp, num:%d !", data_num);
-
-                    netdpsock_sendto(events[i].data.fd, send_data, strlen(send_data) + 1, 0, (struct sockaddr *)&remote_addr,  sizeof(remote_addr));
                 }
             
             }

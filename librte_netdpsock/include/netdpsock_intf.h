@@ -46,7 +46,7 @@
 int netdpsock_init();
 
 /**
- *  creates  an endpoint for communication and returns a descriptor.
+ *  Creates  an endpoint for communication and returns a descriptor.
  *
  * @param domain      
  *
@@ -60,7 +60,7 @@ int netdpsock_init();
 int netdpsock_socket(int domain, int type, int protocol);
 
 /**
- * binds a local IP address.
+ * Binds a local IP address.
  *
  * @param sockfd
  *
@@ -74,7 +74,7 @@ int netdpsock_socket(int domain, int type, int protocol);
 int netdpsock_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 /**
- * connect to remote IP address.
+ * Connect to remote IP address.
  *
  * @param sockfd      
  *
@@ -102,7 +102,7 @@ ssize_t netdpsock_sendto(int sockfd, const void *buf, size_t len, int flags,
 
 
 /**
- *  send user data via socket. This is nonblocking function, so shall check EAGAIN.
+ *  Send user data via socket. This is nonblocking function, so shall check EAGAIN.
  *
  * @param       
  * @param 
@@ -114,7 +114,7 @@ ssize_t netdpsock_sendto(int sockfd, const void *buf, size_t len, int flags,
 ssize_t netdpsock_send(int sockfd, const void *buf, size_t len, int flags);
 
 /**
- * receive user data from socket. This function is designed as nonblocking function, so shall not set socket as nonblocking.
+ * Receive user data from socket. This function is designed as nonblocking function, so shall not set socket as nonblocking and work with epoll.
  *
  * @param       
  * @param 
@@ -128,7 +128,7 @@ ssize_t netdpsock_recvfrom(int sockfd, void *buf, size_t len, int flags,
 
 
 /**
- * receive user data from socket. This function is designed as nonblocking function, so shall not set socket as nonblocking.
+ * Receive user data from socket. This function is designed as nonblocking function, so shall not set socket as nonblocking.
  *
  * @param       
  * @param 
@@ -152,7 +152,7 @@ ssize_t netdpsock_recv(int sockfd, void *buf, size_t len, int flags);
 int netdpsock_listen(int sockfd, int backlog);
 
 /**
- * Accept a new socket.
+ * Accept a new socket. This function is designed as nonblocking function, so shall not set socket as nonblocking and work with epoll.
  *
  * @param       
  * @param 
@@ -164,7 +164,7 @@ int netdpsock_listen(int sockfd, int backlog);
 int netdpsock_accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 
 /**
- * close a socket.
+ * Close a socket.
  *
  * @param       
  * @param 
@@ -176,7 +176,7 @@ int netdpsock_close(int fd);
 
 
 /**
- * create a epoll socket.
+ * Create a epoll socket.
  *
  * @param       
  * @param 
@@ -187,7 +187,7 @@ int netdpsock_close(int fd);
  int netdpsock_epoll_create(int size);
 
 /**
- * update epoll socket event.
+ * Update epoll socket event.
  *
  * @param       
  * @param 
@@ -198,7 +198,7 @@ int netdpsock_close(int fd);
  int netdpsock_epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
 
 /**
- * Waiting epoll socket event. Only support Edge  Triggered,  and ignore timeout, wait indefinitely if no event.
+ * Waiting epoll socket event. Only support Edge Triggered.
  *
  * @param       
  * @param timeout

@@ -44,6 +44,7 @@ include $(RTE_SDK)/mk/rte.vars.mk
 
 ODP_PATH = $(RTE_ODP)
 
+CFLAGS += -I$(ODP_PATH)/librte_netdp/include
 CFLAGS += -I$(ODP_PATH)/librte_netdpsock/include
 
 LDLIBS += $(ODP_PATH)/librte_netdpsock/librte_netdpsock.a 

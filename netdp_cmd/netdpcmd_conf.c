@@ -82,9 +82,9 @@
 #include <cmdline.h>
 
 
-#include "netdpcmd_ip.h"
+#include "netdpcmd_conf.h"
 #include "netdp_errno.h"
-#include "netdp_msg.h"
+#include "netdp_conf.h"
 
 
 uint32_t netmask_len2int(int mask_len)
@@ -727,6 +727,131 @@ cmdline_parse_inst_t netdpcmd_arp_show = {
 };
 
 
+
+
+
+/*********************************************************
+*
+*    log
+*
+*
+**********************************************************/
+cmdline_parse_token_string_t netdpcmd_log_name =
+  TOKEN_STRING_INITIALIZER(struct netdpcmd_log_result, name, "log");
+cmdline_parse_token_string_t netdpcmd_log_type =
+  TOKEN_STRING_INITIALIZER(struct netdpcmd_log_result, type, "level");
+cmdline_parse_token_string_t netdpcmd_log_action =
+  TOKEN_STRING_INITIALIZER(struct netdpcmd_log_result, action, "set");
+cmdline_parse_token_string_t netdpcmd_log_level=
+  TOKEN_STRING_INITIALIZER(struct netdpcmd_log_result, level, NULL);
+
+
+/*********************************************************
+*
+*    log level set
+*
+*
+**********************************************************/
+static void netdpcmd_log_set_parsed(void *parsed_result,
+             struct cmdline *cl,
+             __attribute__((unused)) void *data)
+{
+    int ret = 0;
+    netdp_conf_req_t conf_req;
+    netdp_conf_ack_t conf_ack;
+    struct netdpcmd_log_result *res = parsed_result;
+
+    memset(&conf_req, 0, sizeof(conf_req));
+
+    conf_req.msg_type = NETDP_MSG_TYPE_LOG;
+    conf_req.msg_action= NETDP_MSG_ACTION_SET;
+
+    if(0 == strcmp(res->level, "emerg"))
+    {
+        conf_req.msg_data.log_conf.level = RTE_LOG_EMERG;
+    }
+    else if(0 == strcmp(res->level, "alert"))
+    {
+        conf_req.msg_data.log_conf.level = RTE_LOG_ALERT;
+    }
+    else if(0 == strcmp(res->level, "crit"))
+    {
+        conf_req.msg_data.log_conf.level = RTE_LOG_CRIT;
+    }
+    else if(0 == strcmp(res->level, "err"))
+    {
+        conf_req.msg_data.log_conf.level = RTE_LOG_ERR;
+    }
+    else if(0 == strcmp(res->level, "warning"))
+    {
+        conf_req.msg_data.log_conf.level = RTE_LOG_WARNING;
+    }
+    else if(0 == strcmp(res->level, "notice"))
+    {
+        conf_req.msg_data.log_conf.level = RTE_LOG_NOTICE;
+    }
+    else if(0 == strcmp(res->level, "info"))
+    {
+        conf_req.msg_data.log_conf.level = RTE_LOG_INFO;
+    }
+    else if(0 == strcmp(res->level, "debug"))
+    {
+        conf_req.msg_data.log_conf.level = RTE_LOG_DEBUG;
+    }
+    else 
+    {
+        cmdline_printf(cl, "Invalid log level \n");
+        return;
+    }
+                            
+    ret = netdpcmd_ring_send((void *) &conf_req, sizeof(conf_req));
+
+    memset(&conf_ack, 0, sizeof(conf_ack));
+
+     ret = netdpcmd_ring_recv((void *) &conf_ack, sizeof(conf_ack));
+
+    if(ret != NETDPCMD_RECV_MSG)
+    {
+        cmdline_printf(cl, "No reply\n");
+        return;
+    }
+
+    if(conf_ack.status != 0)
+    {
+         cmdline_printf(cl, "Set log level failed,  error code %d \n", conf_ack.status);
+         return;
+    }
+
+    if(conf_ack.status != 0)
+    {
+         cmdline_printf(cl, "Set log level failed,  error code %d \n", conf_ack.status);
+    }
+    else
+    {
+         cmdline_printf(cl, "Set log level successfully \n");
+    }
+
+    return;
+
+}
+
+
+cmdline_parse_inst_t netdpcmd_log_set = {
+  .f = netdpcmd_log_set_parsed,            /* function to call */
+  .data = NULL,                                   /* 2nd arg of func */
+  .help_str = "log level set [emerg | alert | crit | err | warning | notice | info | debug] \n",
+  .tokens = {                                    /* token list, NULL terminated */
+    (void *)&netdpcmd_log_name,
+    (void *)&netdpcmd_log_type,
+    (void *)&netdpcmd_log_action,
+    (void *)&netdpcmd_log_level,
+    NULL,
+  },
+};
+
+
+
+
 /*********************************************************
 *
 *    quit
@@ -774,6 +899,7 @@ static void netdpcmd_help_parsed(__attribute__((unused)) void *parsed_result,
            "ip route del DESTIP\n"
            "ip route show\n"
            "ip arp show\n"
+           "log level set [emerg | alert | crit | err | warning | notice | info | debug] \n"
            "help\n"
            "quit\n"
            );
@@ -804,6 +930,7 @@ cmdline_parse_ctx_t ip_main_ctx[] = {
   (cmdline_parse_inst_t *)&netdpcmd_route_del,
   (cmdline_parse_inst_t *)&netdpcmd_route_show,
   (cmdline_parse_inst_t *)&netdpcmd_arp_show,
+  (cmdline_parse_inst_t *)&netdpcmd_log_set,
   (cmdline_parse_inst_t *)&netdpcmd_help,
   (cmdline_parse_inst_t *)&netdpcmd_quit,
   NULL,

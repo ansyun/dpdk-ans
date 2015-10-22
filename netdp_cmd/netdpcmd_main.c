@@ -65,7 +65,7 @@
 #include <rte_log.h>
 
 #include "netdpcmd_main.h"
-#include "netdpcmd_ip.h"
+#include "netdpcmd_conf.h"
 #include "netdpcmd_ring.h"
 
 

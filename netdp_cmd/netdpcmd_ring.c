@@ -82,9 +82,9 @@
 #include <cmdline.h>
 
 
-#include "netdpcmd_ip.h"
+#include "netdpcmd_conf.h"
 #include "netdp_errno.h"
-#include "netdp_msg.h"
+#include "netdp_conf.h"
 #include "netdpcmd_ring.h"
 
 struct rte_ring *netdpcmd_ring_tx;
