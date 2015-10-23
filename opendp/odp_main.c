@@ -439,7 +439,7 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
     nb_mbuf = RTE_MAX((nb_ports*nb_rx_queue*ODP_RX_DESC_DEFAULT +	
 				nb_ports*nb_lcores*MAX_PKT_BURST +					
 				nb_ports*n_tx_queue*ODP_TX_DESC_DEFAULT +	
-				nb_lcores*MEMPOOL_CACHE_SIZE), (unsigned)8192);
+				nb_lcores*MEMPOOL_CACHE_SIZE), MAX_MBUF_NB);
 				
     /* init memory */
     ret = odp_init_mbuf_pool(nb_mbuf, user_conf);

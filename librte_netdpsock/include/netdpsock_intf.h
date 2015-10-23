@@ -200,7 +200,8 @@ int netdpsock_close(int fd);
 /**
  * Waiting epoll socket event. Only support Edge Triggered.
  *
- * @param       
+ * @param maxevents
+ * max events shall less than 2048
  * @param timeout
  * The timeout argument specifies the minimum number of milliseconds that netdpsock_epoll_wait() will block. Specifying a timeout of -1 causes epoll_wait() to block indefinitely, 
  * while specifying a timeout equal to zero cause epoll_wait() to return immediately, even if no events are available.
