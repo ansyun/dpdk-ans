@@ -46,7 +46,7 @@ You can get more information and instructions from [wiki page](https://github.co
 
 ####Notes
 -------
-- Netdp socket application run as a secondary dpdk process, If you got below log, shall run below commands to disable ASLR.
+- Netdp socket application run as a secondary dpdk process, If you got below log, shall execute below commands to disable ASLR.
 ```
 EAL: WARNING: Address Space Layout Randomization (ASLR) is enabled in the kernel.
 EAL: This may cause issues with mapping memory into secondary processes
