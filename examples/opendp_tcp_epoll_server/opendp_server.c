@@ -174,7 +174,7 @@ int RunServerThread(void *arg)
 		return 1;
 	}
 
-	if (netdpsock_listen(server_sockfd, 200) < 0)
+	if (netdpsock_listen(server_sockfd, 2048) < 0)
 	{
 		printf("listen error \n");
 		return 1;
