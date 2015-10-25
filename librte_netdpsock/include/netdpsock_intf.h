@@ -144,8 +144,8 @@ ssize_t netdpsock_recv(int sockfd, void *buf, size_t len, int flags);
  * Listen for connections on a socket
  *
  * @param       
- * @param 
- *
+ * @param  backlog 
+ * The  backlog  argument defines the maximum length to which the queue of pending connection. default value is 2048
  * @return  
  * On success, zero is returned.  On error, -1 is returned, and errno is set appropriately.
  */
@@ -155,7 +155,7 @@ int netdpsock_listen(int sockfd, int backlog);
  * Accept a new socket. This function is designed as nonblocking function, so shall not set socket as nonblocking and work with epoll.
  *
  * @param       
- * @param 
+ * @param  
  *
  * @return  
  * On success, these system calls return a nonnegative integer that is a descriptor for the accepted socket.  On error, -1 is returned, and errno is set appropriately.
@@ -233,6 +233,29 @@ int netdpsock_getsockopt(int sockfd, int level, int optname, void *optval, sockl
  *
  */
 int netdpsock_setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
+
+/**
+ *  Returns  the address of the peer connected to the socket sockfd.
+ *
+ * @param       
+ * @param 
+ *
+ * @return  
+ * On  success,  zero is returned.  On error, -1 is returned, and errno is set appropriately.
+ */
+int netdpsock_getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+
+
+/**
+ * Returns the current address to which the socket sockfd is bound.
+ *
+ * @param       
+ * @param 
+ *
+ * @return  
+ * On  success,  zero is returned.  On error, -1 is returned, and errno is set appropriately.
+ */
+ int netdpsock_getsockname(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 
 
 #endif /* __NETDP_SOCKET_INTF_H__ */
