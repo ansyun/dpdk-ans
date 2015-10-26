@@ -51,7 +51,8 @@ You can get more information and instructions from [wiki page](https://github.co
   ENV: CPU- intel xeon 2.3G, NIC- 10G, one lcore rx packets-->l3 forwarding --> tx packets,  Test tool:pktgen-DPDK
 ```
     |--------------------------------------| 
-    |      L3 forwarding performance       | 
+    |      L3 forwarding performance       |
+    |             (one lcore)              |
     |--------------------------------------| 
     | Packet size(byte)| Throughput(Mpps)  | 
     |--------------------------------------|
