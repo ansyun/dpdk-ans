@@ -44,6 +44,31 @@ Next Planning
 -------
 You can get more information and instructions from [wiki page](https://github.com/dpdk-net/netdp/wiki).
 
+####Performance Testing
+--------------
+- L3 forwarding performance testing
+
+  ENV: CPU- intel xeon 2.3G, NIC- 10G, one lcore rx packets-->l3 forwarding --> tx packets,  Test tool:pktgen-DPDK
+```
+    |--------------------------------------| 
+    |      L3 forwarding performance       | 
+    |--------------------------------------| 
+    | Packet size(byte)| Throughput(Mpps)  | 
+    |--------------------------------------|
+    |     64           |      3.682        | 
+    |--------------------------------------| 
+    |     128          |      3.682        | 
+    |--------------------------------------| 
+    |     256          |      3.683        | 
+    |--------------------------------------| 
+    |     512          |      2.35         |
+    |--------------------------------------| 
+    |     1024         |      1.197        | 
+    |--------------------------------------| 
+    |     1500         |      0.822        | 
+    |--------------------------------------| 
+```
+
 ####Notes
 -------
 - Netdp socket application run as a secondary dpdk process, If you got below log, shall execute below commands to disable ASLR.
