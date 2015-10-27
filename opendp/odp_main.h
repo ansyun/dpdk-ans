@@ -56,7 +56,7 @@
 #define MAX_PKT_BURST     32
 #define BURST_TX_DRAIN_US 100 /* TX drain every ~100us */
 
-#define MAX_MBUF_NB     (1024 * 128)
+#define MAX_MBUF_NB     (1024 * 16)
 
 
 /* Configure how many packets ahead to prefetch, when reading packets */
