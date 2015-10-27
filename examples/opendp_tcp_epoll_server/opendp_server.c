@@ -75,7 +75,6 @@
 #include <sched.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#include <numa.h>
 #include <sys/syscall.h> 
 
 #define MAX_FLOW_NUM 200000

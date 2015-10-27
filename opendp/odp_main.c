@@ -96,6 +96,46 @@ static struct odp_lcore_params odp_lcore_params_default[] =
 	{0, 0, 0},
 };
 
+/* these config are used for kvm virtio nic */
+#if 0
+
+static  struct rte_eth_conf odp_port_conf = {
+    .rxmode = {
+        .max_rx_pkt_len = ETHER_MAX_LEN,
+        .split_hdr_size = 0,
+        .header_split   = 0, /**< Header Split disabled */
+        .hw_ip_checksum = 0, /**< IP checksum offload disabled */
+        .hw_vlan_filter = 0, /**< VLAN filtering disabled */
+        .jumbo_frame    = 0, /**< Jumbo Frame Support disabled */
+        .hw_strip_crc   = 0, /**< CRC stripped by hardware */
+    },
+    .txmode = {
+        .mq_mode = ETH_MQ_TX_NONE,
+    },
+};
+
+static  struct rte_eth_rxconf odp_rx_conf = {
+    .rx_thresh = {
+        .pthresh = RX_PTHRESH,
+        .hthresh = RX_HTHRESH,
+        .wthresh = RX_WTHRESH,
+    },
+};
+
+static  struct rte_eth_txconf odp_tx_conf = {
+    .tx_thresh = {
+        .pthresh = TX_PTHRESH,
+        .hthresh = TX_HTHRESH,
+        .wthresh = TX_WTHRESH,
+    },
+    .tx_free_thresh = 0, /* Use PMD default values */
+    .tx_rs_thresh = 0, /* Use PMD default values */
+    .txq_flags = ETH_TXQ_FLAGS_NOXSUMS  /* For virtio */
+};
+
+#endif
+
+
 static struct rte_eth_conf odp_port_conf = 
 {
 	.rxmode = 
@@ -150,6 +190,7 @@ static struct rte_eth_txconf odp_tx_conf =
 			ETH_TXQ_FLAGS_NOXSUMTCP)
 
 };
+
 
 static uint8_t rss_intel_key[NETDP_RSS_KEY_SIZE] =
 {
@@ -867,6 +908,7 @@ int main(int argc, char **argv)
     printf("core mask: %x, sockets number:%d, lcore number:%d \n", odp_user_conf.lcore_mask, odp_user_conf.socket_nb, odp_user_conf.lcore_nb);
 
     printf("start to init netdp \n");
+    init_conf.hw_ip_checksum = NETDP_HW_CHKSUM_ENABLE;
     init_conf.max_sock_conn = 1024 * 130;
     init_conf.max_tcp_conn_per_lcore = 1024 * 128;
 
