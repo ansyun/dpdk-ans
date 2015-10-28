@@ -46,6 +46,24 @@ You can get more information and instructions from [wiki page](https://github.co
 
 ####Performance Testing
 --------------
+- TCP server performance testing
+ 
+ ENV: CPU- intel xeon 2.3G, NIC- 10G, Test tool:ab 
+
+ Procedure: ab establish tcp connection to netdp tcp server, ab download one data, netdp tcp server close socket.
+
+ Command: ab -n 1000000 -c 500  2.2.2.2:8089/
+```
+    |--------------------------------------| 
+    |      TCP Server accept performance   |
+    |--------------------------------------| 
+    | Linux with epoll | NETDP with epoll  | 
+    |    (Multi core)  |    (one core)     |
+    |--------------------------------------|
+    | 53k connection/s | 43k connection/s  | 
+    |--------------------------------------| 
+```
+
 - L3 forwarding performance testing
 
   ENV: CPU- intel xeon 2.3G, NIC- 10G, one lcore rx packets-->l3 forwarding --> tx packets,  Test tool:pktgen-DPDK
