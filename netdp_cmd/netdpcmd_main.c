@@ -73,12 +73,13 @@ int main(void)
 {
     int ret;
     struct cmdline *cl;
-    int     param_num = 7;
+    int     param_num = 8;
     char *param[] = {"netdpcmd",
                                "-c",
                                "1",
                                "-n",
                                "1",
+                               "--no-pci",
                                "--socket-mem=1",
                                "--proc-type=secondary",
                                NULL};

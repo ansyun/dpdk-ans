@@ -101,7 +101,7 @@ int main(void)
     int recv_len; 
     pthread_t id;  
 
-    ret = netdpsock_init();
+    ret = netdpsock_init(NULL);
     if(ret != 0)
         printf("init sock ring failed \n");
 

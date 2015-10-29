@@ -220,7 +220,7 @@ int main(void)
     struct sockaddr_in remote_addr;  
     struct epoll_event event;
 
-    ret = netdpsock_init();
+    ret = netdpsock_init(NULL);
     if(ret != 0)
         printf("init sock ring failed \n");
 

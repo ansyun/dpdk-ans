@@ -73,7 +73,7 @@ int main(void)
     char recv_buf[2038];
     int recv_len; 
 
-    ret = netdpsock_init();
+    ret = netdpsock_init(NULL);
     if(ret != 0)
         printf("init sock ring failed \n");
 

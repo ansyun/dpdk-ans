@@ -126,7 +126,7 @@ int main(int argc, char * argv[])
     struct sockaddr_in remote_addr;     
     int sin_size;     
 
-    ret = netdpsock_init();
+    ret = netdpsock_init(NULL);
     if(ret != 0)
         printf("init sock failed \n");
     

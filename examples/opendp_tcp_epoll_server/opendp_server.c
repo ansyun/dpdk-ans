@@ -151,7 +151,7 @@ int RunServerThread(void *arg)
 	CPU_SET((unsigned)core, &cpus);
 	sched_setaffinity(Gettid(), sizeof(cpus), &cpus);
 
-	ret = netdpsock_init();
+	ret = netdpsock_init(NULL);
 	if (ret != 0)
 		printf("init sock failed \n");
 

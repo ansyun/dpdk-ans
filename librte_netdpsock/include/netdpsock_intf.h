@@ -38,12 +38,13 @@
 /**
  *  Init netdp socket lib and register a user to opendp. One process shall only call it once.
  *
- * @param   
- *
+ * @param  file_prefix 
+ *  Prefix for hugepage filenames, shall be same as opendp startup parameter(--file-prefix).
+ *  If input is NULL, the default file-prefix is "rte"
  * @return  
  *
  */
-int netdpsock_init();
+int netdpsock_init(char *file_prefix);
 
 /**
  *  Creates  an endpoint for communication and returns a descriptor.
