@@ -148,7 +148,8 @@ int udp_sock_handle(int epfd, struct epoll_event *event, int curr_event, int sum
         netdpsock_close (event->data.fd);  
         return -1;  
     }   
-    else if (event->events & EPOLLIN)
+
+    if (event->events & EPOLLIN)
     {
 
         sock = udp_sock_find(event->data.fd);

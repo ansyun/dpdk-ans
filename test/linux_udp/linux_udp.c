@@ -162,7 +162,8 @@ int main(int argc, char **argv)
                 close (events[i].data.fd);  
                 continue;  
             }   
-            else if (events[i].events & EPOLLIN)
+
+            if (events[i].events & EPOLLIN)
             {
                 while(1)
                 {

@@ -227,25 +227,32 @@ int RunServerThread(void *arg)
 			int sockid = events[i].data.fd;
 			if (sockid == server_sockfd) { //accept case
 				do_accept = 1;
-			} else if (events[i].events & EPOLLERR) { //epoll error event
-				int err;
-				socklen_t len = sizeof(err);
+			} 
+                     else
+                    {
+        			if (events[i].events & EPOLLERR) { //epoll error event
+        				int err;
+        				socklen_t len = sizeof(err);
 
-				/* error on the connection */
-				netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
-				netdpsock_close(sockid);
-			} else if (events[i].events == EPOLLIN) { //epollin  read and write
-				int ret = HandleReadEvent(epoll_fd, events[i]);
-				netdpsock_close(sockid);
-			} else if (events[i].events == EPOLLOUT) { //epollout write
-				int LEN = strlen(http_200);
-				netdpsock_send(sockid, http_200, LEN, 0);
-				netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
-				netdpsock_close(sockid);
-			} else if (events[i].events == EPOLLHUP) { //remote close the socket
-				netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
-				netdpsock_close(sockid);
-			}
+        				/* error on the connection */
+        				netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
+        				netdpsock_close(sockid);
+        			} 
+                            if (events[i].events == EPOLLIN) { //epollin  read and write
+        				int ret = HandleReadEvent(epoll_fd, events[i]);
+        				netdpsock_close(sockid);
+        			} 
+                            if (events[i].events == EPOLLOUT) { //epollout write
+        				int LEN = strlen(http_200);
+        				netdpsock_send(sockid, http_200, LEN, 0);
+        				netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
+        				netdpsock_close(sockid);
+        			} 
+                            if (events[i].events == EPOLLHUP) { //remote close the socket
+        				netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
+        				netdpsock_close(sockid);
+        			}
+                    }
 		}
 		if (do_accept) {
 			while (1) {

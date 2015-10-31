@@ -179,7 +179,8 @@ int main(void)
                 fd = -1;
                 continue;  
             }   
-            else if (events[i].events & EPOLLIN)
+
+            if (events[i].events & EPOLLIN)
             {
                 while(1)
                 {

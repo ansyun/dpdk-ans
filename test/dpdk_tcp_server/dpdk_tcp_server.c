@@ -69,7 +69,8 @@
 int dpdk_handle_event(struct epoll_event ev)
 {
     char recv_buf[BUFFER_SIZE];       
-    int len;     
+    int len; 
+    int send_len = 0;
     char send_buf[BUFFER_SIZE];       
 
     if (ev.events&EPOLLIN)
@@ -82,7 +83,11 @@ int dpdk_handle_event(struct epoll_event ev)
             {  
                 sprintf(send_buf, "I have received your message.");
                 
-                netdpsock_send(ev.data.fd, send_buf, 2500, 0);  
+                send_len = netdpsock_send(ev.data.fd, send_buf, 2500, 0);  
+                if(send_len < 0)
+                {
+                    printf("send data failed, send_len %d \n", send_len);
+                }
 
                 printf("receive from client(%d) , data len:%d \n", ev.data.fd, len);  
             } 
@@ -108,7 +113,8 @@ int dpdk_handle_event(struct epoll_event ev)
 
         }
     }
-    else if (ev.events&EPOLLERR || ev.events&EPOLLHUP) 
+    
+    if (ev.events&EPOLLERR || ev.events&EPOLLHUP) 
     {
         printf("remote close the socket, event %x \n", ev.events);
         netdpsock_close(ev.data.fd);

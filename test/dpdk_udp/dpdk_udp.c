@@ -147,8 +147,9 @@ int main(void)
                 printf("dpdk socket(%d) error\n", events[i].data.fd);
                 netdpsock_close (events[i].data.fd);  
                 continue;  
-            }   
-            else if (events[i].events & EPOLLIN)
+            } 
+            
+            if (events[i].events & EPOLLIN)
             {
                 while(1)
                 {
