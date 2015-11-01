@@ -227,7 +227,7 @@ int main(int argc, char * argv[])
                 }  
                 
                
-                printf("accept client %s \n",inet_ntoa(remote_addr.sin_addr));  
+                printf("accept client %s,  family: %d, port %d \n",inet_ntoa(remote_addr.sin_addr), remote_addr.sin_family, remote_addr.sin_port);  
                 
                 netdpsock_send(client_sockfd, "I have received your message.", 20, 0);  
 

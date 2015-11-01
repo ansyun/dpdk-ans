@@ -258,5 +258,14 @@ int netdpsock_getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
  */
  int netdpsock_getsockname(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 
+/**
+ * Enable netdpsock API debug log
+ *
+ * @param flag  
+ * 1: enable debug log, 0: disable log
+ * @return  
+ * 
+ */
+ void netdpsock_enable_log(int flag);
 
 #endif /* __NETDP_SOCKET_INTF_H__ */

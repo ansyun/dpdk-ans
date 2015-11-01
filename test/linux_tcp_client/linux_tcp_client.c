@@ -83,6 +83,12 @@ void tcp_send_thread()
 
    //         if(data_num == 1)
                 send_len = send(fd, send_data, 2000, 0);
+                if(send_len <= 0)
+                {
+                    printf("send failed \n");
+                    usleep(200000);
+                    continue;
+                }
             data_len += send_len;
 
             printf("send len %d, data num %d, data len:%d \n", send_len, data_num, data_len);
