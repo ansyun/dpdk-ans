@@ -37,26 +37,32 @@ ifeq ($(RTE_ODP),)
 $(error "Please define RTE_ODP environment variable")
 endif
 
-# Default target, can be overriden by command line or environment
-RTE_TARGET ?= x86_64-native-linuxapp-gcc
+ifeq ($(RTE_TARGET),)
+$(error "Please define RTE_TARGET environment variable")
+endif
 
-include $(RTE_SDK)/mk/rte.vars.mk
+CC = gcc
+RM = rm -f
 
 ODP_PATH = $(RTE_ODP)
 
-CFLAGS += -I$(ODP_PATH)/librte_netdp/include
-CFLAGS += -I$(ODP_PATH)/librte_netdpsock/include
+CFLAGS += -I$(ODP_PATH)/librte_netdp/include \
+          -I$(ODP_PATH)/librte_netdpsock/include
 
-LDLIBS += $(ODP_PATH)/librte_netdpsock/librte_netdpsock.a 
+LDLIBS += $(ODP_PATH)/librte_netdpsock/librte_netdpsock.a \
+          $(RTE_SDK)/$(RTE_TARGET)/lib/librte_eal.a \
+          $(RTE_SDK)/$(RTE_TARGET)/lib/librte_mempool.a \
+          $(RTE_SDK)/$(RTE_TARGET)/lib/librte_ring.a \
+          -lrt -pthread -ldl
 
-# binary name
-APP = opendp_server
+OBJS = http_server.o 
+TARGET = http_server
 
-# all source are stored in SRCS-y
-SRCS-y := opendp_server.c 
+$(TARGET):$(OBJS)                      
+	$(CC) -o $(TARGET) $(OBJS) $(CFLAGS) $(LDLIBS)
+        
+$(OBJS):%.o:%.c          
+	$(CC) -c $(CFLAGS) $< -o $@        
+clean:                              
+	-$(RM) $(TARGET) $(OBJS)
 
-CFLAGS += -O3
-#CFLAGS += $(WERROR_FLAGS)
-CFLAGS += -I$(ODP_PATH)/include
-
-include $(RTE_SDK)/mk/rte.extapp.mk
