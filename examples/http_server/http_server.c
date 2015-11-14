@@ -124,7 +124,7 @@ HandleReadEvent(int epoll_fd, struct epoll_event ev)
 
 	ev.events = EPOLLIN | EPOLLOUT;
 	netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
-	printf("read and close sockid:%d\n", sockid); //test purpose
+	//printf("read and close sockid:%d\n", sockid); //test purpose
 	return rd;
 }
 /*----------------------------------------------------------------------------*/

@@ -50,6 +50,7 @@ CFLAGS += -I$(ODP_PATH)/librte_netdp/include \
           -I$(ODP_PATH)/librte_netdpsock/include
 
 LDLIBS += $(ODP_PATH)/librte_netdpsock/librte_netdpsock.a \
+          $(RTE_SDK)/$(RTE_TARGET)/lib/librte_mbuf.a \
           $(RTE_SDK)/$(RTE_TARGET)/lib/librte_eal.a \
           $(RTE_SDK)/$(RTE_TARGET)/lib/librte_mempool.a \
           $(RTE_SDK)/$(RTE_TARGET)/lib/librte_ring.a \
