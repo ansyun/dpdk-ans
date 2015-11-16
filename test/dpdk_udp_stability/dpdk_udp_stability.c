@@ -53,6 +53,7 @@
 #include <sys/time.h>
 
 #include "netdpsock_intf.h"
+#include "netdp_errno.h"
 
 #define UDP_SOCK_NUM   100
 #define UDP_PORT_START 8888
@@ -162,26 +163,37 @@ int udp_sock_handle(int epfd, struct epoll_event *event, int curr_event, int sum
         while(1)
         {
             recv_len = netdpsock_recvfrom(event->data.fd, recv_buf, UDP_RECV_MAX_SIZE, 0, &dest_addr, &addrlen);
-            if(recv_len == 0)
+
+            if(recv_len > 0)  
+            {  
+                printf("Recv: %s \n", recv_buf);
+
+                sock->packets_nb++;
+                
+                sprintf(send_data, "Hello, linux_udp, fd:%d, num:%d !", event->data.fd, sock->packets_nb);
+                send_data[UDP_SEND_MAX_SIZE -1] = 0;
+                
+                netdpsock_sendto(event->data.fd, send_data, sizeof(send_data), 0, &dest_addr, addrlen);
+            } 
+            else if(recv_len < 0)
             {
-               // printf("no data in socket \n");
+                if (errno == NETDP_EAGAIN)   
+                {
+                    break;
+                }
+                else
+                {
+                    printf("remote close the socket, errno %d \n", errno);
+                    netdpsock_close(event->data.fd);
+                    break;
+                }
+            }
+            else
+            {
+                printf("remote close the socket, len %d \n", recv_len);
+                netdpsock_close(event->data.fd);
                 break;
             }
-
-            if(recv_len < 0)
-            {
-                printf("recv msg failed, fd %d, packets num %d \n", event->data.fd, sock->packets_nb);
-                continue;
-            }
-
-            printf("Recv: %s \n", recv_buf);
-
-            sock->packets_nb++;
-            
-            sprintf(send_data, "Hello, linux_udp, fd:%d, num:%d !", event->data.fd, sock->packets_nb);
-            send_data[UDP_SEND_MAX_SIZE -1] = 0;
-            
-            netdpsock_sendto(event->data.fd, send_data, sizeof(send_data), 0, &dest_addr, addrlen);
 
         }
 

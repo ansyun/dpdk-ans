@@ -44,6 +44,7 @@ include $(RTE_SDK)/mk/rte.vars.mk
 
 ODP_PATH = $(RTE_ODP)
 
+CFLAGS += -I$(ODP_PATH)/librte_netdp/include
 CFLAGS += -I$(ODP_PATH)/librte_netdpsock/include
 
 LDLIBS += $(ODP_PATH)/librte_netdpsock/librte_netdpsock.a 
@@ -54,7 +55,7 @@ APP = dpdk_udp_stability
 # all source are stored in SRCS-y
 SRCS-y := dpdk_udp_stability.c 
 
-CFLAGS += -O3 -g
+CFLAGS += -O3 
 #CFLAGS += $(WERROR_FLAGS)
 CFLAGS += -I$(ODP_PATH)/include
 

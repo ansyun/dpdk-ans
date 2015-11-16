@@ -614,9 +614,9 @@ static inline int odp_send_single_packet(struct rte_mbuf *m, uint8_t port)
     len++;
 
     /* enough pkts to be sent */
-    if (unlikely(len == MAX_PKT_BURST))
+    if (unlikely(len == MAX_TX_BURST))
     {
-        odp_send_burst(qconf, MAX_PKT_BURST, port);
+        odp_send_burst(qconf, MAX_TX_BURST, port);
         len = 0;
     }
 
