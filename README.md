@@ -60,6 +60,20 @@ Next Planning
     | 53k connection/s | 43k connection/s  | 
     |--------------------------------------| 
 ```
+- TCP socket data transmission performance
+ One socket receive 190Mbyte tcp payload, one socket send 130Mbyte tcp payload
+```
+Communication(synchronization)  0 runtime:	 0.734931 s
+Communication(synchronization)  1 runtime:	 0.469566 s
+Communication(synchronization)  2 runtime:	 0.449729 s
+Communication(synchronization)  3 runtime:	 0.648432 s
+Communication(synchronization)  4 runtime:	 0.449422 s
+Communication(synchronization)  5 runtime:	 0.647259 s
+Communication(synchronization)  6 runtime:	 0.457027 s
+Communication(synchronization)  7 runtime:	 0.457691 s
+Communication(synchronization)  8 runtime:	 0.67568 s
+Communication(synchronization)  9 runtime:	 0.736285 s
+```
 
 - L3 forwarding performance testing
 
