@@ -50,6 +50,8 @@ Next Planning
  Procedure: ab establish tcp connection to netdp tcp server, ab download one data, netdp tcp server close socket.
 
  Command: ab -n 1000000 -c 500  2.2.2.2:8089/
+ 
+ Notes: shall increase test linux PC local port range (net.ipv4.ip_local_port_range = 1024 65000).
 ```
     |--------------------------------------| 
     |      TCP Server accept performance   |
