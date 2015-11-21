@@ -127,7 +127,7 @@ static  struct rte_eth_txconf odp_tx_conf = {
     },
     .tx_free_thresh = 0, /* Use PMD default values */
     .tx_rs_thresh = 0, /* Use PMD default values */
-    .txq_flags &= ~ETH_TXQ_FLAGS_NOXSUMS  /* enable checksum for virtio */
+    .txq_flags = ~ETH_TXQ_FLAGS_NOXSUMS  /* enable checksum for virtio */
 };
 
 #endif
@@ -180,11 +180,11 @@ static struct rte_eth_txconf odp_tx_conf =
 	},
 	.tx_free_thresh = 0, /* Use PMD default values */
 	.tx_rs_thresh = 0, /* Use PMD default values */
-	.txq_flags = (ETH_TXQ_FLAGS_NOMULTSEGS |
+	.txq_flags = ~ETH_TXQ_FLAGS_NOXSUMS /*= (ETH_TXQ_FLAGS_NOMULTSEGS |
 			ETH_TXQ_FLAGS_NOVLANOFFL |
 			ETH_TXQ_FLAGS_NOXSUMSCTP |
 			ETH_TXQ_FLAGS_NOXSUMUDP |
-			ETH_TXQ_FLAGS_NOXSUMTCP)
+			ETH_TXQ_FLAGS_NOXSUMTCP)*/
 
 };
 
@@ -428,6 +428,10 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
 
         /* init port */
         printf("\t port %d:  \n", portid );
+        rte_eth_dev_info_get(portid, &dev_info);
+        printf("\t port name %s:  \n", dev_info.driver_name );
+        printf("\t max_rx_queues %d: max_tx_queues:%d \n", dev_info.max_rx_queues, dev_info.max_tx_queues);
+        printf("\t rx_offload_capa %d: tx_offload_capa:%d \n", dev_info.rx_offload_capa, dev_info.tx_offload_capa);
 
         nb_rx_queue = odp_get_port_rx_queues_nb(portid, user_conf);
 
@@ -459,9 +463,14 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
             else
             	socketid = 0;
 
+            rte_eth_dev_info_get(portid, &dev_info);
+            txconf = &dev_info.default_txconf;
+            if (odp_port_conf.rxmode.jumbo_frame)
+                txconf->txq_flags = 0;
+
             printf("\t lcore id:%u, tx queue id:%d, socket id:%d \n", lcore_id, queueid, socketid);
             
-            ret = rte_eth_tx_queue_setup(portid, queueid, ODP_TX_DESC_DEFAULT, socketid, &odp_tx_conf);
+            ret = rte_eth_tx_queue_setup(portid, queueid, ODP_TX_DESC_DEFAULT, socketid, txconf);
             if (ret < 0)
             	rte_exit(EXIT_FAILURE, "rte_eth_tx_queue_setup: err=%d, " "port=%d\n", ret, portid);
 
@@ -504,7 +513,8 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
 
             printf("port id:%d, rx queue id: %d, socket id:%d \n", portid, queueid, socketid);
 
-            ret = rte_eth_rx_queue_setup(portid, queueid, ODP_RX_DESC_DEFAULT, socketid, &odp_rx_conf, odp_pktmbuf_pool[socketid]);
+            /* use NIC default rx conf */
+            ret = rte_eth_rx_queue_setup(portid, queueid, ODP_RX_DESC_DEFAULT, socketid, NULL, odp_pktmbuf_pool[socketid]);
             if (ret < 0)
                 rte_exit(EXIT_FAILURE, "rte_eth_rx_queue_setup: err=%d," "port=%d\n", ret, portid);
         }
