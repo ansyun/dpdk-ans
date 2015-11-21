@@ -245,12 +245,13 @@ static void kni_burst_free_mbufs(struct rte_mbuf **pkts, unsigned num)
 
 static int kni_free_kni(uint8_t port_id)
 {
-    uint8_t i;
+    uint8_t i = 0;
     struct kni_port_params **p = kni_port_params_array;
 
     if (port_id >= RTE_MAX_ETHPORTS || !p[port_id])
         return -1;
 
+    /* fix me */
     rte_kni_release(p[i]->kni);
     p[i]->kni = NULL;
 

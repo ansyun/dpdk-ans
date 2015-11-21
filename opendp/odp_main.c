@@ -127,7 +127,7 @@ static  struct rte_eth_txconf odp_tx_conf = {
     },
     .tx_free_thresh = 0, /* Use PMD default values */
     .tx_rs_thresh = 0, /* Use PMD default values */
-    .txq_flags = ETH_TXQ_FLAGS_NOXSUMS  /* For virtio */
+    .txq_flags &= ~ETH_TXQ_FLAGS_NOXSUMS  /* enable checksum for virtio */
 };
 
 #endif
