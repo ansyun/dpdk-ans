@@ -44,12 +44,10 @@ endif
 CC = gcc
 RM = rm -f
 
-ODP_PATH = $(RTE_ODP)
+CFLAGS += -I$(RTE_ODP)/librte_netdp/include \
+          -I$(RTE_ODP)/librte_netdpsock/include
 
-CFLAGS += -I$(ODP_PATH)/librte_netdp/include \
-          -I$(ODP_PATH)/librte_netdpsock/include
-
-LDLIBS += $(ODP_PATH)/librte_netdpsock/librte_netdpsock.a \
+LDLIBS += $(RTE_ODP)/librte_netdpsock/librte_netdpsock.a \
           $(RTE_SDK)/$(RTE_TARGET)/lib/librte_mbuf.a \
           $(RTE_SDK)/$(RTE_TARGET)/lib/librte_eal.a \
           $(RTE_SDK)/$(RTE_TARGET)/lib/librte_mempool.a \

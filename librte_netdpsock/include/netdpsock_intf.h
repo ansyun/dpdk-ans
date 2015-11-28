@@ -35,6 +35,14 @@
 #ifndef __NETDP_SOCKET_INTF_H__
 #define __NETDP_SOCKET_INTF_H__
 
+/*
+* Limitation: 
+* 1. After fork(), children process can't copy parent's netdp socket, so children proces shall not handle any parent's netdp socket.
+*
+*
+*/
+
+
 /**
  *  Init netdp socket lib and register a user to opendp. One process shall only call it once.
  *
@@ -115,6 +123,18 @@ ssize_t netdpsock_sendto(int sockfd, const void *buf, size_t len, int flags,
 ssize_t netdpsock_send(int sockfd, const void *buf, size_t len, int flags);
 
 /**
+ *  Write user data via socket. This is nonblocking function, so shall check EAGAIN.
+ *
+ * @param       
+ * @param 
+ *
+ * @return  
+ *  On success, these calls return the number of characters sent.  On error, -1 is returned, and errno is set appropriately.
+ *   If errno is EAGAIN, no buffer for sending data.
+ */
+ssize_t netdpsock_write(int fd, const void *buf, size_t count);
+
+/**
  * Receive user data from socket. This function is designed as nonblocking function, so shall not set socket as nonblocking and work with epoll.
  *
  * @param       
@@ -140,6 +160,18 @@ ssize_t netdpsock_recvfrom(int sockfd, void *buf, size_t len, int flags,
  */ 
 ssize_t netdpsock_recv(int sockfd, void *buf, size_t len, int flags);
 
+
+/**
+ * Read user data from socket. This function is designed as nonblocking function, so shall not set socket as nonblocking.
+ *
+ * @param       
+ * @param 
+ *
+ * @return  
+ *  These calls return the number of bytes received, or -1 if an error occurred.  In the event of an error, errno is set to indicate the error.  
+ *  If errno is EAGAIN, no data are present to be received.
+ */ 
+ssize_t netdpsock_read(int fd, void *buf, size_t count);
 
 /**
  * Listen for connections on a socket
