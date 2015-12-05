@@ -100,6 +100,31 @@ Communication(synchronization)  9 runtime:	 0.736285 s
     |     1500         |      0.822        | 
     |--------------------------------------| 
 ```
+- dpdk-redis performance testing
+```
+====ENV=== 
+CPU:Intel(R) Xeon(R) CPU E5-2430 0 @ 2.20GHz.
+NIC:Intel Corporation 82576 Gigabit Network Connection (rev 01) 
+OPENDP run on a lcore.
+
+root@h163:~/dpdk-redis# ./src/redis-benchmark -h 2.2.2.2  -p 6379 -n 100000 -c 50 -q
+PING_INLINE: 76687.12 requests per second
+PING_BULK: 77459.34 requests per second
+SET: 74183.98 requests per second
+GET: 75815.01 requests per second
+INCR: 76687.12 requests per second
+LPUSH: 74794.31 requests per second
+LPOP: 74349.44 requests per second
+SADD: 75757.57 requests per second
+SPOP: 76569.68 requests per second
+LPUSH (needed to benchmark LRANGE): 75075.07 requests per second
+LRANGE_100 (first 100 elements): 44385.27 requests per second
+LRANGE_300 (first 300 elements): 19267.82 requests per second
+LRANGE_500 (first 450 elements): 13757.05 requests per second
+LRANGE_600 (first 600 elements): 9047.32 requests per second
+MSET (10 keys): 61538.46 requests per second
+
+```
 
 ####Examples
 -------
