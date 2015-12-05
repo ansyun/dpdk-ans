@@ -120,12 +120,12 @@ int netdpcmd_ring_recv(void *buff, int buff_len)
 {
     void *msg;
     int wait_num = 0; 
-    while (wait_num < 100)
+    while (wait_num < 10)
     {
         if (rte_ring_dequeue(netdpcmd_ring_rx, &msg) < 0)
         {
             wait_num++;
-            usleep(200);
+            usleep(100000);  /* 100 ms */
             continue;
         }
         rte_memcpy(buff, msg, buff_len);

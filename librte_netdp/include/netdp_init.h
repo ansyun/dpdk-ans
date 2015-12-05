@@ -95,7 +95,7 @@ int netdp_register(netdp_send_packet_cb send_cb);
  * @return  
  *
  */
-void netdp_message_handle(unsigned lcore_id);
+void netdp_message_handle(unsigned lcore_id, uint64_t cur_tsc);
 
 
 #endif /* __NETDP_INIT_H__ */

@@ -45,6 +45,7 @@
 #define NETDP_RT_FLAG_LEN         16
 #define NETDP_IFADDR_LEN           6 
 
+#define NETDP_TIMER_RESOLUTION_CYCLES 20000000ULL /* around 10ms at 2 Ghz */
 
 typedef enum 
 {

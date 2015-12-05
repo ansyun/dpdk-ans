@@ -334,6 +334,12 @@ static void netdpcmd_ip_show_parsed(void *parsed_result,
         }
         
         conf_ack = (netdp_conf_ack_t *)msg_buf;
+
+        /* last message */
+        if(conf_ack->status  == NETDP_ESPIPE)
+        {
+            return;
+        }
         
         if((conf_ack->status != 0) || (conf_ack->msg_action != NETDP_MSG_ACTION_SHOW) || (conf_ack->data_len == 0))
         {
@@ -552,6 +558,12 @@ static void netdpcmd_route_show_parsed(void *parsed_result,
         
         conf_ack = (netdp_conf_ack_t *)msg_buf;
 
+        /* last message */
+        if(conf_ack->status  == NETDP_ESPIPE)
+        {
+            return;
+        }
+        
         if((conf_ack->status != 0) || (conf_ack->msg_action != NETDP_MSG_ACTION_SHOW) || ( conf_ack->data_len == 0))
         {
              cmdline_printf(cl, "Show route failed,  error code %d \n", conf_ack->status);
@@ -661,6 +673,11 @@ static void netdpcmd_arp_show_parsed(void *parsed_result,
         }
 
         conf_ack = (netdp_conf_ack_t *)msg_buf;
+        /* last message */
+        if(conf_ack->status  == NETDP_ESPIPE)
+        {
+            return;
+        }
         
         if((conf_ack->status != 0) || (conf_ack->msg_action != NETDP_MSG_ACTION_SHOW) ||( conf_ack->data_len == 0))
         {

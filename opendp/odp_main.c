@@ -468,6 +468,8 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
             if (odp_port_conf.rxmode.jumbo_frame)
                 txconf->txq_flags = 0;
 
+            /* for igb driver, shall set it as 16 to improve performance */
+         //   txconf->tx_thresh.wthresh = 16;
             printf("\t lcore id:%u, tx queue id:%d, socket id:%d \n", lcore_id, queueid, socketid);
             
             ret = rte_eth_tx_queue_setup(portid, queueid, ODP_TX_DESC_DEFAULT, socketid, txconf);
@@ -734,7 +736,7 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
         cur_tsc = rte_rdtsc();
 
         /* add by netdp_team ---start */
-        netdp_message_handle(lcore_id);
+        netdp_message_handle(lcore_id, cur_tsc);
         /* add by netdp_team ---end */
 
 
@@ -853,6 +855,7 @@ int main(int argc, char **argv)
     memset(&odp_user_conf, 0, sizeof(odp_user_conf));
     memset(odp_lcore_conf, 0, sizeof(odp_lcore_conf));
 
+    odp_user_conf.numa_on = 1;
     odp_user_conf.lcore_param_nb = sizeof(odp_lcore_params_default) / sizeof(odp_lcore_params_default[0]);
     rte_memcpy(odp_user_conf.lcore_param, odp_lcore_params_default, sizeof(odp_lcore_params_default));
 
