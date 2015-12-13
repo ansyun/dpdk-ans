@@ -125,6 +125,68 @@ LRANGE_600 (first 600 elements): 9047.32 requests per second
 MSET (10 keys): 61538.46 requests per second
 
 ```
+- http server connection performance
+```
+CPU:Intel(R) Xeon(R) CPU E5-2430 0 @ 2.20GHz.
+NIC:Intel Corporation 82576 Gigabit Network Connection (rev 01) 
+OPENDP run on a lcore.
+examples/http_server run as server.
+
+root@h163:~# ab -n 40000 -c 500  2.2.2.2:8089/
+This is ApacheBench, Version 2.3 <$Revision: 1528965 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 2.2.2.2 (be patient)
+Completed 4000 requests
+Completed 8000 requests
+Completed 12000 requests
+Completed 16000 requests
+Completed 20000 requests
+Completed 24000 requests
+Completed 28000 requests
+Completed 32000 requests
+Completed 36000 requests
+Completed 40000 requests
+Finished 40000 requests
+
+
+Server Software:
+Server Hostname:        2.2.2.2
+Server Port:            8089
+
+Document Path:          /
+Document Length:        63 bytes
+
+Concurrency Level:      500
+Time taken for tests:   0.867 seconds
+Complete requests:      40000
+Failed requests:        0
+Total transferred:      6040000 bytes
+HTML transferred:       2520000 bytes
+Requests per second:    46124.40 [#/sec] (mean)
+Time per request:       10.840 [ms] (mean)
+Time per request:       0.022 [ms] (mean, across all concurrent requests)
+Transfer rate:          6801.55 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    4   1.0      4       7
+Processing:     2    7   1.7      7      16
+Waiting:        2    5   1.9      5      15
+Total:          4   11   1.5     11      18
+
+Percentage of the requests served within a certain time (ms)
+  50%     11
+  66%     11
+  75%     12
+  80%     12
+  90%     12
+  95%     13
+  98%     15
+  99%     15
+ 100%     18 (longest request)
+```
 
 ####Examples
 -------
