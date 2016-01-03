@@ -11,7 +11,7 @@ Netdp is porting from [FreeBSD](http://freebsd.org) TCP/IP stack, and provide a 
 - netdp_test: Example application with netdp for testing netdp tcp/ip stack
 
 Support environment
-  - EAL is based on dpdk-2.1.0
+  - EAL is based on dpdk-2.2.0
   - Development enviroment is based on x86_64-native-linuxapp-gcc
   - TCP/IP stack is based on FreeBSD 10.0-RELEASE
   - linux version：
