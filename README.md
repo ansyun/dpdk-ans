@@ -32,7 +32,10 @@ Support feature:
  - UDP protocol
  - Socket layer, share memory.
  - Socket API, socket/close/send/recv/epoll.
- - TCP protocol, no lock, hash table, per tcp stack per lcore.(currently only run in one lcore, will enhance it)
+ - TCP protocol
+    - free lock, hash table.
+    - support SO_REUSEPORT, multi application can listen the same port.
+    - per tcp stack per lcore(currently only run in one lcore, will enhance it).
  - 
 Next Planning
 - Enhance socket API
