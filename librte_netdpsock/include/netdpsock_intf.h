@@ -257,13 +257,13 @@ int netdpsock_close(int fd);
 int netdpsock_getsockopt(int sockfd, int level, int optname, void *optval, socklen_t *optlen);
 
 /**
- * This is dummy API, always return 0, it is still not implemented.
+ * 
  *
- * @param       
- * @param 
+ * @param level: only support SOL_SOCKET       
+ * @param optname: only support SO_REUSEPORT
  *
  * @return  
- *
+ * On  success,  zero is returned.  On error, -1 is returned, and errno is set appropriately.
  */
 int netdpsock_setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
 

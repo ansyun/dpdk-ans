@@ -35,10 +35,15 @@
 * This program is used to test netdp user space tcp stack
 */
 
+#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdlib.h>
+#include <sched.h>
+#include <unistd.h>
+#include <sys/times.h>
+
 #include <stdint.h>
 #include <string.h>
-#include <stdlib.h>
 #include <stdarg.h>
 #include <errno.h>
 #include <netinet/in.h>
@@ -61,27 +66,12 @@
 #include "netdpsock_intf.h"
 #include "netdp_errno.h"
 
-#define _GNU_SOURCE
-#define __USE_GNU
-#ifdef __USE_GNU
-/* Access macros for `cpu_set'.  */
-#define CPU_SETSIZE __CPU_SETSIZE
-#define CPU_SET(cpu, cpusetp)   __CPU_SET (cpu, cpusetp)
-#define CPU_CLR(cpu, cpusetp)   __CPU_CLR (cpu, cpusetp)
-#define CPU_ISSET(cpu, cpusetp) __CPU_ISSET (cpu, cpusetp)
-#define CPU_ZERO(cpusetp)       __CPU_ZERO (cpusetp)
-#endif
-#include <unistd.h>
-#include <sched.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/syscall.h> 
 
 #define MAX_FLOW_NUM 200000
 #define BUFFER_SIZE 5000
 #define MAX_EVENTS 512
 #define MAX_CPUS 8
-static pthread_t app_thread[MAX_CPUS];
+
 char *http_200 = "HTTP/1.0 200 OK\r\n"
                  "Cache-Control: no-cache\r\n"
                  "Connection: close\r\n"
@@ -89,20 +79,6 @@ char *http_200 = "HTTP/1.0 200 OK\r\n"
                  "\r\n"
                  "<html><body><h1>200 OK</h1>\nEverything is fine.\n</body></html>\n";
 
-
-/*----------------------------------------------------------------------------*/
-int 
-GetNumCPUs() 
-{
-	return sysconf(_SC_NPROCESSORS_ONLN);
-}
-/*----------------------------------------------------------------------------*/
-pid_t 
-Gettid()
-{
-	return syscall(__NR_gettid);
-}
-/*----------------------------------------------------------------------------*/
 static int
 HandleReadEvent(int epoll_fd, struct epoll_event ev)
 {
@@ -124,13 +100,12 @@ HandleReadEvent(int epoll_fd, struct epoll_event ev)
 
 	ev.events = EPOLLIN | EPOLLOUT;
 	netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
-	//printf("read and close sockid:%d\n", sockid); //test purpose
+//	printf("read and close sockid:%d\n", sockid); //test purpose
 	return rd;
 }
 /*----------------------------------------------------------------------------*/
-int RunServerThread(void *arg)
+int RunServerThread()
 {
-	int core = *(int *)arg;
 	int ret;
 	int server_sockfd;
 	int client_sockfd;
@@ -138,19 +113,8 @@ int RunServerThread(void *arg)
 	struct sockaddr_in remote_addr;
 	int sin_size;
 	int do_accept;
-
-	/*initialize thread bind cpu*/
-	cpu_set_t cpus;
-	size_t n = GetNumCPUs();
-	if (core < 0 || core >= (int) n) {
-		errno = -EINVAL;
-		exit(-1);
-	}
-
-	CPU_ZERO(&cpus);
-	CPU_SET((unsigned)core, &cpus);
-	sched_setaffinity(Gettid(), sizeof(cpus), &cpus);
-
+       int opt_val = 1;
+       
 	ret = netdpsock_init(NULL);
 	if (ret != 0)
 		printf("init sock failed \n");
@@ -166,6 +130,11 @@ int RunServerThread(void *arg)
 		printf("socket error \n");
 		return 1;
 	}
+
+       if(netdpsock_setsockopt(server_sockfd, SOL_SOCKET, SO_REUSEPORT, &opt_val, sizeof(int)) < 0)
+       {
+            printf("set socket option failed \n");
+       }
 
 	if (netdpsock_bind(server_sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) < 0)
 	{
@@ -283,21 +252,25 @@ int RunServerThread(void *arg)
 /*----------------------------------------------------------------------------*/
 int main(int argc, char *argv[] )
 {
-	int i;
-	int core_limit = 1; //test use only 1 core
-	int cores[core_limit];
-	for (i = 0; i < core_limit; i++) {
-		cores[i] = i;
-		if (pthread_create(&app_thread[i],
-		                   NULL, RunServerThread, (void *)&cores[i])) {
-			perror("pthread_create");
-			printf("Failed to create server thread.\n");
-			exit(-1);
-		}
-	}
-	for (i = 0; i < core_limit; i++) {
-		pthread_join(app_thread[i], NULL);
-	}
+	int core =0;
 
-	exit(EXIT_SUCCESS);
+       if(argc >= 2)
+       {
+            core = atoi(argv[1]);
+            printf("affinity to core %d \n", core);
+       }
+       else
+       {
+            printf("affinity to 0 core by default \n");
+       }
+       
+  	/*initialize thread bind cpu*/
+	cpu_set_t cpus;
+
+	CPU_ZERO(&cpus);
+	CPU_SET((unsigned)core, &cpus);
+	sched_setaffinity(0, sizeof(cpus), &cpus);  
+
+       RunServerThread();
+
 }
