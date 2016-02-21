@@ -130,34 +130,6 @@ static  struct rte_eth_txconf odp_tx_conf = {
     .txq_flags = ~ETH_TXQ_FLAGS_NOXSUMS  /* enable checksum for virtio */
 };
 
-#endif
-
-
-static struct rte_eth_conf odp_port_conf = 
-{
-	.rxmode = 
-       {
-		.mq_mode = ETH_MQ_RX_RSS,
-		.max_rx_pkt_len = ETHER_MAX_LEN,
-		.split_hdr_size = 0,
-		.header_split   = 0,      /**< Header Split disabled */
-		.hw_ip_checksum = 1, /**< IP checksum offload enabled */
-		.hw_vlan_filter = 0,     /**< VLAN filtering disabled */
-		.jumbo_frame    = 0,   /**< Jumbo Frame Support disabled */
-		.hw_strip_crc   = 0,    /**< CRC stripped by hardware */
-	},
-	.rx_adv_conf = 
-	{
-		.rss_conf = 
-             {
-			.rss_hf = ETH_RSS_IP | ETH_RSS_TCP,
-		},
-	},
-	.txmode = 
-	{
-		.mq_mode = ETH_MQ_TX_NONE,
-	},
-};
 
 static const struct rte_eth_rxconf odp_rx_conf = 
 {
@@ -187,7 +159,34 @@ static struct rte_eth_txconf odp_tx_conf =
 			ETH_TXQ_FLAGS_NOXSUMTCP)*/
 
 };
+#endif
 
+
+static struct rte_eth_conf odp_port_conf = 
+{
+	.rxmode = 
+       {
+		.mq_mode = ETH_MQ_RX_RSS,
+		.max_rx_pkt_len = ETHER_MAX_LEN,
+		.split_hdr_size = 0,
+		.header_split   = 0,      /**< Header Split disabled */
+		.hw_ip_checksum = 1, /**< IP checksum offload enabled */
+		.hw_vlan_filter = 0,     /**< VLAN filtering disabled */
+		.jumbo_frame    = 0,   /**< Jumbo Frame Support disabled */
+		.hw_strip_crc   = 0,    /**< CRC stripped by hardware */
+	},
+	.rx_adv_conf = 
+	{
+		.rss_conf = 
+             {
+			.rss_hf = ETH_RSS_IP | ETH_RSS_TCP,
+		},
+	},
+	.txmode = 
+	{
+		.mq_mode = ETH_MQ_TX_NONE,
+	},
+};
 
 static uint8_t rss_intel_key[NETDP_RSS_KEY_SIZE] =
 {
@@ -341,11 +340,8 @@ static int odp_init_mbuf_pool(unsigned nb_mbuf, struct odp_user_config  *user_co
         if (odp_pktmbuf_pool[socketid] == NULL) 
         {
             snprintf(str, sizeof(str), "odp_mbuf_pool_%d", socketid);
-            odp_pktmbuf_pool[socketid] = rte_mempool_create(str, nb_mbuf, MAX_MBUF_SIZE, MEMPOOL_CACHE_SIZE,
-                sizeof(struct rte_pktmbuf_pool_private),
-                rte_pktmbuf_pool_init, NULL,
-                rte_pktmbuf_init, NULL,
-                socketid, 0);
+            odp_pktmbuf_pool[socketid] = rte_pktmbuf_pool_create(str, nb_mbuf, MEMPOOL_CACHE_SIZE, 0, RTE_MBUF_DEFAULT_BUF_SIZE, socketid);
+
             
             if (odp_pktmbuf_pool[socketid] == NULL)
                 rte_exit(EXIT_FAILURE, "Cannot init mbuf pool on socket %d\n", socketid);
@@ -877,7 +873,6 @@ int main(int argc, char **argv)
     if(odp_user_conf.jumbo_frame_on)
     {
         odp_port_conf.rxmode.jumbo_frame = 1;
-        odp_tx_conf.txq_flags = 0;
         odp_port_conf.rxmode.max_rx_pkt_len = odp_user_conf.max_rx_pkt_len;
     }
 
