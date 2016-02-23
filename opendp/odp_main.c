@@ -179,7 +179,7 @@ static struct rte_eth_conf odp_port_conf =
 	{
 		.rss_conf = 
              {
-			.rss_hf = ETH_RSS_IP | ETH_RSS_TCP,
+			.rss_hf = ETH_RSS_TCP|ETH_RSS_UDP,
 		},
 	},
 	.txmode = 
@@ -915,7 +915,7 @@ int main(int argc, char **argv)
     printf("start to init netdp \n");
     init_conf.hw_ip_checksum = NETDP_HW_CHKSUM_ENABLE;
     init_conf.max_sock_conn = 1024 * 130;
-    init_conf.max_tcp_conn_per_lcore = 1024 * 128;
+    init_conf.max_tcp_conn_per_lcore = 1024 * 60;
 
     init_conf.lcore_mask = odp_user_conf.lcore_mask;
     for(i = 0 ; i < MAX_NB_SOCKETS; i++)
