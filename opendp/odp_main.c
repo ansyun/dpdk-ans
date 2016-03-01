@@ -188,6 +188,7 @@ static struct rte_eth_conf odp_port_conf =
 	},
 };
 
+/*
 static uint8_t rss_intel_key[NETDP_RSS_KEY_SIZE] =
 {
 	0x6D, 0x5A, 0x56, 0xDA, 0x25, 0x5B, 0x0E, 0xC2,
@@ -196,6 +197,7 @@ static uint8_t rss_intel_key[NETDP_RSS_KEY_SIZE] =
 	0x77, 0xCB, 0x2D, 0xA3, 0x80, 0x30, 0xF2, 0x0C,
 	0x6A, 0x42, 0xB7, 0x3B, 0xBE, 0xAC, 0x01, 0xFA,
 };
+*/
 
 /**********************************************************************
 *@description:
@@ -923,8 +925,6 @@ int main(int argc, char **argv)
         init_conf.pktmbuf_pool[i] = odp_pktmbuf_pool[i];
     }
 
-    rte_memcpy(init_conf.rss_key, rss_intel_key, sizeof(rss_intel_key));
-    
     ret = netdp_initialize(&init_conf);
     if (ret != 0)
    	rte_exit(EXIT_FAILURE, "Init netdp fialed \n");
