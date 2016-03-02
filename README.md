@@ -41,6 +41,46 @@ Next Planning
 - Enhance socket API
 - Performance testing.
 
+####TCP ARCH
+--------------
+```
+         |-------|       |-------|       |-------|
+         |  APP  |       |  APP  |       |  APP  |
+         |       |       |       |       |       |
+         |       |       |       |       |       |
+         |-------|       |-------|       |-------|
+             |               |               |
+--------------------------------------------------
+netdpsock    |               |               |			
+             fd              fd              fd
+             |               |               |
+--------------------------------------------------
+netdp        |               |               |
+         |-------|       |-------|       |-------|
+         | TCP   |       |  TCP  |       | TCP   |
+         |       |       |       |       |       |
+         |       |       |       |       |       |
+         |       |       |       |       |       |
+         |---------------------------------------|       
+         |               IP/ARP/ICMP             |
+         |---------------------------------------|       
+         |       |       |       |       |       |
+         |LCORE0 |       |LCORE1 |       |LCORE2 |
+         |-------|       |-------|       |-------|
+             |               |               |
+             ---------------RSS------------------
+                             | 
+         |---------------------------------------| 
+         |                  NIC                  | 
+         |---------------------------------------| 
+```
+ - NIC distribute packets to different lcore base on RSS, so same TCP flow could be handled in the same lcore.
+ - Each lcore has own TCP stack. so no share data between lcores, free lock.
+ - IP/ARP/ICMP are share between lcores.
+ - APP process run as a tcp server, only listen on one lcore and accept tcp connections from the lcore, so the APP process number shall large than the lcore number. The APP process could be deployed on each lcore automaticly and averagely.
+ - APP process run as a tcp client, app process could communicate with each lcore. The tcp connection could locate in specified lcore automaticly.
+ - APP process could bind the same port if enable reuseport, APP process could accept tcp connection by round robin.
+ - If NIC don't support multi queue or RSS, shall enhance opendp_main.c, reserve one lcore to receive and send packets from NIC, and distribute packets to lcores of netdp tcp stack by software RSS.
 
 ####Performance Testing
 --------------
