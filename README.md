@@ -41,7 +41,7 @@ Next Planning
 - Enhance socket API
 - Performance testing.
 
-####TCP ARCH
+####TCP Deployment
 --------------
 ```
          |-------|       |-------|       |-------|
