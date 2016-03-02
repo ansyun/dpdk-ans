@@ -33,13 +33,12 @@ Support feature:
  - Socket layer, share memory.
  - Socket API, socket/close/send/recv/epoll.
  - TCP protocol
-    - free lock, hash table.
-    - support SO_REUSEPORT, multi application can listen the same port.
-    - per tcp stack per lcore(currently only run in one lcore, will enhance it).
+    - Free lock, hash table.
+    - Support SO_REUSEPORT, multi application can listen the same port.
+    - Support multicore tcp stack, per tcp stack per lcore.
  - 
 Next Planning
 - Enhance socket API
-- Support multi core for TCP
 - Performance testing.
 
 
