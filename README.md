@@ -68,18 +68,18 @@ netdp        |               |               |
          |LCORE0 |       |LCORE1 |       |LCORE2 |
          |-------|       |-------|       |-------|
              |               |               |
-             ---------------RSS------------------
+             ---------------RSS---------------
                              | 
          |---------------------------------------| 
          |                  NIC                  | 
          |---------------------------------------| 
 ```
- - NIC distribute packets to different lcore based on RSS, so same TCP flow could be handled in the same lcore.
+ - NIC distribute packets to different lcore based on RSS, so same TCP flow are handled in the same lcore.
  - Each lcore has own TCP stack. so no share data between lcores, free lock.
  - IP/ARP/ICMP are shared between lcores.
- - APP process runs as a tcp server, only listen on one lcore and accept tcp connections from the lcore, so the APP process number shall large than the lcore number. The APP process could be deployed on each lcore automaticly and averagely.
- - APP process runs as a tcp client, app process could communicate with each lcore. The tcp connection could be located in specified lcore automaticly.
- - APP process could bind the same port if enable reuseport, APP process could accept tcp connection by round robin.
+ - APP process runs as a tcp server, only listens on one lcore and accept tcp connections from the lcore, so the APP process number shall large than the lcore number. The APP processes are deployed on each lcore automaticly and averagely.
+ - APP process runs as a tcp client, app process can communicate with each lcore. The tcp connection can be located in specified lcore automaticly.
+ - APP process can bind the same port if enable reuseport, APP process could accept tcp connection by round robin.
  - If NIC don't support multi queue or RSS, shall enhance opendp_main.c, reserve one lcore to receive and send packets from NIC, and distribute packets to lcores of netdp tcp stack by software RSS.
 
 ####Performance Testing
