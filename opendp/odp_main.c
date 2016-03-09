@@ -130,6 +130,9 @@ static  struct rte_eth_txconf odp_tx_conf = {
     .txq_flags = ~ETH_TXQ_FLAGS_NOXSUMS  /* enable checksum for virtio */
 };
 
+#endif 
+
+#if 0
 
 static const struct rte_eth_rxconf odp_rx_conf = 
 {
@@ -171,7 +174,7 @@ static struct rte_eth_conf odp_port_conf =
 		.split_hdr_size = 0,
 		.header_split   = 0,      /**< Header Split disabled */
 		.hw_ip_checksum = 1, /**< IP checksum offload enabled */
-		.hw_vlan_filter = 0,     /**< VLAN filtering disabled */
+		.hw_vlan_filter = 1,     /**< VLAN filtering disabled */
 		.jumbo_frame    = 0,   /**< Jumbo Frame Support disabled */
 		.hw_strip_crc   = 0,    /**< CRC stripped by hardware */
 	},
