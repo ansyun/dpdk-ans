@@ -249,6 +249,9 @@ EAL: WARNING: Address Space Layout Randomization (ASLR) is enabled in the kernel
 EAL: This may cause issues with mapping memory into secondary processes
 $ sudo sysctl -w kernel.randomize_va_space=0
 ```
+- You shall modify the NIC configuration in odp_main.c based on your NIC type.
+
+
 ####Support
 -------
 BSD LICENSE, you may use netdp freely.
