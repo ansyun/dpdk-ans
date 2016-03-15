@@ -44,7 +44,8 @@ endif
 CC = gcc
 RM = rm -f
 
-CFLAGS += -I$(RTE_ODP)/librte_netdp/include \
+CFLAGS += -O3 \
+	  -I$(RTE_ODP)/librte_netdp/include \
           -I$(RTE_ODP)/librte_netdpsock/include
 
 LDLIBS += $(RTE_ODP)/librte_netdpsock/librte_netdpsock.a \
