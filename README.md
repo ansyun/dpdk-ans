@@ -258,4 +258,4 @@ $ sudo sysctl -w kernel.randomize_va_space=0
 -------
 BSD LICENSE, you may use netdp freely.
 
-For free support, please use netdp team mail list at zimeiw@163.com. or QQ Group:86883521
+For free support, please use netdp team mail list at zimeiw@163.com, or QQ Group:86883521, or https://dpdk-odp.slack.com.
