@@ -252,7 +252,12 @@ EAL: This may cause issues with mapping memory into secondary processes
 $ sudo sysctl -w kernel.randomize_va_space=0
 ```
 - You shall modify the NIC configuration in odp_main.c based on your NIC type.
+- Check if your NIC support HW checksum, if don't support it, shall change the code in odp_main.c as below.
 
+```
+init_conf.hw_ip_checksum = NETDP_HW_CHKSUM_DISABLE;
+```
+- Netdp didn't support loopback interface, so socket client and server can't be in the same netdp tcp/ip stack.
 
 ####Support
 -------
