@@ -132,9 +132,8 @@ static  struct rte_eth_txconf odp_tx_conf = {
 
 #endif 
 
-#if 0
 
-static const struct rte_eth_rxconf odp_rx_conf = 
+static struct rte_eth_rxconf odp_rx_conf = 
 {
 	.rx_thresh = 
        {
@@ -162,7 +161,6 @@ static struct rte_eth_txconf odp_tx_conf =
 			ETH_TXQ_FLAGS_NOXSUMTCP)*/
 
 };
-#endif
 
 
 static struct rte_eth_conf odp_port_conf = 
@@ -408,7 +406,7 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
     struct ether_addr eth_addr;
     struct rte_eth_dev_info dev_info;
     struct rte_eth_txconf *txconf;
-
+    struct rte_eth_rxconf *rxconf;
 
     nb_lcores = rte_lcore_count();
     n_tx_queue = nb_lcores;
@@ -469,10 +467,17 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
             if (odp_port_conf.rxmode.jumbo_frame)
                 txconf->txq_flags = 0;
 
+            printf("\t Deault-- tx pthresh:%d, tx hthresh:%d, tx wthresh:%d, txq_flags:0x%x \n", txconf->tx_thresh.pthresh,
+                txconf->tx_thresh.hthresh, txconf->tx_thresh.wthresh, txconf->txq_flags);
+
             /* for igb driver, shall set it as 16 to improve performance */
          //   txconf->tx_thresh.wthresh = 16;
-            printf("\t lcore id:%u, tx queue id:%d, socket id:%d \n", lcore_id, queueid, socketid);
+            txconf = &odp_tx_conf;
             
+            printf("\t lcore id:%u, tx queue id:%d, socket id:%d \n", lcore_id, queueid, socketid);
+            printf("\t Conf-- tx pthresh:%d, tx hthresh:%d, tx wthresh:%d, txq_flags:0x%x \n", txconf->tx_thresh.pthresh,
+                txconf->tx_thresh.hthresh, txconf->tx_thresh.wthresh, txconf->txq_flags);
+         
             ret = rte_eth_tx_queue_setup(portid, queueid, ODP_TX_DESC_DEFAULT, socketid, txconf);
             if (ret < 0)
             	rte_exit(EXIT_FAILURE, "rte_eth_tx_queue_setup: err=%d, " "port=%d\n", ret, portid);
@@ -514,10 +519,21 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
             else
                 socketid = 0;
 
+            rte_eth_dev_info_get(portid, &dev_info);
+            rxconf = &dev_info.default_rxconf;
+            
+            printf("Default-- rx pthresh:%d, rx hthresh:%d, rx wthresh:%d \n", rxconf->rx_thresh.pthresh,
+                rxconf->rx_thresh.hthresh, rxconf->rx_thresh.wthresh);
+
+            rxconf = &odp_rx_conf;
+
             printf("port id:%d, rx queue id: %d, socket id:%d \n", portid, queueid, socketid);
 
+            printf("Conf-- rx pthresh:%d, rx hthresh:%d, rx wthresh:%d \n", rxconf->rx_thresh.pthresh,
+                rxconf->rx_thresh.hthresh, rxconf->rx_thresh.wthresh);
+
             /* use NIC default rx conf */
-            ret = rte_eth_rx_queue_setup(portid, queueid, ODP_RX_DESC_DEFAULT, socketid, NULL, odp_pktmbuf_pool[socketid]);
+            ret = rte_eth_rx_queue_setup(portid, queueid, ODP_RX_DESC_DEFAULT, socketid, rxconf, odp_pktmbuf_pool[socketid]);
             if (ret < 0)
                 rte_exit(EXIT_FAILURE, "rte_eth_rx_queue_setup: err=%d," "port=%d\n", ret, portid);
         }
