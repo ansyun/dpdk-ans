@@ -207,6 +207,17 @@ int netdpsock_accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
  */
 int netdpsock_close(int fd);
 
+/**
+ * Shutdown a socket.
+ *
+ * @param       
+ * @param  SHUT_RD,  SHUT_WR,  SHUT_RDWR  have  the  value  0,  1,  2, respectively
+ *
+ * @return  
+ * Returns zero on success.  On error, -1 is returned, and errno is set appropriately.
+ */
+int netdpsock_shutdown(int sockfd, int how);
+
 
 /**
  * Create a epoll socket.
