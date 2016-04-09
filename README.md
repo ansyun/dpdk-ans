@@ -1,14 +1,14 @@
 ####TCP/IP stack for dpdk
 --------------
-Netdp is porting from [FreeBSD](http://freebsd.org) TCP/IP stack, and provide a userspace TCP/IP stack for use with the Intel [dpdk](http://dpdk.org/). 
+ANS(accelerated network stack) is porting from [FreeBSD](http://freebsd.org) TCP/IP stack, and provide a userspace TCP/IP stack for use with the Intel [dpdk](http://dpdk.org/). 
 
-- librte_netdp: TCP/IP stack static library. netdp use dpdk mbuf, ring, memzone, mempool, timer, spinlock. so zero copy mbuf between dpdk and netdp. 
+- librte_netdp: TCP/IP stack static library. ANS use dpdk mbuf, ring, memzone, mempool, timer, spinlock. so zero copy mbuf between dpdk and ANS. 
 
-- librte_netdpsock: Netdp socket lib for application, zero copy between netdp and application.
+- librte_netdpsock: ANS socket lib for application, zero copy between ANS and application.
 
-- netdp_cmd: Command for configure netdp tcp/ip stack.
+- netdp_cmd: Command for configure ANS tcp/ip stack.
  
-- netdp_test: Example application with netdp for testing netdp tcp/ip stack
+- netdp_test: Example application with ANS for testing ANS tcp/ip stack
 
 Support environment
   - EAL is based on dpdk-2.2.0
@@ -20,8 +20,8 @@ Support environment
 gcc version 4.8.4 (Ubuntu 4.8.4-2ubuntu1~14.04)
 
 Support feature:
- - Netdp initialize
- - Ether, zero copy between NIC and netdp TCP/IP stack.
+ - ANS initialize
+ - Ether, zero copy between NIC and ANS TCP/IP stack.
  - ARP, ARP timeout
  - IP layer, IP fragmentation and reassemble
  - Routing
@@ -53,7 +53,7 @@ netdpsock    |               |               |
              fd              fd              fd
              |               |               |
 --------------------------------------------------
-netdp        |               |               |
+ANS          |               |               |
          |-------|       |-------|       |-------|
          | TCP   |       |  TCP  |       | TCP   |
          |       |       |       |       |       |
@@ -75,10 +75,10 @@ netdp        |               |               |
  - IP/ARP/ICMP are shared between lcores.
  - APP process runs as a tcp server.
   - If App process only creates one listen socket, the listen socket only listens on one lcore and accept tcp connections from the lcore, so the APP process number shall large than the lcore number. The listen sockets of APP processes are created on each lcore averagely. For example: opendp(with -c 0x3) run on two lcore, shall run two nginx(only run master ), one nginx listens on lcore0, another nginx listens on lcore1.
-  - If App process creates many listen sockets, the listen sockets number shall be equal to the lcore numbers. these listen sockets can be created on each lcore averagely too. For example: opendp(with -c 0x3) run on two lcore, redis server(one process) shall create two listen socket, one listen socket is created on lcore0, another listen socket is created on lcore1.
+  - If App process creates many listen sockets, the listen sockets number shall be equal to the lcore numbers. these listen sockets can be created on each lcore averagely too. For example: ans(with -c 0x3) run on two lcore, redis server(one process) shall create two listen socket, one listen socket is created on lcore0, another listen socket is created on lcore1.
  - APP process runs as a tcp client, app process can communicate with each lcore. The tcp connection can be located in specified lcore automaticly.
  - APP process can bind the same port if enable reuseport, APP process could accept tcp connection by round robin.
- - If NIC don't support multi queue or RSS, shall enhance opendp_main.c, reserve one lcore to receive and send packets from NIC, and distribute packets to lcores of netdp tcp stack by software RSS.
+ - If NIC don't support multi queue or RSS, shall enhance opendp_main.c, reserve one lcore to receive and send packets from NIC, and distribute packets to lcores of ANS tcp stack by software RSS.
 
 ####Performance Testing
 --------------
@@ -95,7 +95,7 @@ netdp        |               |               |
     |--------------------------------------| 
     |      TCP Server accept performance   |
     |--------------------------------------| 
-    | Linux with epoll | NETDP with epoll  | 
+    | Linux with epoll |   ANS with epoll  | 
     |    (Multi core)  |    (one core)     |
     |--------------------------------------|
     | 53k connection/s | 43k connection/s  | 
@@ -145,7 +145,7 @@ Communication(synchronization)  9 runtime:	 0.736285 s
 ====ENV=== 
 CPU:Intel(R) Xeon(R) CPU E5-2430 0 @ 2.20GHz.
 NIC:Intel Corporation 82576 Gigabit Network Connection (rev 01) 
-OPENDP run on a lcore.
+ANS run on a lcore.
 
 root@h163:~/dpdk-redis# ./src/redis-benchmark -h 2.2.2.2  -p 6379 -n 100000 -c 50 -q
 PING_INLINE: 86655.11 requests per second
@@ -169,7 +169,7 @@ MSET (10 keys): 66401.06 requests per second
 ```
 CPU:Intel(R) Xeon(R) CPU E5-2430 0 @ 2.20GHz.
 NIC:Intel Corporation 82576 Gigabit Network Connection (rev 01) 
-OPENDP run on a lcore.
+ANS run on a lcore.
 examples/http_server run as http server.
 
 root@h163:~# ab -n 30000 -c 500 2.2.2.2:8089/
@@ -241,18 +241,13 @@ You can get more information and instructions from [wiki page](https://github.co
 
 ####Notes
 -------
-- Netdp socket application run as a secondary dpdk process, If you got below log, shall execute below commands to disable ASLR.
+- ANS socket application run as a secondary dpdk process, If you got below log, shall execute below commands to disable ASLR.
 ```
 EAL: WARNING: Address Space Layout Randomization (ASLR) is enabled in the kernel.
 EAL: This may cause issues with mapping memory into secondary processes
 $ sudo sysctl -w kernel.randomize_va_space=0
 ```
 - You shall modify the NIC configuration in odp_main.c based on your NIC type.
-- Check if your NIC support HW checksum, if don't support it, shall change the code in odp_main.c as below.
-
-```
-init_conf.hw_ip_checksum = NETDP_HW_CHKSUM_DISABLE;
-```
 - Netdp didn't support loopback interface, so socket client and server can't be in the same netdp tcp/ip stack.
 
 ####Support
