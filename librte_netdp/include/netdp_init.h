@@ -37,10 +37,6 @@
 
 #define NETDP_MAX_NB_SOCKETS 8
 
-
-#define NETDP_HW_CHKSUM_DISABLE 0     /* NIC don't support hardware checksum */
-#define NETDP_HW_CHKSUM_ENABLE   1     /* NIC support hardware checksum */
-
 #define NETDP_HW_RSS_DISABLE 0     /* NIC don't support RSS */
 #define NETDP_HW_RSS_ENABLE   1     /* NIC support RSS */
 
@@ -54,7 +50,6 @@ struct netdp_init_config
     uint64_t lcore_mask;                                                                   /* lcore which used to run netdp */
     uint32_t max_sock_conn;                                                            /* support max sock connection */
     uint32_t max_tcp_conn_per_lcore;                                            /* shall be power of 2 */
-    uint8_t   hw_ip_checksum;                                                          /* If HW IP checksum enable */
     uint8_t   hw_rss;                                                                          /* If HW RSS enable */
     struct rte_mempool *pktmbuf_pool[NETDP_MAX_NB_SOCKETS];  /* mbuf pools for each sockets */
 } __rte_cache_aligned;

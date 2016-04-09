@@ -171,7 +171,7 @@ static struct rte_eth_conf odp_port_conf =
 		.max_rx_pkt_len = ETHER_MAX_LEN,
 		.split_hdr_size = 0,
 		.header_split   = 0,      /**< Header Split disabled */
-		.hw_ip_checksum = 1, /**< IP checksum offload enabled */
+		.hw_ip_checksum = 1, /**< IP/UDP/TCP checksum offload enable */
 		.hw_vlan_filter = 0,     /**< VLAN filtering disabled */
 		.jumbo_frame    = 0,   /**< Jumbo Frame Support disabled */
 		.hw_strip_crc   = 0,    /**< CRC stripped by hardware */
@@ -188,17 +188,6 @@ static struct rte_eth_conf odp_port_conf =
 		.mq_mode = ETH_MQ_TX_NONE,
 	},
 };
-
-/*
-static uint8_t rss_intel_key[NETDP_RSS_KEY_SIZE] =
-{
-	0x6D, 0x5A, 0x56, 0xDA, 0x25, 0x5B, 0x0E, 0xC2,
-	0x41, 0x67, 0x25, 0x3D, 0x43, 0xA3, 0x8F, 0xB0,
-	0xD0, 0xCA, 0x2B, 0xCB, 0xAE, 0x7B, 0x30, 0xB4,
-	0x77, 0xCB, 0x2D, 0xA3, 0x80, 0x30, 0xF2, 0x0C,
-	0x6A, 0x42, 0xB7, 0x3B, 0xBE, 0xAC, 0x01, 0xFA,
-};
-*/
 
 /**********************************************************************
 *@description:
@@ -934,7 +923,6 @@ int main(int argc, char **argv)
     printf("core mask: %x, sockets number:%d, lcore number:%d \n", odp_user_conf.lcore_mask, odp_user_conf.socket_nb, odp_user_conf.lcore_nb);
 
     printf("start to init netdp \n");
-    init_conf.hw_ip_checksum = NETDP_HW_CHKSUM_ENABLE;
     init_conf.max_sock_conn = 1024 * 130;
     init_conf.max_tcp_conn_per_lcore = 1024 * 60;
 
