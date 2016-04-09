@@ -30,20 +30,20 @@
  *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __ODP_KNI_H__
-#define __ODP_KNI_H__
+#ifndef __ANS_KNI_H__
+#define __ANS_KNI_H__
 
 #include <rte_mempool.h>
-#include "odp_main.h"
+#include "ans_main.h"
 
 /* Load Configure Information for ODP KNI module */
-int odp_kni_config(struct odp_user_config * common_config, struct rte_mempool * pktmbuf_pool[]);
+int ans_kni_config(struct ans_user_config * common_config, struct rte_mempool * pktmbuf_pool[]);
 /* Destory ODP KNI module */
-int odp_kni_destory();
+int ans_kni_destory();
 /* Run ODP KNI module, should be called at main loop each lcore */
-void odp_kni_main();
+void ans_kni_main();
 /* send packets which cannot be proceed to network stack */
-int odp_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned port_id);
+int ans_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned port_id);
 
 #endif
 

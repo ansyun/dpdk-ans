@@ -31,8 +31,8 @@
  *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _ODP_MAIN_H_
-#define _ODP_MAIN_H_
+#ifndef _ANS_MAIN_H_
+#define _ANS_MAIN_H_
 
 /*
  * RX and TX Prefetch, Host, and Write-back threshold values should be
@@ -77,7 +77,7 @@
 
 #define MAX_LCORE_PARAMS 512
 
-struct odp_lcore_params 
+struct ans_lcore_params 
 {
 	uint8_t port_id;
 	uint8_t queue_id;
@@ -85,20 +85,20 @@ struct odp_lcore_params
 } __rte_cache_aligned;
 
 
-struct odp_mbuf_table 
+struct ans_mbuf_table 
 {
 	uint16_t len;
 	struct rte_mbuf *m_table[MAX_PKT_BURST];
 };
 
-struct odp_lcore_rx_queue 
+struct ans_lcore_rx_queue 
 {
 	uint8_t port_id;
 	uint8_t queue_id;
 } __rte_cache_aligned;
 
 
-struct odp_user_config
+struct ans_user_config
 {
     uint8_t socket_nb;
     uint8_t lcore_nb;
@@ -110,15 +110,15 @@ struct odp_user_config
     uint8_t jumbo_frame_on;
     uint16_t max_rx_pkt_len;
     uint16_t lcore_param_nb;
-    struct odp_lcore_params lcore_param[MAX_LCORE_PARAMS];
+    struct ans_lcore_params lcore_param[MAX_LCORE_PARAMS];
 };
 
-struct odp_lcore_config 
+struct ans_lcore_config 
 {
 	uint16_t n_rx_queue;
-	struct odp_lcore_rx_queue rx_queue_list[MAX_RX_QUEUE_PER_LCORE];
+	struct ans_lcore_rx_queue rx_queue_list[MAX_RX_QUEUE_PER_LCORE];
 	uint16_t tx_queue_id[RTE_MAX_ETHPORTS];
-	struct odp_mbuf_table tx_mbufs[RTE_MAX_ETHPORTS];
+	struct ans_mbuf_table tx_mbufs[RTE_MAX_ETHPORTS];
 } __rte_cache_aligned;
 
 #define MAX_NB_SOCKETS    8
@@ -129,10 +129,10 @@ struct odp_lcore_config
 /*
  * Configurable number of RX/TX ring descriptors
  */
-#define ODP_RX_DESC_DEFAULT 128
-#define ODP_TX_DESC_DEFAULT 512
+#define ANS_RX_DESC_DEFAULT 128
+#define ANS_TX_DESC_DEFAULT 512
 
 #define TIMER_RESOLUTION_CYCLES 20000000ULL /* around 10ms at 2 Ghz */
 
 
-#endif /* _ODP_MAIN_H_ */
+#endif /* _ANS_MAIN_H_ */

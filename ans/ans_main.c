@@ -80,15 +80,15 @@
 
 /* add by netdp_team -- end */
 
-#include "odp_main.h"
-#include "odp_param.h"
-#include "odp_kni.h"
+#include "ans_main.h"
+#include "ans_param.h"
+#include "ans_kni.h"
 
-static struct odp_user_config  odp_user_conf;
-static struct odp_lcore_config odp_lcore_conf[RTE_MAX_LCORE];
-static struct rte_mempool *odp_pktmbuf_pool[MAX_NB_SOCKETS];
+static struct ans_user_config  ans_user_conf;
+static struct ans_lcore_config ans_lcore_conf[RTE_MAX_LCORE];
+static struct rte_mempool *ans_pktmbuf_pool[MAX_NB_SOCKETS];
 
-static struct odp_lcore_params odp_lcore_params_default[] = 
+static struct ans_lcore_params ans_lcore_params_default[] = 
 {
 	{0, 0, 0},
 };
@@ -96,7 +96,7 @@ static struct odp_lcore_params odp_lcore_params_default[] =
 /* these config are used for kvm virtio nic */
 #if 0
 
-static  struct rte_eth_conf odp_port_conf = {
+static  struct rte_eth_conf ans_port_conf = {
     .rxmode = {
         .max_rx_pkt_len = ETHER_MAX_LEN,
         .split_hdr_size = 0,
@@ -111,7 +111,7 @@ static  struct rte_eth_conf odp_port_conf = {
     },
 };
 
-static  struct rte_eth_rxconf odp_rx_conf = {
+static  struct rte_eth_rxconf ans_rx_conf = {
     .rx_thresh = {
         .pthresh = RX_PTHRESH,
         .hthresh = RX_HTHRESH,
@@ -119,7 +119,7 @@ static  struct rte_eth_rxconf odp_rx_conf = {
     },
 };
 
-static  struct rte_eth_txconf odp_tx_conf = {
+static  struct rte_eth_txconf ans_tx_conf = {
     .tx_thresh = {
         .pthresh = TX_PTHRESH,
         .hthresh = TX_HTHRESH,
@@ -133,7 +133,7 @@ static  struct rte_eth_txconf odp_tx_conf = {
 #endif 
 
 
-static struct rte_eth_rxconf odp_rx_conf = 
+static struct rte_eth_rxconf ans_rx_conf = 
 {
 	.rx_thresh = 
        {
@@ -144,7 +144,7 @@ static struct rte_eth_rxconf odp_rx_conf =
 	.rx_free_thresh = 32,
 };
 
-static struct rte_eth_txconf odp_tx_conf = 
+static struct rte_eth_txconf ans_tx_conf = 
 {
 	.tx_thresh = 
        {
@@ -163,7 +163,7 @@ static struct rte_eth_txconf odp_tx_conf =
 };
 
 
-static struct rte_eth_conf odp_port_conf = 
+static struct rte_eth_conf ans_port_conf = 
 {
 	.rxmode = 
        {
@@ -200,7 +200,7 @@ static struct rte_eth_conf odp_port_conf =
 *@return values: 
 *
 **********************************************************************/
-static void odp_check_ports_link_status(uint8_t port_num, uint32_t port_mask)
+static void ans_check_ports_link_status(uint8_t port_num, uint32_t port_mask)
 {
     uint8_t check_interval = 100; /* 100ms */
     uint8_t max_check_time = 90; /* 9s (90 * 100ms) in total */
@@ -270,7 +270,7 @@ static void odp_check_ports_link_status(uint8_t port_num, uint32_t port_mask)
 *@return values: 
 *
 **********************************************************************/
-static int odp_init_lcore_rx_queues(struct odp_user_config  *user_conf, struct odp_lcore_config *lcore_conf)
+static int ans_init_lcore_rx_queues(struct ans_user_config  *user_conf, struct ans_lcore_config *lcore_conf)
 {
     uint16_t i, nb_rx_queue;
     uint8_t lcore;
@@ -306,13 +306,13 @@ static int odp_init_lcore_rx_queues(struct odp_user_config  *user_conf, struct o
 *@return values: 
 *
 **********************************************************************/
-static int odp_init_mbuf_pool(unsigned nb_mbuf, struct odp_user_config  *user_conf)
+static int ans_init_mbuf_pool(unsigned nb_mbuf, struct ans_user_config  *user_conf)
 {
     int socketid;
     unsigned lcore_id;
     char str[64];
 
-    memset(odp_pktmbuf_pool, 0, sizeof(odp_pktmbuf_pool));
+    memset(ans_pktmbuf_pool, 0, sizeof(ans_pktmbuf_pool));
 
     for (lcore_id = 0; lcore_id < RTE_MAX_LCORE; lcore_id++) 
     {
@@ -329,13 +329,13 @@ static int odp_init_mbuf_pool(unsigned nb_mbuf, struct odp_user_config  *user_co
             rte_exit(EXIT_FAILURE, "Socket %d of lcore %u is out of range %d\n", socketid, lcore_id, MAX_NB_SOCKETS);
         }
         
-        if (odp_pktmbuf_pool[socketid] == NULL) 
+        if (ans_pktmbuf_pool[socketid] == NULL) 
         {
-            snprintf(str, sizeof(str), "odp_mbuf_pool_%d", socketid);
-            odp_pktmbuf_pool[socketid] = rte_pktmbuf_pool_create(str, nb_mbuf, MEMPOOL_CACHE_SIZE, 0, RTE_MBUF_DEFAULT_BUF_SIZE, socketid);
+            snprintf(str, sizeof(str), "ans_mbuf_pool_%d", socketid);
+            ans_pktmbuf_pool[socketid] = rte_pktmbuf_pool_create(str, nb_mbuf, MEMPOOL_CACHE_SIZE, 0, RTE_MBUF_DEFAULT_BUF_SIZE, socketid);
 
             
-            if (odp_pktmbuf_pool[socketid] == NULL)
+            if (ans_pktmbuf_pool[socketid] == NULL)
                 rte_exit(EXIT_FAILURE, "Cannot init mbuf pool on socket %d\n", socketid);
             else
                 printf("Allocated mbuf pool on socket %d, mbuf number: %d \n", socketid, nb_mbuf);
@@ -358,7 +358,7 @@ static int odp_init_mbuf_pool(unsigned nb_mbuf, struct odp_user_config  *user_co
 *@return values: 
 *
 **********************************************************************/
-static uint8_t odp_get_port_rx_queues_nb(const uint8_t port, struct odp_user_config  *user_conf)
+static uint8_t ans_get_port_rx_queues_nb(const uint8_t port, struct ans_user_config  *user_conf)
 {
     int queue = -1;
     uint16_t i;
@@ -382,7 +382,7 @@ static uint8_t odp_get_port_rx_queues_nb(const uint8_t port, struct odp_user_con
 *@return values: 
 *
 **********************************************************************/
-static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user_conf, struct odp_lcore_config *lcore_conf)
+static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user_conf, struct ans_lcore_config *lcore_conf)
 {
     int ret;
     uint8_t portid; 
@@ -421,14 +421,14 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
         printf("\t max_rx_queues %d: max_tx_queues:%d \n", dev_info.max_rx_queues, dev_info.max_tx_queues);
         printf("\t rx_offload_capa %d: tx_offload_capa:%d \n", dev_info.rx_offload_capa, dev_info.tx_offload_capa);
 
-        nb_rx_queue = odp_get_port_rx_queues_nb(portid, user_conf);
+        nb_rx_queue = ans_get_port_rx_queues_nb(portid, user_conf);
 
         if(max_rx_queue < nb_rx_queue)
             max_rx_queue = nb_rx_queue;
         
         printf("\t Creating queues: rx queue number=%d tx queue number=%u... \n", nb_rx_queue, (unsigned)n_tx_queue );
 
-        ret = rte_eth_dev_configure(portid, nb_rx_queue, (uint16_t)n_tx_queue, &odp_port_conf);
+        ret = rte_eth_dev_configure(portid, nb_rx_queue, (uint16_t)n_tx_queue, &ans_port_conf);
         if (ret < 0)
         	rte_exit(EXIT_FAILURE, "Cannot configure device: err=%d, port=%d\n", ret, portid);
 
@@ -453,7 +453,7 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
 
             rte_eth_dev_info_get(portid, &dev_info);
             txconf = &dev_info.default_txconf;
-            if (odp_port_conf.rxmode.jumbo_frame)
+            if (ans_port_conf.rxmode.jumbo_frame)
                 txconf->txq_flags = 0;
 
             printf("\t Deault-- tx pthresh:%d, tx hthresh:%d, tx wthresh:%d, txq_flags:0x%x \n", txconf->tx_thresh.pthresh,
@@ -461,13 +461,13 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
 
             /* for igb driver, shall set it as 16 to improve performance */
          //   txconf->tx_thresh.wthresh = 16;
-            txconf = &odp_tx_conf;
+            txconf = &ans_tx_conf;
             
             printf("\t lcore id:%u, tx queue id:%d, socket id:%d \n", lcore_id, queueid, socketid);
             printf("\t Conf-- tx pthresh:%d, tx hthresh:%d, tx wthresh:%d, txq_flags:0x%x \n", txconf->tx_thresh.pthresh,
                 txconf->tx_thresh.hthresh, txconf->tx_thresh.wthresh, txconf->txq_flags);
          
-            ret = rte_eth_tx_queue_setup(portid, queueid, ODP_TX_DESC_DEFAULT, socketid, txconf);
+            ret = rte_eth_tx_queue_setup(portid, queueid, ANS_TX_DESC_DEFAULT, socketid, txconf);
             if (ret < 0)
             	rte_exit(EXIT_FAILURE, "rte_eth_tx_queue_setup: err=%d, " "port=%d\n", ret, portid);
 
@@ -480,13 +480,13 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
 
     }
 
-    nb_mbuf = RTE_MAX((nb_ports*nb_rx_queue*ODP_RX_DESC_DEFAULT +	
+    nb_mbuf = RTE_MAX((nb_ports*nb_rx_queue*ANS_RX_DESC_DEFAULT +	
 				nb_ports*nb_lcores*MAX_PKT_BURST +					
-				nb_ports*n_tx_queue*ODP_TX_DESC_DEFAULT +	
+				nb_ports*n_tx_queue*ANS_TX_DESC_DEFAULT +	
 				nb_lcores*MEMPOOL_CACHE_SIZE), MAX_MBUF_NB);
 				
     /* init memory */
-    ret = odp_init_mbuf_pool(nb_mbuf, user_conf);
+    ret = ans_init_mbuf_pool(nb_mbuf, user_conf);
     if (ret < 0)
     	rte_exit(EXIT_FAILURE, "init_mem failed\n");
 
@@ -514,7 +514,7 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
             printf("Default-- rx pthresh:%d, rx hthresh:%d, rx wthresh:%d \n", rxconf->rx_thresh.pthresh,
                 rxconf->rx_thresh.hthresh, rxconf->rx_thresh.wthresh);
 
-            rxconf = &odp_rx_conf;
+            rxconf = &ans_rx_conf;
 
             printf("port id:%d, rx queue id: %d, socket id:%d \n", portid, queueid, socketid);
 
@@ -522,7 +522,7 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
                 rxconf->rx_thresh.hthresh, rxconf->rx_thresh.wthresh);
 
             /* use NIC default rx conf */
-            ret = rte_eth_rx_queue_setup(portid, queueid, ODP_RX_DESC_DEFAULT, socketid, rxconf, odp_pktmbuf_pool[socketid]);
+            ret = rte_eth_rx_queue_setup(portid, queueid, ANS_RX_DESC_DEFAULT, socketid, rxconf, ans_pktmbuf_pool[socketid]);
             if (ret < 0)
                 rte_exit(EXIT_FAILURE, "rte_eth_rx_queue_setup: err=%d," "port=%d\n", ret, portid);
         }
@@ -544,7 +544,7 @@ static int odp_init_ports(unsigned short nb_ports, struct odp_user_config  *user
 *@return values: 
 *
 **********************************************************************/
-static int odp_start_ports(unsigned short nb_ports, struct odp_user_config  *user_conf)
+static int ans_start_ports(unsigned short nb_ports, struct ans_user_config  *user_conf)
 {
     int ret;
     uint8_t portid;
@@ -571,7 +571,7 @@ static int odp_start_ports(unsigned short nb_ports, struct odp_user_config  *use
     		rte_eth_promiscuous_enable(portid);
     }
 
-    odp_check_ports_link_status((uint8_t)nb_ports, user_conf->port_mask);
+    ans_check_ports_link_status((uint8_t)nb_ports, user_conf->port_mask);
 
     return 0;
 }
@@ -586,7 +586,7 @@ static int odp_start_ports(unsigned short nb_ports, struct odp_user_config  *use
 *@return values: 
 *
 **********************************************************************/
-static inline int odp_send_burst(struct odp_lcore_config *qconf, uint16_t n, uint8_t port)
+static inline int ans_send_burst(struct ans_lcore_config *qconf, uint16_t n, uint8_t port)
 {
     struct rte_mbuf **m_table;
     int ret;
@@ -618,15 +618,15 @@ static inline int odp_send_burst(struct odp_lcore_config *qconf, uint16_t n, uin
 *@return values: 
 *
 **********************************************************************/
-static inline int odp_send_single_packet(struct rte_mbuf *m, uint8_t port)
+static inline int ans_send_single_packet(struct rte_mbuf *m, uint8_t port)
 {
     uint32_t lcore_id;
     uint16_t len;
-    struct odp_lcore_config *qconf;
+    struct ans_lcore_config *qconf;
 
     lcore_id = rte_lcore_id();
 
-    qconf = &odp_lcore_conf[lcore_id];
+    qconf = &ans_lcore_conf[lcore_id];
     len = qconf->tx_mbufs[port].len;
     qconf->tx_mbufs[port].m_table[len] = m;
     len++;
@@ -634,7 +634,7 @@ static inline int odp_send_single_packet(struct rte_mbuf *m, uint8_t port)
     /* enough pkts to be sent */
     if (unlikely(len == MAX_TX_BURST))
     {
-        odp_send_burst(qconf, MAX_TX_BURST, port);
+        ans_send_burst(qconf, MAX_TX_BURST, port);
         len = 0;
     }
 
@@ -653,7 +653,7 @@ static inline int odp_send_single_packet(struct rte_mbuf *m, uint8_t port)
 *@return values: 
 *
 **********************************************************************/
-static void odp_init_timer()
+static void ans_init_timer()
 {
     /* init RTE timer library */
     rte_timer_subsystem_init();
@@ -671,17 +671,17 @@ static void odp_init_timer()
 *@return values: 
 *
 **********************************************************************/
-static inline void odp_to_linux(unsigned port_id, struct rte_mbuf *m)
+static inline void ans_to_linux(unsigned port_id, struct rte_mbuf *m)
 {
     int ret = 0;
 
-    if(odp_user_conf.kni_on != 1)
+    if(ans_user_conf.kni_on != 1)
     {
         rte_pktmbuf_free(m);
         return;
     }
 
-    ret = odp_kni_sendpkt_burst(&m, 1, port_id);
+    ret = ans_kni_sendpkt_burst(&m, 1, port_id);
     if(ret != 0 )
         rte_pktmbuf_free(m);
     
@@ -699,7 +699,7 @@ static inline void odp_to_linux(unsigned port_id, struct rte_mbuf *m)
 *@return values: 
 *
 **********************************************************************/
-static int odp_main_loop(__attribute__((unused)) void *dummy)
+static int ans_main_loop(__attribute__((unused)) void *dummy)
 {
     int ret;
     unsigned nb_ports;
@@ -707,7 +707,7 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
     unsigned lcore_id;
     uint64_t prev_tsc, diff_tsc, cur_tsc;
     uint8_t portid, queueid;
-    struct odp_lcore_config *qconf;
+    struct ans_lcore_config *qconf;
     uint64_t timer_prev_tsc = 0, timer_cur_tsc, timer_diff_tsc;
     struct rte_mbuf *pkts_burst[MAX_PKT_BURST];
 
@@ -716,7 +716,7 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
     prev_tsc = 0;
 
     lcore_id = rte_lcore_id();
-    qconf = &odp_lcore_conf[lcore_id];
+    qconf = &ans_lcore_conf[lcore_id];
 
     if (qconf->n_rx_queue == 0) 
     {
@@ -777,7 +777,7 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
                 if (qconf->tx_mbufs[portid].len == 0)
                     continue;
                 
-                odp_send_burst(qconf, qconf->tx_mbufs[portid].len,  portid);
+                ans_send_burst(qconf, qconf->tx_mbufs[portid].len,  portid);
                 
                 qconf->tx_mbufs[portid].len = 0;
             }
@@ -811,7 +811,7 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
 
                 ret = netdp_packet_handle(pkts_burst[j], portid);
                 if(ret == NETDP_MBUF_CONTINUE)
-                    odp_to_linux(portid, pkts_burst[j]);
+                    ans_to_linux(portid, pkts_burst[j]);
       
                 /* add by netdp_team ---end */
             }
@@ -824,15 +824,15 @@ static int odp_main_loop(__attribute__((unused)) void *dummy)
 
                 ret = netdp_packet_handle(pkts_burst[j], portid);
                if(ret == NETDP_MBUF_CONTINUE)
-                   odp_to_linux(portid, pkts_burst[j]);
+                   ans_to_linux(portid, pkts_burst[j]);
           
                 /* add by netdp_team ---end */
             }
         }
 
         /* to support KNI, at 2014-12-15 */
-        if(odp_user_conf.kni_on == 1)
-            odp_kni_main();
+        if(ans_user_conf.kni_on == 1)
+            ans_kni_main();
         
     }
 }
@@ -858,12 +858,12 @@ int main(int argc, char **argv)
     struct netdp_init_config init_conf;
 
     
-    memset(&odp_user_conf, 0, sizeof(odp_user_conf));
-    memset(odp_lcore_conf, 0, sizeof(odp_lcore_conf));
+    memset(&ans_user_conf, 0, sizeof(ans_user_conf));
+    memset(ans_lcore_conf, 0, sizeof(ans_lcore_conf));
 
-    odp_user_conf.numa_on = 1;
-    odp_user_conf.lcore_param_nb = sizeof(odp_lcore_params_default) / sizeof(odp_lcore_params_default[0]);
-    rte_memcpy(odp_user_conf.lcore_param, odp_lcore_params_default, sizeof(odp_lcore_params_default));
+    ans_user_conf.numa_on = 1;
+    ans_user_conf.lcore_param_nb = sizeof(ans_lcore_params_default) / sizeof(ans_lcore_params_default[0]);
+    rte_memcpy(ans_user_conf.lcore_param, ans_lcore_params_default, sizeof(ans_lcore_params_default));
 
     /* init EAL */   
 
@@ -875,24 +875,24 @@ int main(int argc, char **argv)
     argv += ret;
     
     /* parse application arguments (after the EAL ones) */
-    ret = odp_parse_args(argc, argv, &odp_user_conf);
+    ret = ans_parse_args(argc, argv, &ans_user_conf);
     if (ret < 0)
     	rte_exit(EXIT_FAILURE, "Invalid ODP parameters\n");
 
 
-    if(odp_user_conf.jumbo_frame_on)
+    if(ans_user_conf.jumbo_frame_on)
     {
-        odp_port_conf.rxmode.jumbo_frame = 1;
-        odp_port_conf.rxmode.max_rx_pkt_len = odp_user_conf.max_rx_pkt_len;
+        ans_port_conf.rxmode.jumbo_frame = 1;
+        ans_port_conf.rxmode.max_rx_pkt_len = ans_user_conf.max_rx_pkt_len;
     }
 
-    odp_user_conf.lcore_nb = rte_lcore_count();
+    ans_user_conf.lcore_nb = rte_lcore_count();
 
-    if (odp_check_lcore_params(&odp_user_conf) < 0)
+    if (ans_check_lcore_params(&ans_user_conf) < 0)
         rte_exit(EXIT_FAILURE, "check_lcore_params failed\n");
 
 
-    ret = odp_init_lcore_rx_queues(&odp_user_conf, odp_lcore_conf);
+    ret = ans_init_lcore_rx_queues(&ans_user_conf, ans_lcore_conf);
     if (ret < 0)
     	rte_exit(EXIT_FAILURE, "init_lcore_rx_queues failed\n");
 
@@ -903,33 +903,33 @@ int main(int argc, char **argv)
     	nb_ports = RTE_MAX_ETHPORTS;
 
 
-    ret = odp_check_port_config(nb_ports, &odp_user_conf);
+    ret = ans_check_port_config(nb_ports, &ans_user_conf);
     if (ret < 0)
     	rte_exit(EXIT_FAILURE, "check_port_config failed\n");
 
 
-    ret = odp_init_ports(nb_ports, &odp_user_conf, odp_lcore_conf);
+    ret = ans_init_ports(nb_ports, &ans_user_conf, ans_lcore_conf);
     if (ret < 0)
     	rte_exit(EXIT_FAILURE, "Init ports failed\n");
 
 
     /* add by netdp_team: support KNI interface at 2014-12-15 */
-    if(odp_user_conf.kni_on == 1)
-        odp_kni_config(&odp_user_conf, odp_pktmbuf_pool);
+    if(ans_user_conf.kni_on == 1)
+        ans_kni_config(&ans_user_conf, ans_pktmbuf_pool);
 
     
     /* add by netdp_team ---start */
-    odp_init_timer();
-    printf("core mask: %x, sockets number:%d, lcore number:%d \n", odp_user_conf.lcore_mask, odp_user_conf.socket_nb, odp_user_conf.lcore_nb);
+    ans_init_timer();
+    printf("core mask: %x, sockets number:%d, lcore number:%d \n", ans_user_conf.lcore_mask, ans_user_conf.socket_nb, ans_user_conf.lcore_nb);
 
     printf("start to init netdp \n");
     init_conf.max_sock_conn = 1024 * 130;
     init_conf.max_tcp_conn_per_lcore = 1024 * 60;
 
-    init_conf.lcore_mask = odp_user_conf.lcore_mask;
+    init_conf.lcore_mask = ans_user_conf.lcore_mask;
     for(i = 0 ; i < MAX_NB_SOCKETS; i++)
     {
-        init_conf.pktmbuf_pool[i] = odp_pktmbuf_pool[i];
+        init_conf.pktmbuf_pool[i] = ans_pktmbuf_pool[i];
     }
 
     ret = netdp_initialize(&init_conf);
@@ -937,7 +937,7 @@ int main(int argc, char **argv)
    	rte_exit(EXIT_FAILURE, "Init netdp fialed \n");
 
   
-    netdp_register(odp_send_single_packet);
+    netdp_register(ans_send_single_packet);
     /* add by netdp_team ---end */
 
     /* add by netdp_team for testing ---start */
@@ -948,7 +948,7 @@ int main(int argc, char **argv)
     for(portid= 0; portid < nb_ports; portid++)
     {
         /* skip ports that are not enabled */
-        if ((odp_user_conf.port_mask & (1 << portid)) == 0) 
+        if ((ans_user_conf.port_mask & (1 << portid)) == 0) 
         {
             printf("\nSkipping disabled port %d\n", portid);
             continue;
@@ -986,10 +986,10 @@ int main(int argc, char **argv)
     printf("\n");
     /* add by netdp_team ---end */
 
-    odp_start_ports(nb_ports, &odp_user_conf);
+    ans_start_ports(nb_ports, &ans_user_conf);
 
     /* launch per-lcore init on every lcore */
-    rte_eal_mp_remote_launch(odp_main_loop, NULL, CALL_MASTER);
+    rte_eal_mp_remote_launch(ans_main_loop, NULL, CALL_MASTER);
     RTE_LCORE_FOREACH_SLAVE(lcore_id){
     	if (rte_eal_wait_lcore(lcore_id) < 0)
     		return -1;

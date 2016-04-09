@@ -71,11 +71,11 @@
 #include <rte_malloc.h>
 #include <rte_kni.h>
 
-#include "odp_kni.h"
+#include "ans_kni.h"
 
 
-#ifndef ODP_KNI_RING_SIZE
-#define ODP_KNI_RING_SIZE   4096
+#ifndef ANS_KNI_RING_SIZE
+#define ANS_KNI_RING_SIZE   4096
 #endif
 
 #define PKT_BURST_SZ                    32
@@ -133,10 +133,10 @@ static struct rte_eth_conf port_conf =
 //static struct kni_interface_stats kni_stats[RTE_MAX_ETHPORTS];
 static int kni_change_mtu(uint8_t port_id, unsigned new_mtu);
 static int kni_config_network_interface(uint8_t port_id, uint8_t if_up);
-static int odp_kni_alloc(uint8_t port_id);
+static int ans_kni_alloc(uint8_t port_id);
 
 /* KNI Module Interface */
-int odp_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned port_id)
+int ans_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned port_id)
 {
     if(unlikely(kni_port_params_array[port_id] == NULL))
         return -ENOENT;
@@ -148,7 +148,7 @@ int odp_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned 
     return rte_ring_enqueue_bulk(ring,(void **)mbufs,nb_mbufs);
 }
 
-int odp_kni_init()
+int ans_kni_init()
 {
     for (int port = 0; port < RTE_MAX_ETHPORTS; port++) 
     {
@@ -156,13 +156,13 @@ int odp_kni_init()
         if(kni_port_params_array[port] == NULL)
             continue;
 
-        odp_kni_alloc(port);
+        ans_kni_alloc(port);
     }
 
     return 0;
 }
 
-int odp_kni_config(struct odp_user_config * common_config, struct rte_mempool * pktmbuf_pool[])
+int ans_kni_config(struct ans_user_config * common_config, struct rte_mempool * pktmbuf_pool[])
 {
     uint32_t portmask    = common_config->port_mask;
     unsigned lcore_item  = 0;
@@ -186,7 +186,7 @@ int odp_kni_config(struct odp_user_config * common_config, struct rte_mempool * 
         kni_port_params_array[port_id]->port_id  = port_id;
         kni_port_params_array[port_id]->lcore_id = lcore_id;
 
-        printf("odp_kni: port_id=%d,lcore_id=%d\n",port_id,lcore_id);
+        printf("ans_kni: port_id=%d,lcore_id=%d\n",port_id,lcore_id);
     }
 
     for(int i = 0; i < RTE_MAX_ETHPORTS; i++)
@@ -210,13 +210,13 @@ int odp_kni_config(struct odp_user_config * common_config, struct rte_mempool * 
     /* Invoke rte KNI init to preallocate the ports */
     rte_kni_init(port_id++);
 
-    odp_kni_init();
+    ans_kni_init();
 
     return 0;
 }
 
 
-int odp_kni_destory()
+int ans_kni_destory()
 {
     for (int port = 0; port < RTE_MAX_ETHPORTS; port++) 
     {
@@ -259,7 +259,7 @@ static int kni_free_kni(uint8_t port_id)
 }
 
 /* Alloc KNI Devices for PORT_ID */
-static int odp_kni_alloc(uint8_t port_id)
+static int ans_kni_alloc(uint8_t port_id)
 {
   uint8_t i;
   struct rte_kni *kni;
@@ -302,7 +302,7 @@ static int odp_kni_alloc(uint8_t port_id)
   char ring_name[32];
   snprintf(ring_name,sizeof(ring_name),"kni_ring_s%u_p%u",lcore_socket,port_id);
 
-  params[port_id]->ring = rte_ring_create(ring_name,ODP_KNI_RING_SIZE, lcore_socket,RING_F_SC_DEQ);
+  params[port_id]->ring = rte_ring_create(ring_name,ANS_KNI_RING_SIZE, lcore_socket,RING_F_SC_DEQ);
   
   if(!params[port_id]->ring)
     rte_exit(EXIT_FAILURE, "Fail to create ring for kni %s",ring_name);
@@ -383,7 +383,7 @@ static void kni_kni_to_eth(struct kni_port_params *p)
 }
 
 
-void odp_kni_main()
+void ans_kni_main()
 {
     uint8_t lcore_id = rte_lcore_id();
     struct kni_lcore_params * lcore = kni_lcore_params_array[lcore_id];

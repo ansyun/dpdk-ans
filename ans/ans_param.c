@@ -68,8 +68,8 @@
 #include <rte_udp.h>
 #include <rte_string_fns.h>
 
-#include "odp_main.h"
-#include "odp_param.h"
+#include "ans_main.h"
+#include "ans_param.h"
 
 
 /**********************************************************************
@@ -83,7 +83,7 @@
 *@return values: 
 *
 **********************************************************************/
-int odp_check_port_config(const unsigned nb_ports, struct odp_user_config *user_conf)
+int ans_check_port_config(const unsigned nb_ports, struct ans_user_config *user_conf)
 {
     unsigned portid;
     uint16_t i;
@@ -121,7 +121,7 @@ int odp_check_port_config(const unsigned nb_ports, struct odp_user_config *user_
 *@return values: 
 *
 **********************************************************************/
-int odp_check_lcore_params(struct odp_user_config *user_conf)
+int ans_check_lcore_params(struct ans_user_config *user_conf)
 {
     uint8_t queue, lcore;
     uint16_t i;
@@ -162,7 +162,7 @@ int odp_check_lcore_params(struct odp_user_config *user_conf)
 *@return values: 
 *
 **********************************************************************/
-static void odp_print_usage(const char *prgname)
+static void ans_print_usage(const char *prgname)
 {
 	printf ("%s [EAL options] -- -p PORTMASK -P"
 		"  [--config (port,queue,lcore)[,(port,queue,lcore]]"
@@ -188,7 +188,7 @@ static void odp_print_usage(const char *prgname)
 *@return values: 
 *
 **********************************************************************/
-static int odp_parse_max_pkt_len(const char *pktlen)
+static int ans_parse_max_pkt_len(const char *pktlen)
 {
 	char *end = NULL;
 	unsigned long len;
@@ -215,7 +215,7 @@ static int odp_parse_max_pkt_len(const char *pktlen)
 *@return values: 
 *
 **********************************************************************/
-static int odp_parse_portmask(const char *portmask)
+static int ans_parse_portmask(const char *portmask)
 {
 	char *end = NULL;
 	unsigned long pm;
@@ -242,7 +242,7 @@ static int odp_parse_portmask(const char *portmask)
 *@return values: 
 *
 **********************************************************************/
-static int odp_parse_config(const char *q_arg, struct odp_user_config *user_conf)
+static int ans_parse_config(const char *q_arg, struct ans_user_config *user_conf)
 {
     char s[256];
     const char *p, *p0 = q_arg;
@@ -316,7 +316,7 @@ static int odp_parse_config(const char *q_arg, struct odp_user_config *user_conf
 *@return values: 
 *
 **********************************************************************/
-int odp_parse_args(int argc, char **argv, struct odp_user_config *user_conf)
+int ans_parse_args(int argc, char **argv, struct ans_user_config *user_conf)
 {
     int opt, ret;
     char **argvopt;
@@ -340,11 +340,11 @@ int odp_parse_args(int argc, char **argv, struct odp_user_config *user_conf)
        {
         	/* portmask */
         	case 'p':
-        		user_conf->port_mask = odp_parse_portmask(optarg);
+        		user_conf->port_mask = ans_parse_portmask(optarg);
         		if (user_conf->port_mask == 0) 
                      {
         			printf("invalid portmask\n");
-        			odp_print_usage(prgname);
+        			ans_print_usage(prgname);
         			return -1;
         		}
         		break;
@@ -358,11 +358,11 @@ int odp_parse_args(int argc, char **argv, struct odp_user_config *user_conf)
         	case 0:
         		if (!strncmp(lgopts[option_index].name, CMD_LINE_OPT_CONFIG, sizeof (CMD_LINE_OPT_CONFIG))) 
     		       {
-        			ret = odp_parse_config(optarg, user_conf);
+        			ret = ans_parse_config(optarg, user_conf);
         			if (ret)
                             {
         				printf("Invalid config\n");
-        				odp_print_usage(prgname);
+        				ans_print_usage(prgname);
         				return -1;
         			}
         		}
@@ -389,11 +389,11 @@ int odp_parse_args(int argc, char **argv, struct odp_user_config *user_conf)
         			/* if no max-pkt-len set, use the default value ETHER_MAX_LEN */
         		      if (0 == getopt_long(argc, argvopt, "", &lenopts, &option_index)) 
                            {
-        				ret = odp_parse_max_pkt_len(optarg);
+        				ret = ans_parse_max_pkt_len(optarg);
         				if ((ret < 64) || (ret > MAX_JUMBO_PKT_LEN))
                                    {
         					printf("invalid packet length\n");
-        					odp_print_usage(prgname);
+        					ans_print_usage(prgname);
         					return -1;
         				}
                                     user_conf->max_rx_pkt_len = ret;
@@ -403,7 +403,7 @@ int odp_parse_args(int argc, char **argv, struct odp_user_config *user_conf)
         		break;
 
         	default:
-        		odp_print_usage(prgname);
+        		ans_print_usage(prgname);
         		return -1;
         }
     }

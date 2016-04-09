@@ -33,7 +33,7 @@ ifeq ($(RTE_SDK),)
 $(error "Please define RTE_SDK environment variable")
 endif
 
-ifeq ($(RTE_ODP),)
+ifeq ($(RTE_ANS),)
 $(error "Please define RTE_ODP environment variable")
 endif
 
@@ -42,19 +42,19 @@ RTE_TARGET ?= x86_64-native-linuxapp-gcc
 
 include $(RTE_SDK)/mk/rte.vars.mk
 
-ODP_PATH = $(RTE_ODP)
+ANS_PATH = $(RTE_ANS)
 
 # binary name
-APP = opendp
+APP = ans
 
 # all source are stored in SRCS-y
-SRCS-y := odp_param.c odp_main.c odp_kni.c
+SRCS-y := ans_param.c ans_main.c ans_kni.c
 
 CFLAGS += -O3 -std=gnu99 $(USER_FLAGS)
 #CFLAGS += $(WERROR_FLAGS)
-CFLAGS += -I$(ODP_PATH)/librte_netdp/include
+CFLAGS += -I$(ANS_PATH)/librte_netdp/include
 
-LDLIBS += $(ODP_PATH)/librte_netdp/librte_netdp.a 
+LDLIBS += $(ANS_PATH)/librte_netdp/librte_netdp.a 
 
 
 # workaround for a gcc bug with noreturn attribute

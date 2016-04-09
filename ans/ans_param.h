@@ -31,12 +31,12 @@
  *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _ODP_PARAM_H_
-#define _ODP_PARAM_H_
+#ifndef _ANS_PARAM_H_
+#define _ANS_PARAM_H_
 
-extern int odp_parse_args(int argc, char **argv, struct odp_user_config *user_conf);
-extern int odp_check_lcore_params( struct odp_user_config *user_conf);
-extern int odp_check_port_config(const unsigned nb_ports, struct odp_user_config *user_conf);
+extern int ans_parse_args(int argc, char **argv, struct ans_user_config *user_conf);
+extern int ans_check_lcore_params( struct ans_user_config *user_conf);
+extern int ans_check_port_config(const unsigned nb_ports, struct ans_user_config *user_conf);
 
 
-#endif /* _ODP_PARAM_H_ */
+#endif /* _ANS_PARAM_H_ */
