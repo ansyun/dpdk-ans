@@ -34,7 +34,7 @@ $(error "Please define RTE_SDK environment variable")
 endif
 
 ifeq ($(RTE_ANS),)
-$(error "Please define RTE_ODP environment variable")
+$(error "Please define RTE_ANS environment variable")
 endif
 
 # Default target, can be overriden by command line or environment

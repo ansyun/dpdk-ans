@@ -33,8 +33,8 @@ ifeq ($(RTE_SDK),)
 $(error "Please define RTE_SDK environment variable")
 endif
 
-ifeq ($(RTE_ODP),)
-$(error "Please define RTE_ODP environment variable")
+ifeq ($(RTE_ANS),)
+$(error "Please define RTE_ANS environment variable")
 endif
 
 ifeq ($(RTE_TARGET),)
@@ -45,10 +45,10 @@ CC = gcc
 RM = rm -f
 
 CFLAGS += -O3 \
-	  -I$(RTE_ODP)/librte_netdp/include \
-          -I$(RTE_ODP)/librte_netdpsock/include
+	  -I$(RTE_ANS)/librte_netdp/include \
+          -I$(RTE_ANS)/librte_netdpsock/include
 
-LDLIBS += $(RTE_ODP)/librte_netdpsock/librte_netdpsock.a \
+LDLIBS += $(RTE_ANS)/librte_netdpsock/librte_netdpsock.a \
           $(RTE_SDK)/$(RTE_TARGET)/lib/librte_mbuf.a \
           $(RTE_SDK)/$(RTE_TARGET)/lib/librte_eal.a \
           $(RTE_SDK)/$(RTE_TARGET)/lib/librte_mempool.a \
