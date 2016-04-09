@@ -86,7 +86,7 @@ ANS          |               |               |
  
  ENV: CPU- intel xeon 2.3G, NIC- 10G, Test tool:ab 
 
- Procedure: ab establish tcp connection to netdp tcp server, ab download one data, netdp tcp server close socket.
+ Procedure: ab establish tcp connection to ANS tcp server, ab download one data, ANS tcp server close socket.
 
  Command: ab -n 1000000 -c 500  2.2.2.2:8089/
  
@@ -247,11 +247,11 @@ EAL: WARNING: Address Space Layout Randomization (ASLR) is enabled in the kernel
 EAL: This may cause issues with mapping memory into secondary processes
 $ sudo sysctl -w kernel.randomize_va_space=0
 ```
-- You shall modify the NIC configuration in odp_main.c based on your NIC type.
-- Netdp didn't support loopback interface, so socket client and server can't be in the same netdp tcp/ip stack.
+- You shall modify the NIC configuration in ans_main.c based on your NIC type.
+- ANS didn't support loopback interface, so socket client and server can't be in the same ANS tcp/ip stack.
 
 ####Support
 -------
-BSD LICENSE, you may use netdp freely.
+BSD LICENSE, you may use ANS freely.
 
-For free support, please use netdp team mail list at zimeiw@163.com, or QQ Group:86883521, or https://dpdk-odp.slack.com.
+For free support, please use ANS team mail list at zimeiw@163.com, or QQ Group:86883521, or https://dpdk-odp.slack.com.
