@@ -44,10 +44,10 @@ include $(RTE_SDK)/mk/rte.vars.mk
 
 ODP_PATH = $(RTE_ANS)
 
-CFLAGS += -I$(ODP_PATH)/librte_netdp/include
-CFLAGS += -I$(ODP_PATH)/librte_netdpsock/include
+CFLAGS += -I$(ODP_PATH)/librte_ans/include
+CFLAGS += -I$(ODP_PATH)/librte_anssock/include
 
-LDLIBS += $(ODP_PATH)/librte_netdpsock/librte_netdpsock.a 
+LDLIBS += $(ODP_PATH)/librte_anssock/librte_anssock.a 
 
 # binary name
 APP = dpdk_tcp_server

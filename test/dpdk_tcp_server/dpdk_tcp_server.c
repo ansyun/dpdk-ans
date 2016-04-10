@@ -32,7 +32,7 @@
  */
 
 /*
-* This program is used to test netdp user space tcp stack
+* This program is used to test ans user space tcp stack
 */
 
 #include <stdio.h>
@@ -59,8 +59,8 @@
 
 #include <sys/time.h>
 
-#include "netdpsock_intf.h"
-#include "netdp_errno.h"
+#include "anssock_intf.h"
+#include "ans_errno.h"
 
 
 #define BUFFER_SIZE 5000  
@@ -78,12 +78,12 @@ int dpdk_handle_event(struct epoll_event ev)
 
         while(1)
         {
-            len = netdpsock_recvfrom(ev.data.fd, recv_buf, BUFFER_SIZE, 0, NULL, NULL);
+            len = anssock_recvfrom(ev.data.fd, recv_buf, BUFFER_SIZE, 0, NULL, NULL);
             if(len > 0)  
             {  
                 sprintf(send_buf, "I have received your message.");
                 
-                send_len = netdpsock_send(ev.data.fd, send_buf, 2500, 0);  
+                send_len = anssock_send(ev.data.fd, send_buf, 2500, 0);  
                 if(send_len < 0)
                 {
                     printf("send data failed, send_len %d \n", send_len);
@@ -93,21 +93,21 @@ int dpdk_handle_event(struct epoll_event ev)
             } 
             else if(len < 0)
             {
-                if (errno == NETDP_EAGAIN)   
+                if (errno == ANS_EAGAIN)   
                 {
                     break;
                 }
                 else
                 {
                     printf("remote close the socket, errno %d \n", errno);
-                    netdpsock_close(ev.data.fd);
+                    anssock_close(ev.data.fd);
                     break;
                 }
             }
             else
             {
                 printf("remote close the socket, len %d \n", len);
-                netdpsock_close(ev.data.fd);
+                anssock_close(ev.data.fd);
                 break;
             }
 
@@ -117,7 +117,7 @@ int dpdk_handle_event(struct epoll_event ev)
     if (ev.events&EPOLLERR || ev.events&EPOLLHUP) 
     {
         printf("remote close the socket, event %x \n", ev.events);
-        netdpsock_close(ev.data.fd);
+        anssock_close(ev.data.fd);
     }
     
     return 0;
@@ -132,7 +132,7 @@ int main(int argc, char * argv[])
     struct sockaddr_in remote_addr;     
     int sin_size;     
 
-    ret = netdpsock_init(NULL);
+    ret = anssock_init(NULL);
     if(ret != 0)
         printf("init sock failed \n");
     
@@ -141,19 +141,19 @@ int main(int argc, char * argv[])
     my_addr.sin_addr.s_addr=INADDR_ANY;   
     my_addr.sin_port=htons(8000);    
   
-    if((server_sockfd=netdpsock_socket(PF_INET,SOCK_STREAM, 0)) < 0)     
+    if((server_sockfd=anssock_socket(PF_INET,SOCK_STREAM, 0)) < 0)     
     {       
         printf("socket error \n");     
         return 1;     
     }     
 
-    if (netdpsock_bind(server_sockfd,(struct sockaddr *)&my_addr,sizeof(struct sockaddr)) < 0)     
+    if (anssock_bind(server_sockfd,(struct sockaddr *)&my_addr,sizeof(struct sockaddr)) < 0)     
     {     
         printf("bind error \n");     
         return 1;     
     }     
 
-    if (netdpsock_listen(server_sockfd, 5) < 0)  
+    if (anssock_listen(server_sockfd, 5) < 0)  
     {     
         printf("listen error \n");     
         return 1;     
@@ -162,11 +162,11 @@ int main(int argc, char * argv[])
     sin_size=sizeof(struct sockaddr_in);   
 
     int epoll_fd;  
-    epoll_fd=netdpsock_epoll_create(MAX_EVENTS);  
+    epoll_fd=anssock_epoll_create(MAX_EVENTS);  
     if(epoll_fd==-1)  
     {  
         printf("epoll_create failed \n"); 
-        netdpsock_close(server_sockfd);
+        anssock_close(server_sockfd);
         return 1;     
     }  
     
@@ -175,11 +175,11 @@ int main(int argc, char * argv[])
     ev.events=EPOLLIN;  
     ev.data.fd=server_sockfd;  
 
-    if(netdpsock_epoll_ctl(epoll_fd,EPOLL_CTL_ADD,server_sockfd,&ev)==-1)  
+    if(anssock_epoll_ctl(epoll_fd,EPOLL_CTL_ADD,server_sockfd,&ev)==-1)  
     {  
         printf("epll_ctl:server_sockfd register failed");  
-        netdpsock_close(server_sockfd);
-        netdpsock_close(epoll_fd);
+        anssock_close(server_sockfd);
+        anssock_close(epoll_fd);
         return 1;     
     }  
     
@@ -189,12 +189,12 @@ int main(int argc, char * argv[])
     
     while(1)  
     {  
-        nfds=netdpsock_epoll_wait(epoll_fd, events, MAX_EVENTS, -1);  
+        nfds=anssock_epoll_wait(epoll_fd, events, MAX_EVENTS, -1);  
         if(nfds==-1)  
         {  
             printf("start epoll_wait failed \n");  
-            netdpsock_close(server_sockfd);
-            netdpsock_close(epoll_fd);
+            anssock_close(server_sockfd);
+            anssock_close(epoll_fd);
             return 1;     
         }  
         else if(nfds == 0)
@@ -208,28 +208,28 @@ int main(int argc, char * argv[])
         {  
             if(events[i].data.fd==server_sockfd)  
             {  
-                if((client_sockfd = netdpsock_accept(server_sockfd, (struct sockaddr *)&remote_addr,&sin_size)) < 0)  
+                if((client_sockfd = anssock_accept(server_sockfd, (struct sockaddr *)&remote_addr,&sin_size)) < 0)  
                 {     
                     printf("accept client_sockfd failed \n");     
-                    netdpsock_close(server_sockfd);
-                    netdpsock_close(epoll_fd);
+                    anssock_close(server_sockfd);
+                    anssock_close(epoll_fd);
                     return 1;     
                 }  
                 
                 ev.events=EPOLLIN;  
                 ev.data.fd=client_sockfd;  
-                if(netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_ADD,client_sockfd,&ev)==-1)  
+                if(anssock_epoll_ctl(epoll_fd, EPOLL_CTL_ADD,client_sockfd,&ev)==-1)  
                 {  
                     printf("epoll_ctl:client_sockfd register failed \n");  
-                    netdpsock_close(server_sockfd);
-                    netdpsock_close(epoll_fd);
+                    anssock_close(server_sockfd);
+                    anssock_close(epoll_fd);
                     return 1;     
                 }  
                 
                
                 printf("accept client %s,  family: %d, port %d \n",inet_ntoa(remote_addr.sin_addr), remote_addr.sin_family, remote_addr.sin_port);  
                 
-                netdpsock_send(client_sockfd, "I have received your message.", 20, 0);  
+                anssock_send(client_sockfd, "I have received your message.", 20, 0);  
 
             }  
             else  

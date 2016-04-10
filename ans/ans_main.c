@@ -71,14 +71,14 @@
 #include <rte_udp.h>
 #include <rte_string_fns.h>
 
-/* add by netdp_team -- start */
+/* add by ans_team -- start */
 #include <rte_spinlock.h>
 
-#include "netdp_init.h"
-#include "netdp_enet_intf.h"
-#include "netdp_ip_intf.h"
+#include "ans_init.h"
+#include "ans_enet_intf.h"
+#include "ans_ip_intf.h"
 
-/* add by netdp_team -- end */
+/* add by ans_team -- end */
 
 #include "ans_main.h"
 #include "ans_param.h"
@@ -741,9 +741,9 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
 
         cur_tsc = rte_rdtsc();
 
-        /* add by netdp_team ---start */
-        netdp_message_handle(lcore_id, cur_tsc);
-        /* add by netdp_team ---end */
+        /* add by ans_team ---start */
+        ans_message_handle(lcore_id, cur_tsc);
+        /* add by ans_team ---end */
 
 
         /*
@@ -807,26 +807,26 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
             {
                 rte_prefetch0(rte_pktmbuf_mtod(pkts_burst[j + PREFETCH_OFFSET], void *));
 
-                /* add by netdp_team ---start */
+                /* add by ans_team ---start */
 
-                ret = netdp_packet_handle(pkts_burst[j], portid);
-                if(ret == NETDP_MBUF_CONTINUE)
+                ret = ans_packet_handle(pkts_burst[j], portid);
+                if(ret == ANS_MBUF_CONTINUE)
                     ans_to_linux(portid, pkts_burst[j]);
       
-                /* add by netdp_team ---end */
+                /* add by ans_team ---end */
             }
 
             /* Forward remaining prefetched packets */
             for (; j < nb_rx; j++)
             {
 
-                /* add by netdp_team ---start */
+                /* add by ans_team ---start */
 
-                ret = netdp_packet_handle(pkts_burst[j], portid);
-               if(ret == NETDP_MBUF_CONTINUE)
+                ret = ans_packet_handle(pkts_burst[j], portid);
+               if(ret == ANS_MBUF_CONTINUE)
                    ans_to_linux(portid, pkts_burst[j]);
           
-                /* add by netdp_team ---end */
+                /* add by ans_team ---end */
             }
         }
 
@@ -855,7 +855,7 @@ int main(int argc, char **argv)
     int ret;
     unsigned nb_ports;
     unsigned lcore_id;
-    struct netdp_init_config init_conf;
+    struct ans_init_config init_conf;
 
     
     memset(&ans_user_conf, 0, sizeof(ans_user_conf));
@@ -913,16 +913,16 @@ int main(int argc, char **argv)
     	rte_exit(EXIT_FAILURE, "Init ports failed\n");
 
 
-    /* add by netdp_team: support KNI interface at 2014-12-15 */
+    /* add by ans_team: support KNI interface at 2014-12-15 */
     if(ans_user_conf.kni_on == 1)
         ans_kni_config(&ans_user_conf, ans_pktmbuf_pool);
 
     
-    /* add by netdp_team ---start */
+    /* add by ans_team ---start */
     ans_init_timer();
     printf("core mask: %x, sockets number:%d, lcore number:%d \n", ans_user_conf.lcore_mask, ans_user_conf.socket_nb, ans_user_conf.lcore_nb);
 
-    printf("start to init netdp \n");
+    printf("start to init ans \n");
     init_conf.max_sock_conn = 1024 * 130;
     init_conf.max_tcp_conn_per_lcore = 1024 * 60;
 
@@ -932,15 +932,15 @@ int main(int argc, char **argv)
         init_conf.pktmbuf_pool[i] = ans_pktmbuf_pool[i];
     }
 
-    ret = netdp_initialize(&init_conf);
+    ret = ans_initialize(&init_conf);
     if (ret != 0)
-   	rte_exit(EXIT_FAILURE, "Init netdp fialed \n");
+   	rte_exit(EXIT_FAILURE, "Init ans fialed \n");
 
   
-    netdp_register(ans_send_single_packet);
-    /* add by netdp_team ---end */
+    ans_register(ans_send_single_packet);
+    /* add by ans_team ---end */
 
-    /* add by netdp_team for testing ---start */
+    /* add by ans_team for testing ---start */
     uint8_t ifname[16];
     int portid;
     struct ether_addr eth_addr;
@@ -961,30 +961,30 @@ int main(int argc, char **argv)
         printf("add %s device\r\n", ifname);
         rte_eth_macaddr_get(portid, &eth_addr);
 
-        netdp_intf_add(portid,  ifname, &eth_addr);
+        ans_intf_add(portid,  ifname, &eth_addr);
 
         int ip_addr = 0x02020202;
         ip_addr += portid;
 
         printf("add IP %x on device %s \n", ip_addr, ifname);
-        netdp_intf_add_ipaddr((caddr_t)ifname, ip_addr, 0x00ffffff);  
+        ans_intf_add_ipaddr((caddr_t)ifname, ip_addr, 0x00ffffff);  
     }
-    /* add by netdp_team ---end */
+    /* add by ans_team ---end */
 
-    /* add by netdp_team for testing ---start */
+    /* add by ans_team for testing ---start */
 
     printf("Show interface \n");
-    netdp_intf_show();
+    ans_intf_show();
 
     int route_ret = 0;
     printf("add static route \r\n");
 
-    route_ret = netdp_add_route(0x00030303, 1, 0x05020202, 0x00ffffff, NETDP_IP_RTF_GATEWAY);
+    route_ret = ans_add_route(0x00030303, 1, 0x05020202, 0x00ffffff, ANS_IP_RTF_GATEWAY);
 
-    netdp_route_show_all();
+    ans_route_show_all();
 
     printf("\n");
-    /* add by netdp_team ---end */
+    /* add by ans_team ---end */
 
     ans_start_ports(nb_ports, &ans_user_conf);
 

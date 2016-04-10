@@ -52,8 +52,8 @@
 
 #include <sys/time.h>
 
-#include "netdpsock_intf.h"
-#include "netdp_errno.h"
+#include "anssock_intf.h"
+#include "ans_errno.h"
 
 
 struct epoll_event events[20];
@@ -73,24 +73,24 @@ int main(void)
     char recv_buf[2038];
     int recv_len; 
 
-    ret = netdpsock_init(NULL);
+    ret = anssock_init(NULL);
     if(ret != 0)
         printf("init sock ring failed \n");
 
 
     /* create epoll socket */
-    epfd = netdpsock_epoll_create(0);
+    epfd = anssock_epoll_create(0);
     if(epfd < 0)
     {
         printf("create epoll socket failed \n");
         return -1;
     }
 
-    fd = netdpsock_socket(AF_INET, SOCK_DGRAM, 0);	
+    fd = anssock_socket(AF_INET, SOCK_DGRAM, 0);	
     if(fd < 0)
     {
         printf("create socket failed \n");
-        netdpsock_close(epfd);
+        anssock_close(epfd);
         return -1;
     }
 
@@ -99,12 +99,12 @@ int main(void)
     addr_in.sin_port   = htons(8888);  
     addr_in.sin_addr.s_addr = htonl(0x02020202); 
 
-    ret =  netdpsock_bind(fd, (struct sockaddr *)&addr_in, sizeof(addr_in) );
+    ret =  anssock_bind(fd, (struct sockaddr *)&addr_in, sizeof(addr_in) );
     if(ret != 0)
     {
         printf("bind socket failed \n");
-        netdpsock_close(fd);
-        netdpsock_close(epfd);
+        anssock_close(fd);
+        anssock_close(epfd);
         return -1;
     }
 
@@ -117,12 +117,12 @@ int main(void)
     event.data.fd = fd;  
     event.events = EPOLLIN | EPOLLET;  
 
-    ret = netdpsock_epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
+    ret = anssock_epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
     if(ret != 0)
     {
         printf("epoll ctl failed \n");
-        netdpsock_close(fd);
-        netdpsock_close(epfd);
+        anssock_close(fd);
+        anssock_close(epfd);
         return -1;
     }
 
@@ -133,7 +133,7 @@ int main(void)
     
     while(1)
     {
-        event_num = netdpsock_epoll_wait (epfd, events, 20, -1);
+        event_num = anssock_epoll_wait (epfd, events, 20, -1);
         if(event_num <= 0)
         {
             printf("epoll_wait failed \n");
@@ -145,7 +145,7 @@ int main(void)
             if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))  
             {  
                 printf("dpdk socket(%d) error\n", events[i].data.fd);
-                netdpsock_close (events[i].data.fd);  
+                anssock_close (events[i].data.fd);  
                 continue;  
             } 
             
@@ -153,7 +153,7 @@ int main(void)
             {
                 while(1)
                 {
-                    recv_len = netdpsock_recvfrom(events[i].data.fd, recv_buf, 2048, 0, NULL, NULL);
+                    recv_len = anssock_recvfrom(events[i].data.fd, recv_buf, 2048, 0, NULL, NULL);
 
                     if(recv_len > 0)  
                     {  
@@ -162,25 +162,25 @@ int main(void)
                         data_num++;
                         sprintf(send_data, "Hello, linux_udp, num:%d !", data_num);
 
-                        netdpsock_sendto(events[i].data.fd, send_data, strlen(send_data) + 1, 0, (struct sockaddr *)&remote_addr,  sizeof(remote_addr));
+                        anssock_sendto(events[i].data.fd, send_data, strlen(send_data) + 1, 0, (struct sockaddr *)&remote_addr,  sizeof(remote_addr));
                     } 
                     else if(recv_len < 0)
                     {
-                        if (errno == NETDP_EAGAIN)   
+                        if (errno == ANS_EAGAIN)   
                         {
                             break;
                         }
                         else
                         {
                             printf("remote close the socket, errno %d \n", errno);
-                            netdpsock_close(events[i].data.fd);
+                            anssock_close(events[i].data.fd);
                             break;
                         }
                     }
                     else
                     {
                         printf("remote close the socket, len %d \n", recv_len);
-                        netdpsock_close(events[i].data.fd);
+                        anssock_close(events[i].data.fd);
                         break;
                     }
 
@@ -199,8 +199,8 @@ int main(void)
 
 
 
-    netdpsock_close(fd);
-    netdpsock_close(epfd);
+    anssock_close(fd);
+    anssock_close(epfd);
 
     return 0;
 }

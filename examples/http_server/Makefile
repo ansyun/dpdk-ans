@@ -45,10 +45,10 @@ CC = gcc
 RM = rm -f
 
 CFLAGS += -O3 \
-	  -I$(RTE_ANS)/librte_netdp/include \
-          -I$(RTE_ANS)/librte_netdpsock/include
+	  -I$(RTE_ANS)/librte_ans/include \
+          -I$(RTE_ANS)/librte_anssock/include
 
-LDLIBS += $(RTE_ANS)/librte_netdpsock/librte_netdpsock.a \
+LDLIBS += $(RTE_ANS)/librte_anssock/librte_anssock.a \
           $(RTE_SDK)/$(RTE_TARGET)/lib/librte_mbuf.a \
           $(RTE_SDK)/$(RTE_TARGET)/lib/librte_eal.a \
           $(RTE_SDK)/$(RTE_TARGET)/lib/librte_mempool.a \

@@ -52,9 +52,9 @@ SRCS-y := ans_param.c ans_main.c ans_kni.c
 
 CFLAGS += -O3 -std=gnu99 $(USER_FLAGS)
 #CFLAGS += $(WERROR_FLAGS)
-CFLAGS += -I$(ANS_PATH)/librte_netdp/include
+CFLAGS += -I$(ANS_PATH)/librte_ans/include
 
-LDLIBS += $(ANS_PATH)/librte_netdp/librte_netdp.a 
+LDLIBS += $(ANS_PATH)/librte_ans/librte_ans.a 
 
 
 # workaround for a gcc bug with noreturn attribute

@@ -51,8 +51,8 @@
 
 #include <sys/time.h>
 
-#include "netdpsock_intf.h"
-#include "netdp_errno.h"
+#include "anssock_intf.h"
+#include "ans_errno.h"
 
 
 int fd = -1;
@@ -77,7 +77,7 @@ void tcp_send_thread()
             sprintf(send_data, "Hello, linux tcp server, num:%d !", data_num);
             send_len = 0;
             
-            send_len = netdpsock_send(fd, send_data, 2000, 0);
+            send_len = anssock_send(fd, send_data, 2000, 0);
             data_len += send_len;
 
             printf("send len %d, data num %d, data len:%d \n", send_len, data_num, data_len);
@@ -101,23 +101,23 @@ int main(void)
     int recv_len; 
     pthread_t id;  
 
-    ret = netdpsock_init(NULL);
+    ret = anssock_init(NULL);
     if(ret != 0)
         printf("init sock ring failed \n");
 
     /* create epoll socket */
-    epfd = netdpsock_epoll_create(0);
+    epfd = anssock_epoll_create(0);
     if(epfd < 0)
     {
         printf("create epoll socket failed \n");
         return -1;
     }
 
-    fd = netdpsock_socket(AF_INET, SOCK_STREAM, 0);	
+    fd = anssock_socket(AF_INET, SOCK_STREAM, 0);	
     if(fd < 0)
     {
         printf("create socket failed \n");
-        netdpsock_close(epfd);
+        anssock_close(epfd);
         return -1;
     }
 
@@ -127,23 +127,23 @@ int main(void)
     remote_addr.sin_addr.s_addr = htonl(0x02020205); 
 //    remote_addr.sin_addr.s_addr = htonl(0x03030303); 
 
-    if(netdpsock_connect(fd, (struct sockaddr *)&remote_addr, sizeof(struct sockaddr)) < 0)     
+    if(anssock_connect(fd, (struct sockaddr *)&remote_addr, sizeof(struct sockaddr)) < 0)     
     {     
         printf("onnect to server failed \n");
-        netdpsock_close(fd);
-        netdpsock_close(epfd);
+        anssock_close(fd);
+        anssock_close(epfd);
         return -1;  
     } 
     
     event.data.fd = fd;  
     event.events = EPOLLIN | EPOLLET;  
 
-    ret = netdpsock_epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
+    ret = anssock_epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
     if(ret != 0)
     {
         printf("epoll ctl failed \n");
-        netdpsock_close(fd);
-        netdpsock_close(epfd);
+        anssock_close(fd);
+        anssock_close(epfd);
         return -1;
     }
 
@@ -160,7 +160,7 @@ int main(void)
     
     while(1)
     {
-        event_num = netdpsock_epoll_wait (epfd, events, 20, -1);
+        event_num = anssock_epoll_wait (epfd, events, 20, -1);
         if(event_num <= 0)
         {
             printf("epoll_wait failed \n");
@@ -172,7 +172,7 @@ int main(void)
             if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))  
             {  
                 printf("dpdk socket(%d) error\n", events[i].data.fd);
-                netdpsock_close (events[i].data.fd);  
+                anssock_close (events[i].data.fd);  
                 fd = -1;
                 continue;  
             }   
@@ -181,8 +181,8 @@ int main(void)
             {
                 while(1)
                 {
-                    recv_len = netdpsock_recvfrom(events[i].data.fd, recv_buf, 5000, 0, NULL, NULL);
-                    if((recv_len < 0) && (errno == NETDP_EAGAIN))
+                    recv_len = anssock_recvfrom(events[i].data.fd, recv_buf, 5000, 0, NULL, NULL);
+                    if((recv_len < 0) && (errno == ANS_EAGAIN))
                     {
                        // printf("no data in socket \n");
 
@@ -191,7 +191,7 @@ int main(void)
                     else if(recv_len < 0)
                     {
                          // socket error
-                         //netdpsock_close(fd);
+                         //anssock_close(fd);
                          break;
 
                     }
@@ -213,8 +213,8 @@ int main(void)
 
 
 
-    netdpsock_close(fd);
-    netdpsock_close(epfd);
+    anssock_close(fd);
+    anssock_close(epfd);
 
     return 0;
 }

@@ -45,14 +45,14 @@ include $(RTE_SDK)/mk/rte.vars.mk
 ODP_PATH = $(RTE_ANS)
 
 # binary name
-APP = netdpcmd
+APP = anscli
 
 # all source are stored in SRCS-y
-SRCS-y := netdpcmd_main.c netdpcmd_conf.c netdpcmd_ring.c
+SRCS-y := anscli_main.c anscli_conf.c anscli_ring.c
 
 CFLAGS += -O3
 #CFLAGS += $(WERROR_FLAGS)
-CFLAGS += -I$(ODP_PATH)/librte_netdp/include
+CFLAGS += -I$(ODP_PATH)/librte_ans/include
 CFLAGS += -I$(ODP_PATH)/shared
 
 include $(RTE_SDK)/mk/rte.extapp.mk

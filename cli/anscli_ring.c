@@ -78,88 +78,88 @@
 #include <cmdline.h>
 
 
-#include "netdpcmd_conf.h"
-#include "netdp_errno.h"
-#include "netdp_conf.h"
-#include "netdpcmd_ring.h"
+#include "anscli_conf.h"
+#include "ans_errno.h"
+#include "ans_conf.h"
+#include "anscli_ring.h"
 
-struct rte_ring *netdpcmd_ring_tx;
-struct rte_ring *netdpcmd_ring_rx;
-struct rte_mempool *netdpcmd_message_pool;
+struct rte_ring *anscli_ring_tx;
+struct rte_ring *anscli_ring_rx;
+struct rte_mempool *anscli_message_pool;
 
 
-int netdpcmd_ring_init(void)  
+int anscli_ring_init(void)  
 {
 
-    netdpcmd_ring_rx = rte_ring_lookup(NETDP_PRI_2_SEC);
-    if(NULL == netdpcmd_ring_rx)
+    anscli_ring_rx = rte_ring_lookup(ANS_PRI_2_SEC);
+    if(NULL == anscli_ring_rx)
     {
-        printf("Lookup ring(%s) failed \n", NETDP_PRI_2_SEC);
-        return NETDP_ECTRLRING;
+        printf("Lookup ring(%s) failed \n", ANS_PRI_2_SEC);
+        return ANS_ECTRLRING;
     }
 
-    netdpcmd_ring_tx = rte_ring_lookup(NETDP_SEC_2_PRI);
-     if(NULL == netdpcmd_ring_tx)
+    anscli_ring_tx = rte_ring_lookup(ANS_SEC_2_PRI);
+     if(NULL == anscli_ring_tx)
     {
-        printf("Lookup ring(%s) failed \n", NETDP_SEC_2_PRI);
-        return NETDP_ECTRLRING;
+        printf("Lookup ring(%s) failed \n", ANS_SEC_2_PRI);
+        return ANS_ECTRLRING;
     }
 
-    netdpcmd_message_pool = rte_mempool_lookup(NETDP_MSG_POOL_NAME);
-     if(NULL == netdpcmd_message_pool)
+    anscli_message_pool = rte_mempool_lookup(ANS_MSG_POOL_NAME);
+     if(NULL == anscli_message_pool)
     {
-        printf("Lookup message pool(%s) failed \n", NETDP_MSG_POOL_NAME);
-        return NETDP_EMSGPOOL;
+        printf("Lookup message pool(%s) failed \n", ANS_MSG_POOL_NAME);
+        return ANS_EMSGPOOL;
     }
         
     return 0;
 }
 
 
-int netdpcmd_ring_recv(void *buff, int buff_len)
+int anscli_ring_recv(void *buff, int buff_len)
 {
     void *msg;
     int wait_num = 0; 
     while (wait_num < 10)
     {
-        if (rte_ring_dequeue(netdpcmd_ring_rx, &msg) < 0)
+        if (rte_ring_dequeue(anscli_ring_rx, &msg) < 0)
         {
             wait_num++;
             usleep(100000);  /* 100 ms */
             continue;
         }
         rte_memcpy(buff, msg, buff_len);
-        rte_mempool_put(netdpcmd_message_pool, msg);
-        return NETDPCMD_RECV_MSG;
+        rte_mempool_put(anscli_message_pool, msg);
+        return ANSCLI_RECV_MSG;
     }
 
-    return NETDPCMD_NONRECV_MSG;
+    return ANSCLI_NONRECV_MSG;
 }
 
-int netdpcmd_ring_send(void *buff, int buff_len)
+int anscli_ring_send(void *buff, int buff_len)
 {
     void *msg;
 
-    if(buff_len > NETDP_RING_MSG_SIZE)
+    if(buff_len > ANS_RING_MSG_SIZE)
     {
-        printf("Too long message size, max is %d \n", NETDP_RING_MSG_SIZE);
+        printf("Too long message size, max is %d \n", ANS_RING_MSG_SIZE);
 
-        return NETDP_EMSGPOOL;
+        return ANS_EMSGPOOL;
     }
 
-    if (rte_mempool_get(netdpcmd_message_pool, &msg) < 0)
+    if (rte_mempool_get(anscli_message_pool, &msg) < 0)
     {
         printf("Getting message failed \n");
-        return NETDP_EMSGPOOL;
+        return ANS_EMSGPOOL;
     }
 
     rte_memcpy(msg, buff, buff_len);
         
-    if (rte_ring_enqueue(netdpcmd_ring_tx, msg) < 0) 
+    if (rte_ring_enqueue(anscli_ring_tx, msg) < 0) 
     {
-        printf("Sending message to NETDP stack failed  \n");
-        rte_mempool_put(netdpcmd_message_pool, msg);
-        return NETDP_EMSGPOOL;
+        printf("Sending message to ANS stack failed  \n");
+        rte_mempool_put(anscli_message_pool, msg);
+        return ANS_EMSGPOOL;
     }
 
     return 0;

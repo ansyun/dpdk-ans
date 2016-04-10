@@ -52,8 +52,8 @@
 
 #include <sys/time.h>
 
-#include "netdpsock_intf.h"
-#include "netdp_errno.h"
+#include "anssock_intf.h"
+#include "ans_errno.h"
 
 #define UDP_SOCK_NUM   100
 #define UDP_PORT_START 8888
@@ -81,7 +81,7 @@ int udp_sock_create(int epfd, unsigned port)
     struct sockaddr_in addr_in;  
     struct epoll_event event;
  
-    fd = netdpsock_socket(AF_INET, SOCK_DGRAM, 0);	
+    fd = anssock_socket(AF_INET, SOCK_DGRAM, 0);	
     if(fd < 0)
     {
         printf("create socket for port(%d) failed \n", port);
@@ -93,7 +93,7 @@ int udp_sock_create(int epfd, unsigned port)
     addr_in.sin_port   = htons(port);  
     addr_in.sin_addr.s_addr = htonl(0x02020202); 
 
-    ret =  netdpsock_bind(fd, (struct sockaddr *)&addr_in, sizeof(addr_in) );
+    ret =  anssock_bind(fd, (struct sockaddr *)&addr_in, sizeof(addr_in) );
     if(ret != 0)
     {
         printf("bind socket for port(%d) failed \n", port);
@@ -103,7 +103,7 @@ int udp_sock_create(int epfd, unsigned port)
     event.data.fd = fd;  
     event.events = EPOLLIN | EPOLLET;  
 
-    ret = netdpsock_epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
+    ret = anssock_epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
     if(ret != 0)
     {
         printf("epoll ctl failed \n");
@@ -146,7 +146,7 @@ int udp_sock_handle(int epfd, struct epoll_event *event, int curr_event, int sum
     if ((event->events & EPOLLERR) || (event->events & EPOLLHUP) || (!(event->events & EPOLLIN)))  
     {  
         printf("dpdk socket(%d) error, event:0x%x\n", event->data.fd, event->events);
-        netdpsock_close (event->data.fd);  
+        anssock_close (event->data.fd);  
         return -1;  
     }   
 
@@ -162,7 +162,7 @@ int udp_sock_handle(int epfd, struct epoll_event *event, int curr_event, int sum
             
         while(1)
         {
-            recv_len = netdpsock_recvfrom(event->data.fd, recv_buf, UDP_RECV_MAX_SIZE, 0, &dest_addr, &addrlen);
+            recv_len = anssock_recvfrom(event->data.fd, recv_buf, UDP_RECV_MAX_SIZE, 0, &dest_addr, &addrlen);
 
             if(recv_len > 0)  
             {  
@@ -173,25 +173,25 @@ int udp_sock_handle(int epfd, struct epoll_event *event, int curr_event, int sum
                 sprintf(send_data, "Hello, linux_udp, fd:%d, num:%d !", event->data.fd, sock->packets_nb);
                 send_data[UDP_SEND_MAX_SIZE -1] = 0;
                 
-                netdpsock_sendto(event->data.fd, send_data, sizeof(send_data), 0, &dest_addr, addrlen);
+                anssock_sendto(event->data.fd, send_data, sizeof(send_data), 0, &dest_addr, addrlen);
             } 
             else if(recv_len < 0)
             {
-                if (errno == NETDP_EAGAIN)   
+                if (errno == ANS_EAGAIN)   
                 {
                     break;
                 }
                 else
                 {
                     printf("remote close the socket, errno %d \n", errno);
-                    netdpsock_close(event->data.fd);
+                    anssock_close(event->data.fd);
                     break;
                 }
             }
             else
             {
                 printf("remote close the socket, len %d \n", recv_len);
-                netdpsock_close(event->data.fd);
+                anssock_close(event->data.fd);
                 break;
             }
 
@@ -203,9 +203,9 @@ int udp_sock_handle(int epfd, struct epoll_event *event, int curr_event, int sum
             rm_event.events = 0;  
         //    printf("close fd %d \n", sock->fd);
 
-            ret = netdpsock_epoll_ctl(epfd, EPOLL_CTL_DEL, sock->fd, &rm_event);
+            ret = anssock_epoll_ctl(epfd, EPOLL_CTL_DEL, sock->fd, &rm_event);
            
-            netdpsock_close(sock->fd);
+            anssock_close(sock->fd);
             
             sock->fd = -1;
             sock->fd = udp_sock_create(epfd, sock->port);
@@ -233,13 +233,13 @@ int main(void)
     struct sockaddr_in remote_addr;  
     struct epoll_event event;
 
-    ret = netdpsock_init(NULL);
+    ret = anssock_init(NULL);
     if(ret != 0)
         printf("init sock ring failed \n");
 
 
     /* create epoll socket */
-    epfd = netdpsock_epoll_create(0);
+    epfd = anssock_epoll_create(0);
     if(epfd < 0)
     {
         printf("create epoll socket failed \n");
@@ -260,7 +260,7 @@ int main(void)
     
     while(1)
     {
-        event_num = netdpsock_epoll_wait (epfd, events, 20, -1);
+        event_num = anssock_epoll_wait (epfd, events, 20, -1);
       //   printf("epoll wait recv event num: %d \n", event_num);
        if(event_num <= 0)
            printf("epoll wait failed, event num(%d) \n", event_num);
@@ -272,7 +272,7 @@ int main(void)
     
     }
 
-    netdpsock_close(epfd);
+    anssock_close(epfd);
 
     return 0;
 }

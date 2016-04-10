@@ -32,75 +32,58 @@
  */
 
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <errno.h>
-#include <netinet/in.h>
-#include <termios.h>
-#ifndef __linux__
-  #ifdef __FreeBSD__
-    #include <sys/socket.h>
-  #else
-    #include <net/socket.h>
-  #endif
-#endif
+#ifndef _ANSCLI_IP_H_
+#define _ANSCLI_IP_H_
 
-#include <cmdline_rdline.h>
-#include <cmdline_parse.h>
-#include <cmdline_parse_ipaddr.h>
-#include <cmdline_parse_num.h>
-#include <cmdline_parse_string.h>
-#include <cmdline.h>
-#include <cmdline_socket.h>
+/* not defined under linux */
+#define NIPQUAD_FMT "%u.%u.%u.%u"
+#define NIPQUAD(addr)       \
+  (unsigned)((unsigned char *)&addr)[0],  \
+  (unsigned)((unsigned char *)&addr)[1],  \
+  (unsigned)((unsigned char *)&addr)[2],  \
+  (unsigned)((unsigned char *)&addr)[3]
+
+#define ANSCLI_RECV_MSG         1
+#define ANSCLI_NONRECV_MSG  2
 
 
-#include <rte_memory.h>
-#include <rte_memzone.h>
-#include <rte_tailq.h>
-#include <rte_eal.h>
-#include <rte_debug.h>
-#include <rte_log.h>
 
-#include "netdpcmd_main.h"
-#include "netdpcmd_conf.h"
-#include "netdpcmd_ring.h"
-
-
-int main(void)
+/* help */
+struct anscli_help_result
 {
-    int ret;
-    struct cmdline *cl;
-    int     param_num = 8;
-    char *param[] = {"netdpcmd",
-                               "-c",
-                               "1",
-                               "-n",
-                               "1",
-                               "--no-pci",
-                               "--socket-mem=1",
-                               "--proc-type=secondary",
-                               NULL};
+  cmdline_fixed_string_t help;
+};
+
+/* quit */
+struct anscli_quit_result
+{
+  cmdline_fixed_string_t quit;
+};
+
+/* ip addr/route add/del/show */
+struct anscli_iproute_result {
+  cmdline_fixed_string_t name;  /* ip */
+  cmdline_fixed_string_t type;   /* addr/route */
+  cmdline_fixed_string_t action; /* add/del/show */
+  cmdline_ipaddr_t ipaddr;       /* ip address */
+  cmdline_fixed_string_t dev;   /* device */
+  cmdline_fixed_string_t iface;   /* interface */
+
+  cmdline_fixed_string_t via;  /* via */
+  cmdline_ipaddr_t destip;       /* dest network */
+  cmdline_ipaddr_t gateway;       /* nexthot*/
+
+};
+
+/* set log level */
+struct anscli_log_result {
+  cmdline_fixed_string_t name;  /* log */
+  cmdline_fixed_string_t type;   /* level */
+  cmdline_fixed_string_t action; /* set */
+  cmdline_fixed_string_t level; /* err/info */
+};
+
+extern cmdline_parse_ctx_t ip_main_ctx[];
 
 
-    rte_set_log_level(RTE_LOG_ERR);
-    ret = rte_eal_init(param_num, param);
-    if (ret < 0)
-        rte_panic("Cannot init EAL\n");
-
-    ret = netdpcmd_ring_init();
-    if(ret != 0)
-        rte_panic("Cannot init ring\n");
-
-
-    cl = cmdline_stdin_new(ip_main_ctx, "netdp> ");
-    if (cl == NULL)
-    rte_panic("Cannot create netdp cmdline instance\n");
-
-    cmdline_interact(cl);
-    cmdline_stdin_exit(cl);
-
-    return 0;
-}
+#endif /* _ANSCLI_IP_H_ */

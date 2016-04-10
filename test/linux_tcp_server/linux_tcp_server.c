@@ -32,7 +32,7 @@
  */
 
 /*
-* This program is used to test netdp user space tcp stack
+* This program is used to test ans user space tcp stack
 */
 
 #include <stdio.h>     

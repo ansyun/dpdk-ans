@@ -62,20 +62,20 @@
  *
  */
 
-#ifndef __NETDP_ENET_INTF_H__ 
-#define __NETDP_ENET_INTF_H__
+#ifndef __ANS_ENET_INTF_H__ 
+#define __ANS_ENET_INTF_H__
 
 
 /* if_flags */
-#define NETDP_ENET_IFF_UP                     0x01
-#define NETDP_ENET_IFF_BROADCAST      0x02
-#define NETDP_ENET_IFF_DEBUG              0x04        /* Turn on debugging.  */
-#define NETDP_ENET_IFF_LOOPBACK         0x08        /* Is a loopback net.  */
-#define NETDP_ENET_IFF_POINTOPOINT   0x10
-#define NETDP_ENET_IFF_RUNNING           0x40        /* resources allocated */
-#define NETDP_ENET_IFF_NOARP              0x80         /* no address resolution protocol */
-#define NETDP_ENET_IFF_PPROMISC         0x100       /* Receive all packets.  */
-#define NETDP_ENET_IFF_STATICARP       0x80000   /* static ARP */
+#define ANS_ENET_IFF_UP                     0x01
+#define ANS_ENET_IFF_BROADCAST      0x02
+#define ANS_ENET_IFF_DEBUG              0x04        /* Turn on debugging.  */
+#define ANS_ENET_IFF_LOOPBACK         0x08        /* Is a loopback net.  */
+#define ANS_ENET_IFF_POINTOPOINT   0x10
+#define ANS_ENET_IFF_RUNNING           0x40        /* resources allocated */
+#define ANS_ENET_IFF_NOARP              0x80         /* no address resolution protocol */
+#define ANS_ENET_IFF_PPROMISC         0x100       /* Receive all packets.  */
+#define ANS_ENET_IFF_STATICARP       0x80000   /* static ARP */
 
 /**
  * Add an interface.
@@ -87,7 +87,7 @@
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-int netdp_intf_add(uint8_t port, uint8_t *if_name, struct ether_addr *mac_addr);
+int ans_intf_add(uint8_t port, uint8_t *if_name, struct ether_addr *mac_addr);
 
 /**
  * Delete an interface.
@@ -97,7 +97,7 @@ int netdp_intf_add(uint8_t port, uint8_t *if_name, struct ether_addr *mac_addr);
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-int netdp_intf_del(uint8_t port);
+int ans_intf_del(uint8_t port);
 
 /**
  * Retrieves MTU value for an interface.
@@ -109,7 +109,7 @@ int netdp_intf_del(uint8_t port);
  *
  */
 
-int netdp_intf_get_mtu(caddr_t name, int *mtu);
+int ans_intf_get_mtu(caddr_t name, int *mtu);
 
 
 
@@ -123,7 +123,7 @@ int netdp_intf_get_mtu(caddr_t name, int *mtu);
  *
  */
 
-int netdp_intf_set_mtu(caddr_t name, int *mtu);
+int ans_intf_set_mtu(caddr_t name, int *mtu);
 
 
 
@@ -137,7 +137,7 @@ int netdp_intf_set_mtu(caddr_t name, int *mtu);
  *
  */
 
-int netdp_intf_get_flags(caddr_t name, int *flags);
+int ans_intf_get_flags(caddr_t name, int *flags);
 
 
 
@@ -151,7 +151,7 @@ int netdp_intf_get_flags(caddr_t name, int *flags);
  *
  */
 
-int netdp_intf_set_flags(caddr_t name, int *flags);
+int ans_intf_set_flags(caddr_t name, int *flags);
 
 
 
@@ -166,7 +166,7 @@ int netdp_intf_set_flags(caddr_t name, int *flags);
  *
  */
 
-int netdp_intf_add_ipaddr(caddr_t name, int ip_addr, int netmask);
+int ans_intf_add_ipaddr(caddr_t name, int ip_addr, int netmask);
 
 /**
  * Delete IP address for an interface.
@@ -178,7 +178,7 @@ int netdp_intf_add_ipaddr(caddr_t name, int ip_addr, int netmask);
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-int netdp_intf_del_ipaddr(caddr_t name, int ip_addr, int netmask);
+int ans_intf_del_ipaddr(caddr_t name, int ip_addr, int netmask);
 
 /**
  * Displays the interface information (L2 and L3 addresses).  
@@ -188,7 +188,7 @@ int netdp_intf_del_ipaddr(caddr_t name, int ip_addr, int netmask);
  *
  */
 
-int netdp_intf_show(void);
+int ans_intf_show(void);
 
 
 #endif

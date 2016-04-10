@@ -32,58 +32,9 @@
  */
 
 
-#ifndef _NETDPCMD_IP_H_
-#define _NETDPCMD_IP_H_
-
-/* not defined under linux */
-#define NIPQUAD_FMT "%u.%u.%u.%u"
-#define NIPQUAD(addr)       \
-  (unsigned)((unsigned char *)&addr)[0],  \
-  (unsigned)((unsigned char *)&addr)[1],  \
-  (unsigned)((unsigned char *)&addr)[2],  \
-  (unsigned)((unsigned char *)&addr)[3]
-
-#define NETDPCMD_RECV_MSG         1
-#define NETDPCMD_NONRECV_MSG  2
+#ifndef _ANSCLI_MAIIN_H_
+#define _ANSCLI_MAIIN_H_
 
 
 
-/* help */
-struct netdpcmd_help_result
-{
-  cmdline_fixed_string_t help;
-};
-
-/* quit */
-struct netdpcmd_quit_result
-{
-  cmdline_fixed_string_t quit;
-};
-
-/* ip addr/route add/del/show */
-struct netdpcmd_iproute_result {
-  cmdline_fixed_string_t name;  /* ip */
-  cmdline_fixed_string_t type;   /* addr/route */
-  cmdline_fixed_string_t action; /* add/del/show */
-  cmdline_ipaddr_t ipaddr;       /* ip address */
-  cmdline_fixed_string_t dev;   /* device */
-  cmdline_fixed_string_t iface;   /* interface */
-
-  cmdline_fixed_string_t via;  /* via */
-  cmdline_ipaddr_t destip;       /* dest network */
-  cmdline_ipaddr_t gateway;       /* nexthot*/
-
-};
-
-/* set log level */
-struct netdpcmd_log_result {
-  cmdline_fixed_string_t name;  /* log */
-  cmdline_fixed_string_t type;   /* level */
-  cmdline_fixed_string_t action; /* set */
-  cmdline_fixed_string_t level; /* err/info */
-};
-
-extern cmdline_parse_ctx_t ip_main_ctx[];
-
-
-#endif /* _NETDPCMD_IP_H_ */
+#endif /* _ANSCLI_MAIIN_H_ */

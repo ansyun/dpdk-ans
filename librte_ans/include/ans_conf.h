@@ -32,118 +32,118 @@
  */
 
 
-#ifndef __NETDP_MSG_H__
-#define __NETDP_MSG_H__
+#ifndef __ANS_MSG_H__
+#define __ANS_MSG_H__
 
-#define NETDP_MSG_POOL_NAME "NETDP_CTRL_MSG_POOL"
-#define NETDP_SEC_2_PRI           "NETDP_CTRL_SEC_2_PRI"
-#define NETDP_PRI_2_SEC           "NETDP_CTRL_PRI_2_SEC"
+#define ANS_MSG_POOL_NAME "ANS_CTRL_MSG_POOL"
+#define ANS_SEC_2_PRI           "ANS_CTRL_SEC_2_PRI"
+#define ANS_PRI_2_SEC           "ANS_CTRL_PRI_2_SEC"
 
-#define NETDP_RING_MSG_SIZE   256
-#define NETDP_IFNAME_LEN_MAX   16
-#define NETDP_IP_PER_IF_MAX      20
-#define NETDP_RT_FLAG_LEN         16
-#define NETDP_IFADDR_LEN           6 
+#define ANS_RING_MSG_SIZE   256
+#define ANS_IFNAME_LEN_MAX   16
+#define ANS_IP_PER_IF_MAX      20
+#define ANS_RT_FLAG_LEN         16
+#define ANS_IFADDR_LEN           6 
 
-#define NETDP_TIMER_RESOLUTION_CYCLES 20000000ULL /* around 10ms at 2 Ghz */
-
-typedef enum 
-{
-   NETDP_MSG_TYPE_IPADDR,
-   NETDP_MSG_TYPE_ROUTE,
-   NETDP_MSG_TYPE_ARP,
-   NETDP_MSG_TYPE_LOG,
-} netdp_msg_type_e;
+#define ANS_TIMER_RESOLUTION_CYCLES 20000000ULL /* around 10ms at 2 Ghz */
 
 typedef enum 
 {
-   NETDP_MSG_ACTION_ADD,
-   NETDP_MSG_ACTION_DEL,
-   NETDP_MSG_ACTION_SHOW,
-   NETDP_MSG_ACTION_SET,
-} netdp_msg_action_e;
+   ANS_MSG_TYPE_IPADDR,
+   ANS_MSG_TYPE_ROUTE,
+   ANS_MSG_TYPE_ARP,
+   ANS_MSG_TYPE_LOG,
+} ans_msg_type_e;
+
+typedef enum 
+{
+   ANS_MSG_ACTION_ADD,
+   ANS_MSG_ACTION_DEL,
+   ANS_MSG_ACTION_SHOW,
+   ANS_MSG_ACTION_SET,
+} ans_msg_action_e;
 
 typedef struct 
 {
   uint32_t ip_addr;
   uint32_t netmask;
-}netdp_ipaddr_t;
+}ans_ipaddr_t;
 
 
 typedef struct 
 {
-  char ifname[NETDP_IFNAME_LEN_MAX];
-  netdp_ipaddr_t ip;
-}netdp_ipaddr_conf_t;
+  char ifname[ANS_IFNAME_LEN_MAX];
+  ans_ipaddr_t ip;
+}ans_ipaddr_conf_t;
 
 typedef struct 
 {
-  netdp_ipaddr_t dest;
+  ans_ipaddr_t dest;
   uint32_t gateway;
-}netdp_route_conf_t;
+}ans_route_conf_t;
 
 typedef struct 
 {
-}netdp_arp_conf_t;
+}ans_arp_conf_t;
 
 typedef struct 
 {
   uint32_t level;
-}netdp_log_conf_t;
+}ans_log_conf_t;
 
 typedef union
 {
-   netdp_ipaddr_conf_t   ipaddr_conf;
-   netdp_route_conf_t     route_conf;
-   netdp_arp_conf_t        arp_conf;
-   netdp_log_conf_t        log_conf;
+   ans_ipaddr_conf_t   ipaddr_conf;
+   ans_route_conf_t     route_conf;
+   ans_arp_conf_t        arp_conf;
+   ans_log_conf_t        log_conf;
 
-}netdp_conf_data_t;
-
-typedef struct
-{
-  netdp_msg_type_e   msg_type;
-  netdp_msg_action_e msg_action;
-  netdp_conf_data_t    msg_data;
-}netdp_conf_req_t;
+}ans_conf_data_t;
 
 typedef struct
 {
-    char ifname[NETDP_IFNAME_LEN_MAX];
-    unsigned char ifaddr[NETDP_IFADDR_LEN];
-    netdp_ipaddr_t ip;  
-}netdp_ipaddr_show_t;
+  ans_msg_type_e   msg_type;
+  ans_msg_action_e msg_action;
+  ans_conf_data_t    msg_data;
+}ans_conf_req_t;
 
 typedef struct
 {
-  netdp_ipaddr_t dest;
+    char ifname[ANS_IFNAME_LEN_MAX];
+    unsigned char ifaddr[ANS_IFADDR_LEN];
+    ans_ipaddr_t ip;  
+}ans_ipaddr_show_t;
+
+typedef struct
+{
+  ans_ipaddr_t dest;
   uint32_t gateway;
-  char rt_flags[NETDP_RT_FLAG_LEN];
-  char ifname[NETDP_IFNAME_LEN_MAX];
-}netdp_route_show_t;
+  char rt_flags[ANS_RT_FLAG_LEN];
+  char ifname[ANS_IFNAME_LEN_MAX];
+}ans_route_show_t;
 
 typedef struct
 {
     uint32_t ipaddr;
     char  iftype[8];
-    char ifname[NETDP_IFNAME_LEN_MAX];
-    unsigned char ifaddr[NETDP_IFADDR_LEN];
-}netdp_arp_show_t;
+    char ifname[ANS_IFNAME_LEN_MAX];
+    unsigned char ifaddr[ANS_IFADDR_LEN];
+}ans_arp_show_t;
 
 typedef union
 {
-   netdp_ipaddr_show_t   ipaddr_show;
-   netdp_route_show_t    route_show;
-   netdp_arp_show_t       arp_show;
-}netdp_show_data_t;
+   ans_ipaddr_show_t   ipaddr_show;
+   ans_route_show_t    route_show;
+   ans_arp_show_t       arp_show;
+}ans_show_data_t;
 
 typedef struct
 {
     int  status;
     int  data_len;
-    netdp_msg_type_e   msg_type;
-    netdp_msg_action_e msg_action;
-    netdp_show_data_t   msg_data;
-}netdp_conf_ack_t;
+    ans_msg_type_e   msg_type;
+    ans_msg_action_e msg_action;
+    ans_show_data_t   msg_data;
+}ans_conf_ack_t;
 
-#endif /* __NETDP_MSG_H__ */
+#endif /* __ANS_MSG_H__ */

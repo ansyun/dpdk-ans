@@ -32,7 +32,7 @@
  */
 
 /*
-* This program is used to test netdp user space tcp stack
+* This program is used to test ans user space tcp stack
 */
 
 #define _GNU_SOURCE
@@ -63,8 +63,8 @@
 #endif
 
 #include <sys/time.h>
-#include "netdpsock_intf.h"
-#include "netdp_errno.h"
+#include "anssock_intf.h"
+#include "ans_errno.h"
 
 
 #define MAX_FLOW_NUM 200000
@@ -89,17 +89,17 @@ HandleReadEvent(int epoll_fd, struct epoll_event ev)
 	char recv_buf[BUFFER_SIZE];
 	int sockid = ev.data.fd;
 	/* HTTP request handling */
-	rd = netdpsock_recvfrom(sockid, recv_buf, BUFFER_SIZE, 0, NULL, NULL);
+	rd = anssock_recvfrom(sockid, recv_buf, BUFFER_SIZE, 0, NULL, NULL);
 
 	if (rd <= 0) {
 		return rd;
 	}
 	/* just response http 200*/
 	len = strlen(http_200);
-	sent = netdpsock_send(ev.data.fd, http_200, len, 0);
+	sent = anssock_send(ev.data.fd, http_200, len, 0);
 
 	ev.events = EPOLLIN | EPOLLOUT;
-	netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
+	anssock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
 //	printf("read and close sockid:%d\n", sockid); //test purpose
 	return rd;
 }
@@ -115,7 +115,7 @@ int RunServerThread()
 	int do_accept;
        int opt_val = 1;
        
-	ret = netdpsock_init(NULL);
+	ret = anssock_init(NULL);
 	if (ret != 0)
 		printf("init sock failed \n");
 
@@ -125,24 +125,24 @@ int RunServerThread()
 	my_addr.sin_addr.s_addr = INADDR_ANY;
 	my_addr.sin_port = htons(8089);
 
-	if ((server_sockfd = netdpsock_socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	if ((server_sockfd = anssock_socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
 		printf("socket error \n");
 		return 1;
 	}
 
-       if(netdpsock_setsockopt(server_sockfd, SOL_SOCKET, SO_REUSEPORT, &opt_val, sizeof(int)) < 0)
+       if(anssock_setsockopt(server_sockfd, SOL_SOCKET, SO_REUSEPORT, &opt_val, sizeof(int)) < 0)
        {
             printf("set socket option failed \n");
        }
 
-	if (netdpsock_bind(server_sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) < 0)
+	if (anssock_bind(server_sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) < 0)
 	{
 		printf("bind error \n");
 		return 1;
 	}
 
-	if (netdpsock_listen(server_sockfd, 2048) < 0)
+	if (anssock_listen(server_sockfd, 2048) < 0)
 	{
 		printf("listen error \n");
 		return 1;
@@ -152,7 +152,7 @@ int RunServerThread()
 	/* wait for incoming accept events */
    	/* create epoll descriptor */
 	int epoll_fd;
-	epoll_fd = netdpsock_epoll_create(MAX_EVENTS);
+	epoll_fd = anssock_epoll_create(MAX_EVENTS);
 	if (epoll_fd == -1)
 	{
 		printf("epoll_create failed \n");
@@ -164,11 +164,11 @@ int RunServerThread()
 	ev.events = EPOLLIN | EPOLLET;
 	ev.data.fd = server_sockfd;
 
-	if (netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_ADD, server_sockfd, &ev) == -1)
+	if (anssock_epoll_ctl(epoll_fd, EPOLL_CTL_ADD, server_sockfd, &ev) == -1)
 	{
 		printf("epll_ctl:server_sockfd register failed");
-		netdpsock_close(server_sockfd);
-		netdpsock_close(epoll_fd);
+		anssock_close(server_sockfd);
+		anssock_close(epoll_fd);
 		return 1;
 	}
 
@@ -181,11 +181,11 @@ int RunServerThread()
 
 	while (1)
 	{
-		nfds = netdpsock_epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
+		nfds = anssock_epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
 		if (nfds == -1)  {
 			printf("start epoll_wait failed");
-			netdpsock_close(server_sockfd);
-			netdpsock_close(epoll_fd);
+			anssock_close(server_sockfd);
+			anssock_close(epoll_fd);
 			return 1;
 		}
 
@@ -204,28 +204,28 @@ int RunServerThread()
         				socklen_t len = sizeof(err);
 
         				/* error on the connection */
-        				netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
-        				netdpsock_close(sockid);
+        				anssock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
+        				anssock_close(sockid);
         			} 
                             if (events[i].events == EPOLLIN) { //epollin  read and write
         				int ret = HandleReadEvent(epoll_fd, events[i]);
-        				netdpsock_close(sockid);
+        				anssock_close(sockid);
         			} 
                             if (events[i].events == EPOLLOUT) { //epollout write
         				int LEN = strlen(http_200);
-        				netdpsock_send(sockid, http_200, LEN, 0);
-        				netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
-        				netdpsock_close(sockid);
+        				anssock_send(sockid, http_200, LEN, 0);
+        				anssock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
+        				anssock_close(sockid);
         			} 
                             if (events[i].events == EPOLLHUP) { //remote close the socket
-        				netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
-        				netdpsock_close(sockid);
+        				anssock_epoll_ctl(epoll_fd, EPOLL_CTL_DEL, sockid, NULL);
+        				anssock_close(sockid);
         			}
                     }
 		}
 		if (do_accept) {
 			while (1) {
-				int c = netdpsock_accept(server_sockfd, NULL, NULL);
+				int c = anssock_accept(server_sockfd, NULL, NULL);
 				if (c >= 0) {
 					if (c >= MAX_FLOW_NUM) {
 						printf("Invalid socket id %d.\n", c);
@@ -235,7 +235,7 @@ int RunServerThread()
 					//accept connection and wait EPOLLIN EVENT
 					ev.events = EPOLLIN | EPOLLET;
 					ev.data.fd = c;
-					netdpsock_epoll_ctl(epoll_fd, EPOLL_CTL_ADD, c, &ev);
+					anssock_epoll_ctl(epoll_fd, EPOLL_CTL_ADD, c, &ev);
 					//      printf("Socket %d registered.\n", c);
 				} else {  //c<0
 					/*     printf("mtcp_accept() error %s\n",
@@ -245,7 +245,7 @@ int RunServerThread()
 			}
 		}//end if
 	}
-	netdpsock_close(server_sockfd);
+	anssock_close(server_sockfd);
 
 	return 0;
 }

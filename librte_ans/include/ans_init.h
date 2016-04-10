@@ -32,19 +32,68 @@
  */
 
 
-#ifndef _NETDPCMD_IP_H_
-#define _NETDPCMD_IP_H_
+#ifndef __ANS_INIT_H__
+#define __ANS_INIT_H__
+
+#define ANS_MAX_NB_SOCKETS 8
+
+#define ANS_HW_RSS_DISABLE 0     /* NIC don't support RSS */
+#define ANS_HW_RSS_ENABLE   1     /* NIC support RSS */
 
 
-#define NETDPCMD_RECV_MSG         1
-#define NETDPCMD_NONRECV_MSG  2
+/**
+ *
+ *
+ */
+struct ans_init_config 
+{
+    uint64_t lcore_mask;                                                                   /* lcore which used to run ans */
+    uint32_t max_sock_conn;                                                            /* support max sock connection */
+    uint32_t max_tcp_conn_per_lcore;                                            /* shall be power of 2 */
+    uint8_t   hw_rss;                                                                          /* If HW RSS enable */
+    struct rte_mempool *pktmbuf_pool[ANS_MAX_NB_SOCKETS];  /* mbuf pools for each sockets */
+} __rte_cache_aligned;
 
 
-extern int netdpcmd_ring_init(void); 
+typedef int (*ans_send_packet_cb)(struct rte_mbuf *m, uint8_t port);
 
-extern int netdpcmd_ring_recv(void *buff, int buff_len);
+/**
+ * @param user_conf   : user config.
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
+int ans_initialize(struct ans_init_config *user_conf);
 
-extern int netdpcmd_ring_send(void *buff, int buff_len);
+/**
+ * 
+ * @param send_cb     
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
+int ans_register(ans_send_packet_cb send_cb);
+
+/**
+ * 
+ *
+ * @param m      
+ * @param portid   
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
+ int ans_packet_handle(struct rte_mbuf *m, uint8_t portid);
 
 
-#endif /* _NETDPCMD_IP_H_ */
+/**
+ * Dequeue message from ANS_SEC_2_PRI rte_ring, and then handle it.
+ * Only handle one message for each loop.
+ *
+ * @return  
+ *
+ */
+void ans_message_handle(unsigned lcore_id, uint64_t cur_tsc);
+
+
+#endif /* __ANS_INIT_H__ */

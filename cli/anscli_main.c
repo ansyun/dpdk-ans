@@ -32,68 +32,75 @@
  */
 
 
-#ifndef __NETDP_INIT_H__
-#define __NETDP_INIT_H__
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <errno.h>
+#include <netinet/in.h>
+#include <termios.h>
+#ifndef __linux__
+  #ifdef __FreeBSD__
+    #include <sys/socket.h>
+  #else
+    #include <net/socket.h>
+  #endif
+#endif
 
-#define NETDP_MAX_NB_SOCKETS 8
+#include <cmdline_rdline.h>
+#include <cmdline_parse.h>
+#include <cmdline_parse_ipaddr.h>
+#include <cmdline_parse_num.h>
+#include <cmdline_parse_string.h>
+#include <cmdline.h>
+#include <cmdline_socket.h>
 
-#define NETDP_HW_RSS_DISABLE 0     /* NIC don't support RSS */
-#define NETDP_HW_RSS_ENABLE   1     /* NIC support RSS */
+
+#include <rte_memory.h>
+#include <rte_memzone.h>
+#include <rte_tailq.h>
+#include <rte_eal.h>
+#include <rte_debug.h>
+#include <rte_log.h>
+
+#include "anscli_main.h"
+#include "anscli_conf.h"
+#include "anscli_ring.h"
 
 
-/**
- *
- *
- */
-struct netdp_init_config 
+int main(void)
 {
-    uint64_t lcore_mask;                                                                   /* lcore which used to run netdp */
-    uint32_t max_sock_conn;                                                            /* support max sock connection */
-    uint32_t max_tcp_conn_per_lcore;                                            /* shall be power of 2 */
-    uint8_t   hw_rss;                                                                          /* If HW RSS enable */
-    struct rte_mempool *pktmbuf_pool[NETDP_MAX_NB_SOCKETS];  /* mbuf pools for each sockets */
-} __rte_cache_aligned;
+    int ret;
+    struct cmdline *cl;
+    int     param_num = 8;
+    char *param[] = {"anscli",
+                               "-c",
+                               "1",
+                               "-n",
+                               "1",
+                               "--no-pci",
+                               "--socket-mem=1",
+                               "--proc-type=secondary",
+                               NULL};
 
 
-typedef int (*netdp_send_packet_cb)(struct rte_mbuf *m, uint8_t port);
+    rte_set_log_level(RTE_LOG_ERR);
+    ret = rte_eal_init(param_num, param);
+    if (ret < 0)
+        rte_panic("Cannot init EAL\n");
 
-/**
- * @param user_conf   : user config.
- *
- * @return  0 - SUCCESS, non-zero - FAILURE
- *
- */
-int netdp_initialize(struct netdp_init_config *user_conf);
-
-/**
- * 
- * @param send_cb     
- *
- * @return  0 - SUCCESS, non-zero - FAILURE
- *
- */
-int netdp_register(netdp_send_packet_cb send_cb);
-
-/**
- * 
- *
- * @param m      
- * @param portid   
- *
- * @return  0 - SUCCESS, non-zero - FAILURE
- *
- */
- int netdp_packet_handle(struct rte_mbuf *m, uint8_t portid);
+    ret = anscli_ring_init();
+    if(ret != 0)
+        rte_panic("Cannot init ring\n");
 
 
-/**
- * Dequeue message from NETDP_SEC_2_PRI rte_ring, and then handle it.
- * Only handle one message for each loop.
- *
- * @return  
- *
- */
-void netdp_message_handle(unsigned lcore_id, uint64_t cur_tsc);
+    cl = cmdline_stdin_new(ip_main_ctx, "ans> ");
+    if (cl == NULL)
+    rte_panic("Cannot create ans cmdline instance\n");
 
+    cmdline_interact(cl);
+    cmdline_stdin_exit(cl);
 
-#endif /* __NETDP_INIT_H__ */
+    return 0;
+}

@@ -32,19 +32,19 @@
  */
 
 
-#ifndef __NETDP_SOCKET_INTF_H__
-#define __NETDP_SOCKET_INTF_H__
+#ifndef __ANS_SOCKET_INTF_H__
+#define __ANS_SOCKET_INTF_H__
 
 /*
 * Limitation: 
-* 1. After fork(), children process can't copy parent's netdp socket, so children proces shall not handle any parent's netdp socket.
+* 1. After fork(), children process can't copy parent's ans socket, so children proces shall not handle any parent's ans socket.
 *
 *
 */
 
 
 /**
- *  Init netdp socket lib and register a user to opendp. One process shall only call it once.
+ *  Init ans socket lib and register a user to opendp. One process shall only call it once.
  *
  * @param  file_prefix 
  *  Prefix for hugepage filenames, shall be same as opendp startup parameter(--file-prefix).
@@ -52,7 +52,7 @@
  * @return  
  *
  */
-int netdpsock_init(char *file_prefix);
+int anssock_init(char *file_prefix);
 
 /**
  *  Creates  an endpoint for communication and returns a descriptor.
@@ -66,7 +66,7 @@ int netdpsock_init(char *file_prefix);
  * @return  
  * On success, a file descriptor for the new socket is returned.  On error, -1 is returned, and errno is set appropriately.
  */
-int netdpsock_socket(int domain, int type, int protocol);
+int anssock_socket(int domain, int type, int protocol);
 
 /**
  * Binds a local IP address.
@@ -80,7 +80,7 @@ int netdpsock_socket(int domain, int type, int protocol);
  * @return  
  * On success, zero is returned.  On error, -1 is returned, and errno is set appropriately.
  */
-int netdpsock_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+int anssock_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 /**
  * Connect to remote IP address.
@@ -94,7 +94,7 @@ int netdpsock_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
  * @return  
  * If the connection or binding succeeds, zero is returned.  On error, -1 is returned, and errno is set appropriately.
  */
- int netdpsock_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+ int anssock_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 /**
  *  sendto user data via socket. This is nonblocking function, so shall check EAGAIN.
@@ -106,7 +106,7 @@ int netdpsock_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
  *   On success, these calls return the number of characters sent.  On error, -1 is returned, and errno is set appropriately.
  *   If errno is EAGAIN, no buffer for sending data.
  */
-ssize_t netdpsock_sendto(int sockfd, const void *buf, size_t len, int flags,
+ssize_t anssock_sendto(int sockfd, const void *buf, size_t len, int flags,
                       const struct sockaddr *dest_addr, socklen_t addrlen);
 
 
@@ -120,7 +120,7 @@ ssize_t netdpsock_sendto(int sockfd, const void *buf, size_t len, int flags,
  *  On success, these calls return the number of characters sent.  On error, -1 is returned, and errno is set appropriately.
  *   If errno is EAGAIN, no buffer for sending data.
  */
-ssize_t netdpsock_send(int sockfd, const void *buf, size_t len, int flags);
+ssize_t anssock_send(int sockfd, const void *buf, size_t len, int flags);
 
 /**
  *  Write user data via socket. This is nonblocking function, so shall check EAGAIN.
@@ -132,7 +132,7 @@ ssize_t netdpsock_send(int sockfd, const void *buf, size_t len, int flags);
  *  On success, these calls return the number of characters sent.  On error, -1 is returned, and errno is set appropriately.
  *   If errno is EAGAIN, no buffer for sending data.
  */
-ssize_t netdpsock_write(int fd, const void *buf, size_t count);
+ssize_t anssock_write(int fd, const void *buf, size_t count);
 
 /**
  * Receive user data from socket. This function is designed as nonblocking function, so shall not set socket as nonblocking and work with epoll.
@@ -144,7 +144,7 @@ ssize_t netdpsock_write(int fd, const void *buf, size_t count);
  *  These calls return the number of bytes received, or -1 if an error occurred.  In the event of an error, errno is set to indicate the error.  
  *  If errno is EAGAIN, no data are present to be received.
  */      
-ssize_t netdpsock_recvfrom(int sockfd, void *buf, size_t len, int flags,
+ssize_t anssock_recvfrom(int sockfd, void *buf, size_t len, int flags,
                 struct sockaddr *src_addr, socklen_t *addrlen);
 
 
@@ -158,7 +158,7 @@ ssize_t netdpsock_recvfrom(int sockfd, void *buf, size_t len, int flags,
  *  These calls return the number of bytes received, or -1 if an error occurred.  In the event of an error, errno is set to indicate the error.  
  *  If errno is EAGAIN, no data are present to be received.
  */ 
-ssize_t netdpsock_recv(int sockfd, void *buf, size_t len, int flags);
+ssize_t anssock_recv(int sockfd, void *buf, size_t len, int flags);
 
 
 /**
@@ -171,7 +171,7 @@ ssize_t netdpsock_recv(int sockfd, void *buf, size_t len, int flags);
  *  These calls return the number of bytes received, or -1 if an error occurred.  In the event of an error, errno is set to indicate the error.  
  *  If errno is EAGAIN, no data are present to be received.
  */ 
-ssize_t netdpsock_read(int fd, void *buf, size_t count);
+ssize_t anssock_read(int fd, void *buf, size_t count);
 
 /**
  * Listen for connections on a socket
@@ -182,7 +182,7 @@ ssize_t netdpsock_read(int fd, void *buf, size_t count);
  * @return  
  * On success, zero is returned.  On error, -1 is returned, and errno is set appropriately.
  */
-int netdpsock_listen(int sockfd, int backlog);
+int anssock_listen(int sockfd, int backlog);
 
 /**
  * Accept a new socket. This function is designed as nonblocking function, so shall not set socket as nonblocking and work with epoll.
@@ -194,7 +194,7 @@ int netdpsock_listen(int sockfd, int backlog);
  * On success, these system calls return a nonnegative integer that is a descriptor for the accepted socket.  On error, -1 is returned, and errno is set appropriately.
  * If errno is EAGAIN, no connections are present to be accepted.
  */
-int netdpsock_accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+int anssock_accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 
 /**
  * Close a socket.
@@ -205,7 +205,7 @@ int netdpsock_accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
  * @return  
  * Returns zero on success.  On error, -1 is returned, and errno is set appropriately.
  */
-int netdpsock_close(int fd);
+int anssock_close(int fd);
 
 /**
  * Shutdown a socket.
@@ -216,7 +216,7 @@ int netdpsock_close(int fd);
  * @return  
  * Returns zero on success.  On error, -1 is returned, and errno is set appropriately.
  */
-int netdpsock_shutdown(int sockfd, int how);
+int anssock_shutdown(int sockfd, int how);
 
 
 /**
@@ -228,7 +228,7 @@ int netdpsock_shutdown(int sockfd, int how);
  * @return  
  *
  */
- int netdpsock_epoll_create(int size);
+ int anssock_epoll_create(int size);
 
 /**
  * Update epoll socket event.
@@ -239,7 +239,7 @@ int netdpsock_shutdown(int sockfd, int how);
  * @return  
  *
  */
- int netdpsock_epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
+ int anssock_epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
 
 /**
  * Waiting epoll socket event. Only support Edge Triggered.
@@ -247,14 +247,14 @@ int netdpsock_shutdown(int sockfd, int how);
  * @param maxevents
  * max events shall less than 2048
  * @param timeout
- * The timeout argument specifies the minimum number of milliseconds that netdpsock_epoll_wait() will block. Specifying a timeout of -1 causes epoll_wait() to block indefinitely, 
+ * The timeout argument specifies the minimum number of milliseconds that anssock_epoll_wait() will block. Specifying a timeout of -1 causes epoll_wait() to block indefinitely, 
  * while specifying a timeout equal to zero cause epoll_wait() to return immediately, even if no events are available.
  *
  * @return  
- * When successful, netdpsock_epoll_wait() returns the number of file descriptors ready for read, or zero if no file descriptor became ready during the requested timeout milliseconds.   
- * When  an  error  occurs,  netdpsock_epoll_wait() returns -1 and errno is set appropriately. *
+ * When successful, anssock_epoll_wait() returns the number of file descriptors ready for read, or zero if no file descriptor became ready during the requested timeout milliseconds.   
+ * When  an  error  occurs,  anssock_epoll_wait() returns -1 and errno is set appropriately. *
  */
- int netdpsock_epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
+ int anssock_epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
 
 /**
  * This is dummy API, always return 0, it is still not implemented.
@@ -265,7 +265,7 @@ int netdpsock_shutdown(int sockfd, int how);
  * @return  
  *
  */
-int netdpsock_getsockopt(int sockfd, int level, int optname, void *optval, socklen_t *optlen);
+int anssock_getsockopt(int sockfd, int level, int optname, void *optval, socklen_t *optlen);
 
 /**
  * 
@@ -276,7 +276,7 @@ int netdpsock_getsockopt(int sockfd, int level, int optname, void *optval, sockl
  * @return  
  * On  success,  zero is returned.  On error, -1 is returned, and errno is set appropriately.
  */
-int netdpsock_setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
+int anssock_setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
 
 /**
  *  Returns  the address of the peer connected to the socket sockfd.
@@ -287,7 +287,7 @@ int netdpsock_setsockopt(int sockfd, int level, int optname, const void *optval,
  * @return  
  * On  success,  zero is returned.  On error, -1 is returned, and errno is set appropriately.
  */
-int netdpsock_getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+int anssock_getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 
 
 /**
@@ -299,16 +299,16 @@ int netdpsock_getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
  * @return  
  * On  success,  zero is returned.  On error, -1 is returned, and errno is set appropriately.
  */
- int netdpsock_getsockname(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+ int anssock_getsockname(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 
 /**
- * Enable netdpsock API debug log
+ * Enable anssock API debug log
  *
  * @param flag  
  * 1: enable debug log, 0: disable log
  * @return  
  * 
  */
- void netdpsock_enable_log(int flag);
+ void anssock_enable_log(int flag);
 
-#endif /* __NETDP_SOCKET_INTF_H__ */
+#endif /* __ANS_SOCKET_INTF_H__ */
