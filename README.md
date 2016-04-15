@@ -249,6 +249,7 @@ $ sudo sysctl -w kernel.randomize_va_space=0
 ```
 - You shall modify the NIC configuration in ans_main.c based on your NIC type.
 - ANS didn't support loopback interface, so socket client and server can't be in the same ANS tcp/ip stack.
+- In order to improve ANS performance, you shall isolate ANS'lcore from kernel by isolcpus and isolcate interrupt from ANS's lcore by update /proc/irq/default_smp_affinity file.
 
 ####Support
 -------
