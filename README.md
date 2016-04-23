@@ -11,7 +11,7 @@ ANS(accelerated network stack) is porting from [FreeBSD](http://freebsd.org) TCP
 - netdp_test: Example application with ANS for testing ANS tcp/ip stack
 
 Support environment
-  - EAL is based on dpdk-2.2.0
+  - EAL is based on dpdk-16.04
   - Development enviroment is based on x86_64-native-linuxapp-gcc
   - TCP/IP stack is based on FreeBSD 10.0-RELEASE
   - linux version：
@@ -36,6 +36,7 @@ Support feature:
     - Free lock, hash table.
     - Support SO_REUSEPORT, multi application can listen the same port.
     - Support multicore tcp stack, per tcp stack per lcore.
+    - Support TSO.
  - 
 Next Planning
 - Enhance socket API
