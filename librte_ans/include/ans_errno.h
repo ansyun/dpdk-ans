@@ -73,6 +73,157 @@
 
 #undef  _POSIX_SOURCE
 
+#ifdef  __linux__
+#include <errno.h>
+
+#define	ANS_EPERM		EPERM		/* Operation not permitted */
+#define	ANS_ENOENT	ENOENT		/* No such file or directory */
+#define	ANS_ESRCH		ESRCH		/* No such process */
+#define	ANS_EINTR		EINTR		/* Interrupted system call */
+#define	ANS_EIO		EIO  		/* Input/output error */
+#define	ANS_ENXIO		ENXIO		/* Device not configured */
+#define	ANS_E2BIG		E2BIG		/* Argument list too long */
+#define	ANS_ENOEXEC	ENOEXEC		/* Exec format error */
+#define	ANS_EBADF		EBADF		/* Bad file descriptor */
+#define	ANS_ECHILD		ECHILD		/* No child processes */
+#define	ANS_EDEADLK	EDEADLK		/* Resource deadlock avoided */
+					/* 11 was EAGAIN */
+#define	ANS_ENOMEM	ENOMEM		/* Cannot allocate memory */
+#define	ANS_EACCES		EACCES		/* Permission denied */
+#define	ANS_EFAULT		EFAULT		/* Bad address */
+#ifndef _POSIX_SOURCE
+#define	ANS_ENOTBLK	ENOTBLK		/* Block device required */
+#endif
+#define	ANS_EBUSY		EBUSY		/* Device busy */
+#define	ANS_EEXIST		EEXIST		/* File exists */
+#define	ANS_EXDEV		EXDEV		/* Cross-device link */
+#define	ANS_ENODEV	ENODEV		/* Operation not supported by device */
+#define	ANS_ENOTDIR	ENOTDIR		/* Not a directory */
+#define	ANS_EISDIR		EISDIR		/* Is a directory */
+#define	ANS_EINVAL		EINVAL		/* Invalid argument */
+#define	ANS_ENFILE		ENFILE		/* Too many open files in system */
+#define	ANS_EMFILE		EMFILE		/* Too many open files */
+#define	ANS_ENOTTY	ENOTTY		/* Inappropriate ioctl for device */
+#ifndef _POSIX_SOURCE
+#define	ANS_ETXTBSY	ETXTBSY		/* Text file busy */
+#endif
+#define	ANS_EFBIG		EFBIG		/* File too large */
+#define	ANS_ENOSPC	ENOSPC		/* No space left on device */
+#define	ANS_ESPIPE		ESPIPE		/* Illegal seek */
+#define	ANS_EROFS		EROFS		/* Read-only filesystem */
+#define	ANS_EMLINK		EMLINK		/* Too many links */
+#define	ANS_EPIPE		EPIPE		/* Broken pipe */
+
+/* math software */
+#define	ANS_EDOM		EDOM		/* Numerical argument out of domain */
+#define	ANS_ERANGE	ERANGE		/* Result too large */
+
+/* non-blocking and interrupt i/o */
+#define	ANS_EAGAIN	EAGAIN		/* Resource temporarily unavailable */
+#ifndef _POSIX_SOURCE
+#define	ANS_EWOULDBLOCK	ANS_EAGAIN		/* Operation would block */
+#define	ANS_EINPROGRESS	EINPROGRESS		/* Operation now in progress */
+#define	ANS_EALREADY	EALREADY		/* Operation already in progress */
+
+/* ipc/network software -- argument errors */
+#define	ANS_ENOTSOCK	ENOTSOCK		/* Socket operation on non-socket */
+#define	ANS_EDESTADDRREQ	EDESTADDRREQ		/* Destination address required */
+#define	ANS_EMSGSIZE	EMSGSIZE		/* Message too long */
+#define	ANS_EPROTOTYPE	EPROTOTYPE		/* Protocol wrong type for socket */
+#define	ANS_ENOPROTOOPT	ENOPROTOOPT		/* Protocol not available */
+#define	ANS_EPROTONOSUPPORT	EPROTONOSUPPORT		/* Protocol not supported */
+#define	ANS_ESOCKTNOSUPPORT	EPROTONOSUPPORT		/* Socket type not supported */
+#define	ANS_EOPNOTSUPP	EOPNOTSUPP		/* Operation not supported */
+#define	ANS_ENOTSUP		ANS_EOPNOTSUPP	/* Operation not supported */
+#define	ANS_EPFNOSUPPORT	EPFNOSUPPORT		/* Protocol family not supported */
+#define	ANS_EAFNOSUPPORT	EAFNOSUPPORT		/* Address family not supported by protocol family */
+#define	ANS_EADDRINUSE	EADDRINUSE		/* Address already in use */
+#define	ANS_EADDRNOTAVAIL	EADDRNOTAVAIL		/* Can't assign requested address */
+
+/* ipc/network software -- operational errors */
+#define	ANS_ENETDOWN	ENETDOWN		/* Network is down */
+#define	ANS_ENETUNREACH	ENETUNREACH		/* Network is unreachable */
+#define	ANS_ENETRESET	ENETRESET		/* Network dropped connection on reset */
+#define	ANS_ECONNABORTED	ECONNABORTED		/* Software caused connection abort */
+#define	ANS_ECONNRESET	ECONNRESET		/* Connection reset by peer */
+#define	ANS_ENOBUFS		ENOBUFS		/* No buffer space available */
+#define	ANS_EISCONN		EISCONN		/* Socket is already connected */
+#define	ANS_ENOTCONN	ENOTCONN		/* Socket is not connected */
+#define	ANS_ESHUTDOWN	ESHUTDOWN		/* Can't send after socket shutdown */
+#define	ANS_ETOOMANYREFS	ETOOMANYREFS		/* Too many references: can't splice */
+#define	ANS_ETIMEDOUT	ETIMEDOUT		/* Operation timed out */
+#define	ANS_ECONNREFUSED	ECONNREFUSED		/* Connection refused */
+
+#define	ANS_ELOOP		ELOOP		/* Too many levels of symbolic links */
+#endif /* _POSIX_SOURCE */
+#define	ANS_ENAMETOOLONG	ENAMETOOLONG		/* File name too long */
+
+/* should be rearranged */
+#ifndef _POSIX_SOURCE
+#define	ANS_EHOSTDOWN	EHOSTDOWN		/* Host is down */
+#define	ANS_EHOSTUNREACH	EHOSTUNREACH		/* No route to host */
+#endif /* _POSIX_SOURCE */
+#define	ANS_ENOTEMPTY	ENOTEMPTY		/* Directory not empty */
+
+/* quotas & mush */
+#ifndef _POSIX_SOURCE
+#define	ANS_EPROCLIM	EPROCLIM		/* Too many processes */
+#define	ANS_EUSERS		EUSERS			/* Too many users */
+#define	ANS_EDQUOT	EDQUOT		/* Disc quota exceeded */
+
+/* Network File System */
+#define	ANS_ESTALE		ESTALE		/* Stale NFS file handle */
+#define	ANS_EREMOTE		EREMOTE		/* Too many levels of remote in path */
+#define	ANS_EBADRPC		EBADRPC		/* RPC struct is bad */
+#define	ANS_ERPCMISMATCH	ERPCMISMATCH		/* RPC version wrong */
+#define	ANS_EPROGUNAVAIL	EPROGUNAVAIL		/* RPC prog. not avail */
+#define	ANS_EPROGMISMATCH	EPROGMISMATCH		/* Program version wrong */
+#define	ANS_EPROCUNAVAIL	EPROCUNAVAIL		/* Bad procedure for program */
+#endif /* _POSIX_SOURCE */
+
+#define	ANS_ENOLCK		ENOLCK		/* No locks available */
+#define	ANS_ENOSYS	ENOSYS		/* Function not implemented */
+
+#ifndef _POSIX_SOURCE
+#define	ANS_EFTYPE		EFTYPE		/* Inappropriate file type or format */
+#define	ANS_EAUTH		EAUTH		/* Authentication error */
+#define	ANS_ENEEDAUTH	ENEEDAUTH		/* Need authenticator */
+#define	ANS_EIDRM		EIDRM		/* Identifier removed */
+#define	ANS_ENOMSG	ENOMSG		/* No message of desired type */
+#define	ANS_EOVERFLOW	EOVERFLOW		/* Value too large to be stored in data type */
+#define	ANS_ECANCELED	ECANCELED		/* Operation canceled */
+#define	ANS_EILSEQ		EILSEQ			/* Illegal byte sequence */
+#define	ANS_ENOATTR	ENOATTR		/* Attribute not found */
+
+#define	ANS_EDOOFUS	EDOOFUS		/* Programming error */
+#endif /* _POSIX_SOURCE */
+
+#define	ANS_EBADMSG		EBADMSG		/* Bad message */
+#define	ANS_EMULTIHOP	       MULTIHOP		/* Multihop attempted */
+#define	ANS_ENOLINK		ENOLINK		/* Link has been severed */
+#define	ANS_EPROTO		EPROTO		/* Protocol error */
+
+#ifndef _POSIX_SOURCE
+#define	ANS_ENOTCAPABLE	ENOTCAPABLE		/* Capabilities insufficient */
+#define	ANS_ECAPMODE	ECAPMODE		/* Not permitted in capability mode */
+#define	ANS_ENOTRECOVERABLE	ENOTRECOVERABLE		/* State not recoverable */
+#define	ANS_EOWNERDEAD	EOWNERDEAD		/* Previous owner died */
+#endif /* _POSIX_SOURCE */
+
+#ifndef _POSIX_SOURCE
+#define	ANS_ELAST		ELAST		/* Must be equal largest errno */
+#endif /* _POSIX_SOURCE */
+
+#ifdef _KERNEL
+/* pseudo-errors returned inside kernel to modify return to process */
+#define	ANS_ERESTART	(-1)		/* restart syscall */
+#define	ANS_EJUSTRETURN	(-2)		/* don't modify regs, just return */
+#define	ANS_ENOIOCTL	(-3)		/* ioctl not handled by this layer */
+#define	ANS_EDIRIOCTL	(-4)		/* do direct ioctl in GEOM */
+#endif
+
+#else
+
 #define	ANS_EPERM		1		/* Operation not permitted */
 #define	ANS_ENOENT		2		/* No such file or directory */
 #define	ANS_ESRCH		3		/* No such process */
@@ -219,6 +370,9 @@
 #define	ANS_EDIRIOCTL	(-4)		/* do direct ioctl in GEOM */
 #endif
 
+#endif
+
+
 #define  ANS_EOK               0
 
 #define  ANS_ECTRLRING        1000
@@ -250,5 +404,6 @@
 
 #define ANS_FALSE   0
 #define ANS_TRUE    1
+
 
 #endif
