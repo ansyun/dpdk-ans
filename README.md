@@ -230,6 +230,24 @@ Percentage of the requests served within a certain time (ms)
 root@h163:~#
 
 ```
+- Downloading file from dpdk-nginx
+```
+CPU:Intel(R) Xeon(R) CPU E5-2430 0 @ 2.20GHz.
+NIC:Intel Corporation 82576 Gigabit Network Connection (rev 01) 
+ANS run on a lcore.
+
+# wget  2.2.2.2:80/nginx_large_data
+--2016-04-24 08:46:24--  http://2.2.2.2/nginx_large_data
+Connecting to 2.2.2.2:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 80185146 (76M) [application/octet-stream]
+Saving to: ‘nginx_large_data.3’
+
+100%[=================================================>] 80,185,146   111MB/s   in 0.7s
+
+2016-04-24 08:46:25 (111 MB/s) - ‘nginx_large_data.3’ saved [80185146/80185146]
+
+```
 
 ####Examples
 -------
