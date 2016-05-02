@@ -934,7 +934,7 @@ int main(int argc, char **argv)
 
     ret = ans_initialize(&init_conf);
     if (ret != 0)
-   	rte_exit(EXIT_FAILURE, "Init ans fialed \n");
+   	rte_exit(EXIT_FAILURE, "Init ans failed \n");
 
   
     ans_register(ans_send_single_packet);
