@@ -49,7 +49,6 @@ struct ans_init_config
 {
     uint64_t lcore_mask;                                                                   /* lcore which used to run ans */
     uint32_t max_sock_conn;                                                            /* support max sock connection */
-    uint32_t max_tcp_conn_per_lcore;                                            /* shall be power of 2 */
     uint8_t   hw_rss;                                                                          /* If HW RSS enable */
     struct rte_mempool *pktmbuf_pool[ANS_MAX_NB_SOCKETS];  /* mbuf pools for each sockets */
 } __rte_cache_aligned;

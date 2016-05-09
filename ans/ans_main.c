@@ -175,6 +175,7 @@ static struct rte_eth_conf ans_port_conf =
 		.hw_vlan_filter = 0,     /**< VLAN filtering disabled */
 		.jumbo_frame    = 0,   /**< Jumbo Frame Support disabled */
 		.hw_strip_crc   = 0,    /**< CRC stripped by hardware */
+	//	.enable_lro = 1,  /* enable LRO */
 	},
 	.rx_adv_conf = 
 	{
@@ -923,8 +924,7 @@ int main(int argc, char **argv)
     printf("core mask: %x, sockets number:%d, lcore number:%d \n", ans_user_conf.lcore_mask, ans_user_conf.socket_nb, ans_user_conf.lcore_nb);
 
     printf("start to init ans \n");
-    init_conf.max_sock_conn = 1024 * 130;
-    init_conf.max_tcp_conn_per_lcore = 1024 * 60;
+    init_conf.max_sock_conn = ans_user_conf.lcore_nb * 64 * 1024;
 
     init_conf.lcore_mask = ans_user_conf.lcore_mask;
     for(i = 0 ; i < MAX_NB_SOCKETS; i++)
