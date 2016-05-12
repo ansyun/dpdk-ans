@@ -270,6 +270,7 @@ $ sudo sysctl -w kernel.randomize_va_space=0
 - ANS didn't support loopback interface, so socket client and server can't be in the same ANS tcp/ip stack.
 - In order to improve ANS performance, you shall isolate ANS'lcore from kernel by isolcpus and isolcate interrupt from ANS's lcore by update /proc/irq/default_smp_affinity file.
 - ANS run as dpdk primary process, when startup ANS, shall stop other secondary processes(nginx/redis/http_server).
+- Don't run ANS on lcore0, it will effect ANS performance.
 
 ####Support
 -------
