@@ -78,6 +78,7 @@
 
 
 #include "anscli_conf.h"
+#include "anscli_ring.h"
 #include "ans_errno.h"
 #include "ans_conf.h"
 
@@ -89,14 +90,14 @@ uint32_t netmask_len2int(int mask_len)
 
     if(mask_len == 0)
         return 0;
-    
+
     for (i = 1, i_mask = 1; i < mask_len; i++)
     {
         i_mask = (i_mask << 1) | 1;
     }
 
     i_mask = htonl(i_mask << (32 - mask_len));
-    
+
     return i_mask;
 }
 
@@ -111,7 +112,7 @@ int netmask_int2len(unsigned int mask)
         mask = (mask << 1);
     }
 
-    return netmask;    
+    return netmask;
 }
 
 
@@ -176,7 +177,7 @@ static void anscli_ip_add_parsed(void *parsed_result,
 
     conf_req.msg_data.ipaddr_conf.ip.ip_addr = res->ipaddr.addr.ipv4.s_addr;
     conf_req.msg_data.ipaddr_conf.ip.netmask = netmask_len2int(res->ipaddr.prefixlen);
-        
+
     ret = anscli_ring_send((void *) &conf_req, sizeof(conf_req));
 
     memset(&conf_ack, 0, sizeof(conf_ack));
@@ -246,7 +247,7 @@ static void anscli_ip_del_parsed(void *parsed_result,
 
     conf_req.msg_data.ipaddr_conf.ip.ip_addr = res->ipaddr.addr.ipv4.s_addr;
     conf_req.msg_data.ipaddr_conf.ip.netmask = netmask_len2int(res->ipaddr.prefixlen);
-        
+
     ret = anscli_ring_send((void *) &conf_req, sizeof(conf_req));
 
     memset(&conf_ack, 0, sizeof(conf_ack));
@@ -317,12 +318,12 @@ static void anscli_ip_show_parsed(void *parsed_result,
     conf_req.msg_type = ANS_MSG_TYPE_IPADDR;
     conf_req.msg_action= ANS_MSG_ACTION_SHOW;
     memset(ifname, 0, sizeof(ifname));
-      
+
      ret = anscli_ring_send((void *) &conf_req, sizeof(conf_req));
-     
+
     while(1)
     {
-        
+
         memset(msg_buf, 0, sizeof(msg_buf));
 
          ret = anscli_ring_recv((void *) msg_buf, msg_len);
@@ -332,7 +333,7 @@ static void anscli_ip_show_parsed(void *parsed_result,
            // cmdline_printf(cl, "No reply\n");
             return;
         }
-        
+
         conf_ack = (ans_conf_ack_t *)msg_buf;
 
         /* last message */
@@ -340,7 +341,7 @@ static void anscli_ip_show_parsed(void *parsed_result,
         {
             return;
         }
-        
+
         if((conf_ack->status != 0) || (conf_ack->msg_action != ANS_MSG_ACTION_SHOW) || (conf_ack->data_len == 0))
         {
              cmdline_printf(cl, "Show IP address failed,  error code %d \n", conf_ack->status);
@@ -355,25 +356,25 @@ static void anscli_ip_show_parsed(void *parsed_result,
             {
                 strcpy(ifname, ipaddr_show->ifname);
                 cmdline_printf(cl, "\n%s\t", ipaddr_show->ifname);
-                cmdline_printf(cl, "HWaddr %02x:%02x:%02x:%02x:%02x:%02x\n", 
+                cmdline_printf(cl, "HWaddr %02x:%02x:%02x:%02x:%02x:%02x\n",
                     ipaddr_show->ifaddr[0], ipaddr_show->ifaddr[1], ipaddr_show->ifaddr[2],
                     ipaddr_show->ifaddr[3], ipaddr_show->ifaddr[4], ipaddr_show->ifaddr[5]);
             }
-            
+
             data_len += sizeof(ans_ipaddr_show_t);
 
             if(ipaddr_show->ip.ip_addr == 0)
                 continue;
-            
+
             memset(&ipaddr, 0, sizeof(ipaddr));
             ipaddr.s_addr =  ipaddr_show->ip.ip_addr;
             mask_len =  netmask_int2len(ntohl(ipaddr_show->ip.netmask));
             cmdline_printf(cl, "\tinet addr:" NIPQUAD_FMT "/%d\n", NIPQUAD(ipaddr), mask_len);
 
-        } 
+        }
 
     }
-    
+
     return;
  }
 
@@ -414,7 +415,7 @@ static void anscli_route_add_parsed(void *parsed_result,
     conf_req.msg_data.route_conf.dest.ip_addr = res->destip.addr.ipv4.s_addr;
     conf_req.msg_data.route_conf.dest.netmask = netmask_len2int(res->destip.prefixlen);
     conf_req.msg_data.route_conf.gateway = res->gateway.addr.ipv4.s_addr;
-        
+
     ret = anscli_ring_send((void *) &conf_req, sizeof(conf_req));
 
     memset(&conf_ack, 0, sizeof(conf_ack));
@@ -476,7 +477,7 @@ static void anscli_route_del_parsed(void *parsed_result,
 
     conf_req.msg_data.route_conf.dest.ip_addr = res->destip.addr.ipv4.s_addr;
     conf_req.msg_data.route_conf.dest.netmask = netmask_len2int(res->destip.prefixlen);
-        
+
     ret = anscli_ring_send((void *) &conf_req, sizeof(conf_req));
 
     memset(&conf_ack, 0, sizeof(conf_ack));
@@ -537,15 +538,15 @@ static void anscli_route_show_parsed(void *parsed_result,
     struct in_addr ipaddr;
     int mask_len;
     char ip_str[32];
- 
+
     conf_req.msg_type = ANS_MSG_TYPE_ROUTE;
     conf_req.msg_action= ANS_MSG_ACTION_SHOW;
-        
+
      ret = anscli_ring_send((void *) &conf_req, sizeof(conf_req));
 
     while(1)
     {
-        
+
         memset(msg_buf, 0, sizeof(msg_buf));
 
          ret = anscli_ring_recv((void *) msg_buf, sizeof(msg_buf));
@@ -555,7 +556,7 @@ static void anscli_route_show_parsed(void *parsed_result,
            // cmdline_printf(cl, "No reply\n");
             return;
         }
-        
+
         conf_ack = (ans_conf_ack_t *)msg_buf;
 
         /* last message */
@@ -563,7 +564,7 @@ static void anscli_route_show_parsed(void *parsed_result,
         {
             return;
         }
-        
+
         if((conf_ack->status != 0) || (conf_ack->msg_action != ANS_MSG_ACTION_SHOW) || ( conf_ack->data_len == 0))
         {
              cmdline_printf(cl, "Show route failed,  error code %d \n", conf_ack->status);
@@ -584,12 +585,12 @@ static void anscli_route_show_parsed(void *parsed_result,
         data_len = 0;
         while(data_len < conf_ack->data_len)
         {
-        
+
             route_show = (ans_route_show_t *)((void *)&(conf_ack->msg_data.route_show) + data_len);
             ipaddr.s_addr =  route_show->dest.ip_addr;
             sprintf(ip_str, NIPQUAD_FMT, NIPQUAD(ipaddr));
             cmdline_printf(cl, "%-17s", ip_str );
-            
+
             if(route_show->gateway == 0)
             {
                 cmdline_printf(cl, "%-17s", "*" );
@@ -600,7 +601,7 @@ static void anscli_route_show_parsed(void *parsed_result,
                 sprintf(ip_str, NIPQUAD_FMT, NIPQUAD(ipaddr));
                 cmdline_printf(cl, "%-17s", ip_str );
             }
-                
+
             ipaddr.s_addr =  route_show->dest.netmask;
             sprintf(ip_str, NIPQUAD_FMT, NIPQUAD(ipaddr));
             cmdline_printf(cl, "%-17s", ip_str );
@@ -614,7 +615,7 @@ static void anscli_route_show_parsed(void *parsed_result,
         }
     }
     return;
-    
+
 }
 
 cmdline_parse_inst_t anscli_route_show = {
@@ -656,12 +657,12 @@ static void anscli_arp_show_parsed(void *parsed_result,
 
     conf_req.msg_type = ANS_MSG_TYPE_ARP;
     conf_req.msg_action= ANS_MSG_ACTION_SHOW;
-        
+
      ret = anscli_ring_send((void *) &conf_req, sizeof(conf_req));
 
     while(1)
     {
-        
+
         memset(msg_buf, 0, sizeof(msg_buf));
 
          ret = anscli_ring_recv((void *) msg_buf, sizeof(msg_buf));
@@ -678,7 +679,7 @@ static void anscli_arp_show_parsed(void *parsed_result,
         {
             return;
         }
-        
+
         if((conf_ack->status != 0) || (conf_ack->msg_action != ANS_MSG_ACTION_SHOW) ||( conf_ack->data_len == 0))
         {
              cmdline_printf(cl, "Show arp failed,  error code %d \n", conf_ack->status);
@@ -702,7 +703,7 @@ static void anscli_arp_show_parsed(void *parsed_result,
             ipaddr.s_addr =  arp_show->ipaddr;
             sprintf(str, NIPQUAD_FMT, NIPQUAD(ipaddr));
             cmdline_printf(cl, "%-17s", str );
-            
+
             cmdline_printf(cl, "%-10s", arp_show->iftype);
 
             if(!bcmp((caddr_t)(arp_show->ifaddr), ans_enet_zeroaddr, ANS_IFADDR_LEN))
@@ -711,10 +712,10 @@ static void anscli_arp_show_parsed(void *parsed_result,
             }
             else
             {
-                sprintf(str, "%02X:%02X:%02X:%02X:%02X:%02X", 
+                sprintf(str, "%02X:%02X:%02X:%02X:%02X:%02X",
                     arp_show->ifaddr[0], arp_show->ifaddr[1], arp_show->ifaddr[2],
                     arp_show->ifaddr[3], arp_show->ifaddr[4], arp_show->ifaddr[5]);
-                
+
                 cmdline_printf(cl, "%-20s", str );
             }
             cmdline_printf(cl,  "%-16s\n", arp_show->ifname);
@@ -723,7 +724,7 @@ static void anscli_arp_show_parsed(void *parsed_result,
         }
     }
     return;
-    
+
 }
 
 cmdline_parse_inst_t anscli_arp_show = {
@@ -810,12 +811,12 @@ static void anscli_log_set_parsed(void *parsed_result,
     {
         conf_req.msg_data.log_conf.level = RTE_LOG_DEBUG;
     }
-    else 
+    else
     {
         cmdline_printf(cl, "Invalid log level \n");
         return;
     }
-                            
+
     ret = anscli_ring_send((void *) &conf_req, sizeof(conf_req));
 
     memset(&conf_ack, 0, sizeof(conf_ack));
@@ -904,7 +905,7 @@ static void anscli_help_parsed(__attribute__((unused)) void *parsed_result,
           __attribute__((unused)) void *data)
 {
     cmdline_printf(cl,
-           "ip addr add IFADDR dev STRING \n"   
+           "ip addr add IFADDR dev STRING \n"
            "ip addr del IFADDR dev STRING\n"
            "ip addr show\n"
            "ip route add DESTIP via NEXTHOP\n"

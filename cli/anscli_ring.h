@@ -32,19 +32,19 @@
  */
 
 
-#ifndef _ANSCLI_IP_H_
-#define _ANSCLI_IP_H_
+#ifndef _ANSCLI_RING_H_
+#define _ANSCLI_RING_H_
 
 
 #define ANSCLI_RECV_MSG         1
 #define ANSCLI_NONRECV_MSG  2
 
 
-extern int anscli_ring_init(void); 
+extern int anscli_ring_init(void);
 
 extern int anscli_ring_recv(void *buff, int buff_len);
 
 extern int anscli_ring_send(void *buff, int buff_len);
 
 
-#endif /* _ANSCLI_IP_H_ */
+#endif /* _ANSCLI_RING_H_ */
