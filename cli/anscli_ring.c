@@ -37,6 +37,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <unistd.h>
 #include <errno.h>
 #include <netinet/in.h>
 #include <termios.h>
@@ -88,7 +89,7 @@ struct rte_ring *anscli_ring_rx;
 struct rte_mempool *anscli_message_pool;
 
 
-int anscli_ring_init(void)  
+int anscli_ring_init(void)
 {
 
     anscli_ring_rx = rte_ring_lookup(ANS_PRI_2_SEC);
@@ -111,7 +112,7 @@ int anscli_ring_init(void)
         printf("Lookup message pool(%s) failed \n", ANS_MSG_POOL_NAME);
         return ANS_EMSGPOOL;
     }
-        
+
     return 0;
 }
 
@@ -119,7 +120,7 @@ int anscli_ring_init(void)
 int anscli_ring_recv(void *buff, int buff_len)
 {
     void *msg;
-    int wait_num = 0; 
+    int wait_num = 0;
     while (wait_num < 10)
     {
         if (rte_ring_dequeue(anscli_ring_rx, &msg) < 0)
@@ -154,8 +155,8 @@ int anscli_ring_send(void *buff, int buff_len)
     }
 
     rte_memcpy(msg, buff, buff_len);
-        
-    if (rte_ring_enqueue(anscli_ring_tx, msg) < 0) 
+
+    if (rte_ring_enqueue(anscli_ring_tx, msg) < 0)
     {
         printf("Sending message to ANS stack failed  \n");
         rte_mempool_put(anscli_message_pool, msg);

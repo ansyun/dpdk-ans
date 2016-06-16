@@ -32,8 +32,8 @@
  */
 
 
-#ifndef _ANSCLI_IP_H_
-#define _ANSCLI_IP_H_
+#ifndef _ANSCLI_CONF_H_
+#define _ANSCLI_CONF_H_
 
 /* not defined under linux */
 #define NIPQUAD_FMT "%u.%u.%u.%u"
@@ -86,4 +86,4 @@ struct anscli_log_result {
 extern cmdline_parse_ctx_t ip_main_ctx[];
 
 
-#endif /* _ANSCLI_IP_H_ */
+#endif /* _ANSCLI_CONF_H_ */

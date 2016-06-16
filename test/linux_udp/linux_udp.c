@@ -39,6 +39,8 @@
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <errno.h>
+#include <pthread.h>
+#include <arpa/inet.h>
 
 
 #define UDP_REMOTE_PORT_START 8888
@@ -50,8 +52,8 @@ struct epoll_event events[20];
 int sockfd;
 int remote_port_num = 100;
 
-void udp_send_thread()  
-{  
+void udp_send_thread()
+{
     int i;
     int data_num = 0;
     char sendline[SEND_MAX_SIZE] = {2};
@@ -73,19 +75,19 @@ void udp_send_thread()
         data_num++;
         usleep(2000);
     }
-    
+
 }
 
 
 int main(int argc, char **argv)
 {
     int i;
-    int flags, ret;  
+    int flags, ret;
     int epfd;
     int loop = 0;
     struct epoll_event event;
     struct sockaddr_in servaddr;
-    pthread_t id;  
+    pthread_t id;
 
 
     /* create epoll socket */
@@ -102,7 +104,7 @@ int main(int argc, char **argv)
         printf("create udp socket failed \n");
         return -1;
     }
-    
+
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -110,23 +112,23 @@ int main(int argc, char **argv)
 
     bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
-    flags = fcntl (sockfd, F_GETFL, 0);  
-    if (flags == -1)  
-    {  
+    flags = fcntl (sockfd, F_GETFL, 0);
+    if (flags == -1)
+    {
         printf("fcntl get udp socket flag failed \n");
         return -1;
-    }  
+    }
 
-    flags |= O_NONBLOCK;  
-    ret = fcntl (sockfd, F_SETFL, flags);  
-    if (ret == -1)  
-    {  
+    flags |= O_NONBLOCK;
+    ret = fcntl (sockfd, F_SETFL, flags);
+    if (ret == -1)
+    {
         printf("fcntl set udp socket flag failed \n");
         return -1;
-    }  
+    }
 
-    event.data.fd = sockfd;  
-    event.events = EPOLLIN | EPOLLET;  
+    event.data.fd = sockfd;
+    event.events = EPOLLIN | EPOLLET;
 
     ret = epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &event);
     if(ret != 0)
@@ -137,38 +139,38 @@ int main(int argc, char **argv)
 
     printf("start linux udp application \n");
 
-      
-    ret=pthread_create(&id, NULL, (void *) udp_send_thread, NULL);  
-    if(ret!=0)  
-    {  
-        printf ("Create pthread error!\n");  
-        return 0;  
-    }  
-    
+
+    ret=pthread_create(&id, NULL, (void *) udp_send_thread, NULL);
+    if(ret!=0)
+    {
+        printf ("Create pthread error!\n");
+        return 0;
+    }
+
     char recvline[RECV_MAX_SIZE];
 
     int event_num = 0;
     int recv_len = 0;
-    
+
     while(1)
     {
 
         event_num = epoll_wait (epfd, events, 20, -1);
         for(i = 0; i < event_num; i++)
         {
-            if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))  
-            {  
+            if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
+            {
                 printf("socket(%d) error\n", events[i].data.fd);
-                close (events[i].data.fd);  
-                continue;  
-            }   
+                close (events[i].data.fd);
+                continue;
+            }
 
             if (events[i].events & EPOLLIN)
             {
                 while(1)
                 {
                     recv_len = recvfrom(events[i].data.fd, recvline, RECV_MAX_SIZE, 0, NULL, NULL);
-                    if((recv_len <= 0) && (EAGAIN != errno))  
+                    if((recv_len <= 0) && (EAGAIN != errno))
                     {
                         printf("socke error, recv_len:%d, errno:%d \n", recv_len, errno);
                         break;
@@ -181,19 +183,19 @@ int main(int argc, char **argv)
 
                     printf("Data len: %d Recv: %s \n", recv_len, recvline);
                 }
-            
+
             }
             else
             {
                 printf("unknow event %x, fd:%d \n", events[i].events, events[i].data.fd);
             }
-            
+
         }
-    
+
     }
 
 
    close(sockfd);
    close(epfd);
-    
+
 }
