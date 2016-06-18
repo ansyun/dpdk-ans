@@ -30,6 +30,8 @@
  *   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+ 
+#define _GNU_SOURCE             /* See feature_test_macros(7) */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,6 +43,7 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <getopt.h>
+#include <sched.h>
 
 #include <rte_common.h>
 #include <rte_vect.h>
@@ -857,7 +860,7 @@ int main(int argc, char **argv)
     unsigned nb_ports;
     unsigned lcore_id;
     struct ans_init_config init_conf;
-
+    int s;
     
     memset(&ans_user_conf, 0, sizeof(ans_user_conf));
     memset(ans_lcore_conf, 0, sizeof(ans_lcore_conf));
@@ -865,6 +868,15 @@ int main(int argc, char **argv)
     ans_user_conf.numa_on = 1;
     ans_user_conf.lcore_param_nb = sizeof(ans_lcore_params_default) / sizeof(ans_lcore_params_default[0]);
     rte_memcpy(ans_user_conf.lcore_param, ans_lcore_params_default, sizeof(ans_lcore_params_default));
+
+    CPU_ZERO(&init_conf.cpu_set);
+
+    s = sched_getaffinity(0, sizeof(cpu_set_t), &init_conf.cpu_set);
+    if (s != 0) 
+    {
+    	printf("ANS sched_getaffinity failed:%s\n", strerror(errno));
+    	return -1;
+    }
 
     /* init EAL */   
 
