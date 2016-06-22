@@ -975,8 +975,8 @@ int main(int argc, char **argv)
 
         ans_intf_add(portid,  ifname, &eth_addr);
 
-        int ip_addr = 0x02020202;
-        ip_addr += portid;
+        int ip_addr = 0x0200000a;
+        ip_addr += portid << 16;
 
         printf("add IP %x on device %s \n", ip_addr, ifname);
         ans_intf_add_ipaddr((caddr_t)ifname, ip_addr, 0x00ffffff);  
@@ -991,7 +991,7 @@ int main(int argc, char **argv)
     int route_ret = 0;
     printf("add static route \r\n");
 
-    route_ret = ans_add_route(0x00030303, 1, 0x05020202, 0x00ffffff, ANS_IP_RTF_GATEWAY);
+    route_ret = ans_add_route(0x00000a0a, 1, 0x0500000a, 0x00ffffff, ANS_IP_RTF_GATEWAY);
 
     ans_route_show_all();
 
