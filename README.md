@@ -13,7 +13,7 @@ ANS(accelerated network stack) is porting from [FreeBSD](http://freebsd.org) TCP
 - test: Example application with ANS for testing ANS tcp/ip stack
 
 Support environment
-  - EAL is based on dpdk-16.04
+  - EAL is based on dpdk-16.07
   - Development enviroment is based on x86_64-native-linuxapp-gcc
   - TCP/IP stack is based on FreeBSD 10.0-RELEASE
   - linux version：
@@ -273,6 +273,14 @@ $ sudo sysctl -w kernel.randomize_va_space=0
 - In order to improve ANS performance, you shall isolate ANS'lcore from kernel by isolcpus and isolcate interrupt from ANS's lcore by update /proc/irq/default_smp_affinity file.
 - ANS run as dpdk primary process, when startup ANS, shall stop other secondary processes(nginx/redis/http_server).
 - Don't run ANS on lcore0, it will effect ANS performance.
+
+- You shall include dpdk libs as below way because mempool lib has __attribute__((constructor, used)) in dpdk-16.07 version, otherwise your application would coredump.
+```
+	$(RTE_ANS)/librte_anssock/librte_anssock.a \
+  -L$(RTE_SDK)/$(RTE_TARGET)/lib \
+  -Wl,--whole-archive -Wl,-lrte_mbuf -Wl,-lrte_mempool -Wl,-lrte_ring -Wl,-lrte_eal -Wl,--no-whole-archive -Wl,-export-dynamic \
+
+```
 
 ####Support
 -------
