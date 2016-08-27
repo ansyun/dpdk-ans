@@ -936,7 +936,7 @@ int main(int argc, char **argv)
     printf("core mask: %x, sockets number:%d, lcore number:%d \n", ans_user_conf.lcore_mask, ans_user_conf.socket_nb, ans_user_conf.lcore_nb);
 
     printf("start to init ans \n");
-    init_conf.max_sock_conn = ans_user_conf.lcore_nb * 64 * 1024;
+    init_conf.max_sock_conn = ans_user_conf.lcore_nb * 128 * 1024;
 
     init_conf.lcore_mask = ans_user_conf.lcore_mask;
     for(i = 0 ; i < MAX_NB_SOCKETS; i++)
