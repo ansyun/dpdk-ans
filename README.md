@@ -33,7 +33,7 @@ Support feature:
  - Commands for showing ARP table
  - UDP protocol
  - Socket layer, share memory.
- - Socket API, socket/close/send/recv/epoll.
+ - Socket API, socket/close/send/recv/epoll/writev/readv/shutdown.
  - TCP protocol
     - Free lock, hash table.
     - Support SO_REUSEPORT, multi application can listen the same port.
