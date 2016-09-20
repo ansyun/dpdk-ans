@@ -250,6 +250,24 @@ Saving to: ‘nginx_large_data.3’
 2016-04-24 08:46:25 (111 MB/s) - ‘nginx_large_data.3’ saved [80185146/80185146]
 
 ```
+- dpdk-nginx over ans performance
+```
+CPU:Intel(R) Xeon(R) CPU E5-2670 0 @ 2.60GHz.
+NIC:82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01) 
+ANS run on a lcore.
+6 dpdk-nginx run on ANS.
+
+./wrk -c 5k -d30s -t16  http://10.0.0.2/
+Running 30s test @ http://10.0.0.2/
+  16 threads and 5000 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    41.93ms  119.14ms   1.73s    92.61%
+    Req/Sec    18.16k     1.73k   26.34k    76.00%
+  8700983 requests in 30.11s, 6.88GB read
+Requests/sec: 288956.57
+Transfer/sec:    233.95MB
+
+```
 
 ####Examples
 -------
@@ -276,7 +294,7 @@ $ sudo sysctl -w kernel.randomize_va_space=0
 
 - You shall include dpdk libs as below way because mempool lib has __attribute__((constructor, used)) in dpdk-16.07 version, otherwise your application would coredump.
 ```
-	$(RTE_ANS)/librte_anssock/librte_anssock.a \
+  -$(RTE_ANS)/librte_anssock/librte_anssock.a \
   -L$(RTE_SDK)/$(RTE_TARGET)/lib \
   -Wl,--whole-archive -Wl,-lrte_mbuf -Wl,-lrte_mempool -Wl,-lrte_ring -Wl,-lrte_eal -Wl,--no-whole-archive -Wl,-export-dynamic \
 
