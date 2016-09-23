@@ -52,7 +52,7 @@ Next Planning
          |-------|       |-------|       |-------|
              |               |               |
 --------------------------------------------------
-netdpsock    |               |               |			
+anssock    |               |               |			
              fd              fd              fd
              |               |               |
 --------------------------------------------------
@@ -258,9 +258,9 @@ Transfer/sec:    233.95MB
 - dpdk_tcp_server, tcp server run on ANS tcp/ip stack.
 - [dpdk-nginx](https://github.com/opendp/dpdk-nginx), nginx was porting to run on ANS tcp/ip stack.
 
-####[Wiki Page](https://github.com/dpdk-net/netdp/wiki)
+####[Wiki Page](https://github.com/dpdk-net/ans/wiki)
 -------
-You can get more information and instructions from [wiki page](https://github.com/dpdk-net/netdp/wiki).
+You can get more information and instructions from [wiki page](https://github.com/dpdk-net/ans/wiki).
 
 ####Notes
 -------
