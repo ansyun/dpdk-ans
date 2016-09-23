@@ -260,7 +260,7 @@ Transfer/sec:    233.95MB
 
 ####[Wiki Page](https://github.com/dpdk-net/ans/wiki)
 -------
-You can get more information and instructions from [wiki page](https://github.com/dpdk-net/ans/wiki).
+You can get more information and instructions from [wiki page](https://github.com/opendp/dpdk-ans/wiki).
 
 ####Notes
 -------
