@@ -79,7 +79,7 @@ ANS          |               |               |
  - APP process runs as a tcp server.
   - If App process only creates one listen socket, the listen socket only listens on one lcore and accept tcp connections from the lcore, so the APP process number shall large than the lcore number. The listen sockets of APP processes are created on each lcore averagely. For example: ans(with -c 0x3) run on two lcore, shall run two nginx(only run master ), one nginx listens on lcore0, another nginx listens on lcore1.
   - If App process creates many listen sockets, the listen sockets number shall be equal to the lcore numbers. these listen sockets can be created on each lcore averagely too. For example: ans(with -c 0x3) run on two lcore, redis server(one process) shall create two listen socket, one listen socket is created on lcore0, another listen socket is created on lcore1.
- - APP process runs as a tcp client, app process can communicate with each lcore. The tcp connection can be located in specified lcore automaticly.
+ - APP process runs as a tcp client. App process can communicate with each lcore. The tcp connection can be located in specified lcore automaticly.
  - APP process can bind the same port if enable reuseport, APP process could accept tcp connection by round robin.
  - If NIC don't support multi queue or RSS, shall enhance ans_main.c, reserve one lcore to receive and send packets from NIC, and distribute packets to lcores of ANS tcp stack by software RSS.
 
