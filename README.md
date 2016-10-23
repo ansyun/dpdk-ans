@@ -17,9 +17,9 @@ Support environment
   - Development enviroment is based on x86_64-native-linuxapp-gcc
   - TCP/IP stack is based on FreeBSD 10.0-RELEASE
   - linux version：
-3.16.0-30-generic
+4.4.0-45-generic (Ubuntu 16.04.1 LTS)
   - gcc version：
-gcc version 4.8.4 (Ubuntu 4.8.4-2ubuntu1~14.04)
+gcc version 5.4.0 20160609
 
 Support feature:
  - ANS initialize
@@ -44,6 +44,15 @@ Next Planning
 - Enhance socket API
 - Performance testing.
 
+####Build ANS
+--------------
+```
+# git clone https://github.com/opendp/dpdk-ans.git
+# export RTE_ANS=/home/mytest/dpdk-ans
+# ./install_deps.sh
+# cd ans
+# make
+```
 ####TCP Deployment
 --------------
 ```
