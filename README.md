@@ -273,6 +273,7 @@ You can get more information and instructions from [wiki page](https://github.co
 
 ####Notes
 -------
+- Shall use the same gcc version to compile your application.
 - ANS socket application run as a secondary dpdk process, If you got below log, shall execute below commands to disable ASLR.
 ```
 EAL: WARNING: Address Space Layout Randomization (ASLR) is enabled in the kernel.
