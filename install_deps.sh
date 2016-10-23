@@ -10,6 +10,11 @@ else
     exit 1
 fi
 
+if [ -z $RTE_ANS ];then  
+    echo "RTE_ANS variable isn't defined in your ENV."  
+    exit 1
+fi  
+
 NATIVE_STR=$(gcc -c -Q -march=native --help=target | grep march | sed 's/[[:space:]]//g')
 NATIVE_MATCH=${NATIVE_STR#*=}
 
