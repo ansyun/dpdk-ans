@@ -13,35 +13,35 @@ ANS(accelerated network stack) is porting from [FreeBSD](http://freebsd.org) TCP
 - test: Example application with ANS for testing ANS tcp/ip stack
 
 Support environment
-  - EAL is based on dpdk-16.07
-  - Development enviroment is based on x86_64-native-linuxapp-gcc
-  - TCP/IP stack is based on FreeBSD 10.0-RELEASE
+  - EAL is based on dpdk-16.07;
+  - Development enviroment is based on x86_64-native-linuxapp-gcc;
+  - TCP/IP stack is based on FreeBSD 10.0-RELEASE;
   - linux version：
-4.4.0-45-generic (Ubuntu 16.04.1 LTS)
+4.4.0-45-generic (Ubuntu 16.04.1 LTS).
   - gcc version：
-gcc version 5.4.0 20160609
+gcc version 5.4.0 20160609.
 
 Support feature:
- - ANS initialize
- - Ether, zero copy between NIC and ANS TCP/IP stack.
- - ARP, ARP timeout
- - IP layer, IP fragmentation and reassemble
- - Routing
- - ICMP
- - Commands for adding, deleting, showing IP address
- - Commands for adding, deleting, showing static route
- - Commands for showing ARP table
- - UDP protocol
- - Socket layer, share memory.
- - Socket API, socket/close/send/recv/epoll/writev/readv/shutdown.
- - TCP protocol
-    - Free lock, hash table.
-    - Support SO_REUSEPORT, multi application can listen the same port.
-    - Support multicore tcp stack, per tcp stack per lcore.
+ - ANS initialize;
+ - Ether, zero copy between NIC and ANS TCP/IP stack;
+ - ARP, ARP timeout;
+ - IP layer, IP fragmentation and reassemble;
+ - Routing;
+ - ICMP;
+ - Commands for adding, deleting, showing IP address;
+ - Commands for adding, deleting, showing static route;
+ - Commands for showing ARP table;
+ - UDP protocol;
+ - Socket layer, share memory;
+ - Socket API, socket/close/send/recv/epoll/writev/readv/shutdown;
+ - TCP protocol;
+    - Free lock, hash table;
+    - Support SO_REUSEPORT, multi application can listen the same port;
+    - Support multicore tcp stack, per tcp stack per lcore;
     - Support TSO.
  - 
-Next Planning
-- Enhance socket API
+Next Planning;
+- Enhance socket API;
 - Performance testing.
 
 ####Build ANS
