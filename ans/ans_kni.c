@@ -112,9 +112,9 @@ struct kni_lcore_params * kni_lcore_params_array[RTE_MAX_LCORE];
 static struct rte_mempool ** kni_pktmbuf_pool;
 
 /* Options for configuring ethernet port */
-static struct rte_eth_conf port_conf = 
+static struct rte_eth_conf port_conf =
 {
-  .rxmode = 
+  .rxmode =
        {
     .header_split = 0,      /* Header Split disabled */
     .hw_ip_checksum = 0,    /* IP checksum offload disabled */
@@ -122,7 +122,7 @@ static struct rte_eth_conf port_conf =
     .jumbo_frame = 0,       /* Jumbo Frame Support disabled */
     .hw_strip_crc = 0,      /* CRC stripped by hardware */
   },
-  .txmode = 
+  .txmode =
   {
     .mq_mode = ETH_MQ_TX_NONE,
   },
@@ -150,7 +150,7 @@ int ans_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned 
 
 int ans_kni_init()
 {
-    for (int port = 0; port < RTE_MAX_ETHPORTS; port++) 
+    for (int port = 0; port < RTE_MAX_ETHPORTS; port++)
     {
         /* Skip ports that are not enabled */
         if(kni_port_params_array[port] == NULL)
@@ -179,7 +179,7 @@ int ans_kni_config(struct ans_user_config * common_config, struct rte_mempool * 
 
         assert(kni_port_params_array[port_id] == NULL);
 
-        unsigned lcore_id = lcore_item >= common_config->lcore_param_nb 
+        unsigned lcore_id = lcore_item >= common_config->lcore_param_nb
             ? common_config->lcore_param[lcore_item = 0].lcore_id : common_config->lcore_param[lcore_item++].lcore_id;
 
         kni_port_params_array[port_id] = rte_zmalloc(NULL,sizeof(struct kni_port_params),0);
@@ -218,7 +218,7 @@ int ans_kni_config(struct ans_user_config * common_config, struct rte_mempool * 
 
 int ans_kni_destory()
 {
-    for (int port = 0; port < RTE_MAX_ETHPORTS; port++) 
+    for (int port = 0; port < RTE_MAX_ETHPORTS; port++)
     {
                /* Skip ports that are not enabled */
         if(kni_port_params_array[port] == NULL)
@@ -236,7 +236,7 @@ static void kni_burst_free_mbufs(struct rte_mbuf **pkts, unsigned num)
     if (pkts == NULL)
         return;
 
-    for (i = 0; i < num; i++) 
+    for (i = 0; i < num; i++)
     {
         rte_pktmbuf_free(pkts[i]);
         pkts[i] = NULL;
@@ -303,7 +303,7 @@ static int ans_kni_alloc(uint8_t port_id)
   snprintf(ring_name,sizeof(ring_name),"kni_ring_s%u_p%u",lcore_socket,port_id);
 
   params[port_id]->ring = rte_ring_create(ring_name,ANS_KNI_RING_SIZE, lcore_socket,RING_F_SC_DEQ);
-  
+
   if(!params[port_id]->ring)
     rte_exit(EXIT_FAILURE, "Fail to create ring for kni %s",ring_name);
 
@@ -335,7 +335,7 @@ static void kni_ring_to_kni(struct kni_port_params *p)
     //kni_stats[port_id].rx_packets += num;
 
     rte_kni_handle_request(p->kni);
-    if (unlikely(num < nb_rx)) 
+    if (unlikely(num < nb_rx))
     {
         /* Free mbufs not tx to kni interface */
         kni_burst_free_mbufs(&pkts_burst[num], nb_rx - num);
@@ -362,7 +362,7 @@ static void kni_kni_to_eth(struct kni_port_params *p)
 
     /* Burst rx from kni */
     num = rte_kni_rx_burst(p->kni, pkts_burst, PKT_BURST_SZ);
-    if (unlikely(num > PKT_BURST_SZ)) 
+    if (unlikely(num > PKT_BURST_SZ))
     {
         RTE_LOG(ERR, APP, "Error receiving from KNI\n");
         return;
@@ -372,7 +372,7 @@ static void kni_kni_to_eth(struct kni_port_params *p)
     nb_tx = rte_eth_tx_burst(port_id, 0, pkts_burst, (uint16_t)num);
     // kni_stats[port_id].tx_packets += nb_tx;
 
-    if (unlikely(nb_tx < num)) 
+    if (unlikely(nb_tx < num))
     {
         /* Free mbufs not tx to NIC */
         kni_burst_free_mbufs(&pkts_burst[nb_tx], num - nb_tx);

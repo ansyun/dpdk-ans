@@ -1,13 +1,13 @@
 /*-
  *   BSD LICENSE
- * 
+ *
  *   Copyright(c) 2010-2014 ANS Corporation. All rights reserved.
  *   All rights reserved.
- * 
+ *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
  *   are met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,7 +17,7 @@
  *     * Neither the name of ANS Corporation nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
- * 
+ *
  *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -61,7 +61,7 @@
 
 
 /* Configure how many packets ahead to prefetch, when reading packets */
-#define PREFETCH_OFFSET	3
+#define PREFETCH_OFFSET 3
 
 #define MAX_JUMBO_PKT_LEN  9600
 
@@ -77,24 +77,24 @@
 
 #define MAX_LCORE_PARAMS 512
 
-struct ans_lcore_params 
+struct ans_lcore_params
 {
-	uint8_t port_id;
-	uint8_t queue_id;
-	uint8_t lcore_id;
+  uint8_t port_id;
+  uint8_t queue_id;
+  uint8_t lcore_id;
 } __rte_cache_aligned;
 
 
-struct ans_mbuf_table 
+struct ans_mbuf_table
 {
-	uint16_t len;
-	struct rte_mbuf *m_table[MAX_PKT_BURST];
+  uint16_t len;
+  struct rte_mbuf *m_table[MAX_PKT_BURST];
 };
 
-struct ans_lcore_rx_queue 
+struct ans_lcore_rx_queue
 {
-	uint8_t port_id;
-	uint8_t queue_id;
+  uint8_t port_id;
+  uint8_t queue_id;
 } __rte_cache_aligned;
 
 
@@ -113,12 +113,12 @@ struct ans_user_config
     struct ans_lcore_params lcore_param[MAX_LCORE_PARAMS];
 };
 
-struct ans_lcore_config 
+struct ans_lcore_queue
 {
-	uint16_t n_rx_queue;
-	struct ans_lcore_rx_queue rx_queue_list[MAX_RX_QUEUE_PER_LCORE];
-	uint16_t tx_queue_id[RTE_MAX_ETHPORTS];
-	struct ans_mbuf_table tx_mbufs[RTE_MAX_ETHPORTS];
+  uint16_t n_rx_queue;
+  struct ans_lcore_rx_queue rx_queue_list[MAX_RX_QUEUE_PER_LCORE];
+  uint16_t tx_queue_id[RTE_MAX_ETHPORTS];
+  struct ans_mbuf_table tx_mbufs[RTE_MAX_ETHPORTS];
 } __rte_cache_aligned;
 
 #define MAX_NB_SOCKETS    8
