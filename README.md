@@ -298,4 +298,4 @@ $ sudo sysctl -w kernel.randomize_va_space=0
 -------
 BSD LICENSE, you may use ANS freely.
 
-For free support, please use ANS team mail list at zimeiw@163.com, or QQ Group:86883521, or https://dpdk-ans.slack.com.
+For free support, please use ANS team mail list at zimeiw@163.com, or QQ Group:86883521 (FULL), 519855957(No Full), or https://dpdk-ans.slack.com.
