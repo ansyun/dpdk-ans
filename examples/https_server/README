@@ -1,0 +1,29 @@
+ Examples
+-------
+- https_server, tcp server run on ANS tcp/ip stack.
+- [dpdk-https](https://github.com/opendp/dpdk-https), https was porting to run on ANS tcp/ip stack.
+
+ DESCRIPTION
+ -----------
+
+- https_server is https server based on ANS tcp/ip stack,established https connection pass by the openssl.
+ 
+ HOW TO RUN TO https_server
+ ----------------------------
+
+ cd ./https_server
+ make
+ ./https_server
+ notice : Need to load the certificate file on the client£¬include "cacert.cer client.cer clinet.key".
+          if certificate is not used,you can use openssl to make certificate .The CN of certificate must be your hostname.
+          Can also modify the compiler macros LOAD_CERTIFICATE, do not load the certificate.
+          
+ HOW TO TEST IN CLIENT
+ LINUX:
+          curl  --insecure https://10.0.0.2:7838/index.html
+          wget --no-check-certificate https://10.0.0.2:7838/index.html
+          curl  --cacert cacert.cer --cert client.cer --key client.key https://10.0.0.2:7838/index.html
+          wget https://10.0.0.2:7838/index.html --ca-certificate=cacert.cer --certificate=client.cer --private-key=client.key
+ WINDOWS:
+          input https://10.0.0.2:7838  in browser
+          
