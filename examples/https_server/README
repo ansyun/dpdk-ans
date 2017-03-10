@@ -1,12 +1,7 @@
-Examples
---------
-- https_server, tcp server run on ANS tcp/ip stack.
-- [dpdk-https](https://github.com/opendp/dpdk-https), https was porting to run on ANS tcp/ip stack.
-
  DESCRIPTION
  -----------
 
-- https_server is https server based on ANS tcp/ip stack,established https connection pass by the openssl.
+- https_server is https server based on ANS tcp/ip stack,established https connection by the openssl.
  
  How to run https_server
  -----------------------
