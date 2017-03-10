@@ -21,9 +21,9 @@ Examples
 How to test https_server
 -----------------------
  LINUX:
-          curl  --insecure https://10.0.0.2:7838/index.html
+          curl --insecure https://10.0.0.2:7838/index.html
           wget --no-check-certificate https://10.0.0.2:7838/index.html
-          curl  --cacert cacert.cer --cert client.cer --key client.key https://10.0.0.2:7838/index.html
+          curl --cacert cacert.cer --cert client.cer --key client.key https://10.0.0.2:7838/index.html
           wget https://10.0.0.2:7838/index.html --ca-certificate=cacert.cer --certificate=client.cer --private-key=client.key
  WINDOWS:
           input https://10.0.0.2:7838  in browser
