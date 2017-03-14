@@ -34,6 +34,7 @@ Support feature:
  - UDP protocol;
  - Socket layer, share memory;
  - Socket API, socket/close/send/recv/epoll/writev/readv/shutdown;
+ - Support openssl;
  - TCP protocol;
     - Free lock, hash table;
     - Support SO_REUSEPORT, multi application can listen the same port;
