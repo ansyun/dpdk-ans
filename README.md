@@ -286,7 +286,7 @@ $ sudo sysctl -w kernel.randomize_va_space=0
 - ANS run as dpdk primary process, when startup ANS, shall stop other secondary processes(nginx/redis/http_server).
 - Don't run ANS on lcore0, it will effect ANS performance.
 
-- You shall include dpdk libs as below way because mempool lib has __attribute__((constructor, used)) in dpdk-16.07 version, otherwise your application would coredump.
+- You shall include dpdk libs as below way because mempool lib has __attribute__((constructor, used)) in latest version, otherwise your application would coredump.
 ```
   -$(RTE_ANS)/librte_anssock/librte_anssock.a \
   -L$(RTE_SDK)/$(RTE_TARGET)/lib \
