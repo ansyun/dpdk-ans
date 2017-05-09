@@ -67,7 +67,6 @@
 #include "ans_errno.h"
 
 
-#define MAX_FLOW_NUM 200000
 #define BUFFER_SIZE 5000
 #define MAX_EVENTS 512
 #define MAX_CPUS 8
@@ -227,10 +226,6 @@ int RunServerThread()
 			while (1) {
 				int c = anssock_accept(server_sockfd, NULL, NULL);
 				if (c >= 0) {
-					if (c >= MAX_FLOW_NUM) {
-						printf("Invalid socket id %d.\n", c);
-						exit(-1);
-					}
 					struct epoll_event ev;
 					//accept connection and wait EPOLLIN EVENT
 					ev.events = EPOLLIN | EPOLLET;
