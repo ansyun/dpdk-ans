@@ -47,7 +47,7 @@ Next Planning;
 #### Build ANS
 --------------
 ```
-# git clone https://github.com/opendp/dpdk-ans.git
+# git clone https://github.com/ansyun/dpdk-ans.git
 # export RTE_ANS=/home/mytest/dpdk-ans
 # ./install_deps.sh
 # cd ans
@@ -265,11 +265,11 @@ Transfer/sec:    233.95MB
 #### Examples
 -------
 - dpdk_tcp_server, tcp server run on ANS tcp/ip stack.
-- [dpdk-nginx](https://github.com/opendp/dpdk-nginx), nginx was porting to run on ANS tcp/ip stack.
+- [dpdk-nginx](https://github.com/ansyun/dpdk-nginx), nginx was porting to run on ANS tcp/ip stack.
 
-#### [Wiki Page](https://github.com/dpdk-net/ans/wiki)
+#### [Wiki Page](https://github.com/ansyun/ans/wiki)
 -------
-You can get more information and instructions from [wiki page](https://github.com/opendp/dpdk-ans/wiki).
+You can get more information and instructions from [wiki page](https://github.com/ansyun/dpdk-ans/wiki).
 
 #### Notes
 -------
