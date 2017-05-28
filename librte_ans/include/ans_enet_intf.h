@@ -1,7 +1,8 @@
+
 /*-
  *   BSD LICENSE
  *
- *   Copyright(c) 2010-2014 ANS Corporation. All rights reserved.
+ *   Copyright(c) 2015-2017 Ansyun <anssupport@163.com>. All rights reserved.
  *   All rights reserved.
  *
  *   Redistribution and use in source and binary forms, with or without
@@ -14,7 +15,7 @@
  *       notice, this list of conditions and the following disclaimer in
  *       the documentation and/or other materials provided with the
  *       distribution.
- *     * Neither the name of ANS Corporation nor the names of its
+ *     * Neither the name of Ansyun <anssupport@163.com> nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -65,24 +66,33 @@
 #ifndef __ANS_ENET_INTF_H__ 
 #define __ANS_ENET_INTF_H__
 
+/**
+ * @file
+ *
+ * ANS ethernet API defines.
+ *
+ */
 
 /* if_flags */
-#define ANS_ENET_IFF_UP                     0x01
-#define ANS_ENET_IFF_BROADCAST      0x02
-#define ANS_ENET_IFF_DEBUG              0x04        /* Turn on debugging.  */
-#define ANS_ENET_IFF_LOOPBACK         0x08        /* Is a loopback net.  */
+#define ANS_ENET_IFF_UP                     0x01       /**< Iface up.  */
+#define ANS_ENET_IFF_BROADCAST      0x02        /**< Iface broadcast. */
+#define ANS_ENET_IFF_DEBUG              0x04        /**< Turn on debugging.  */
+#define ANS_ENET_IFF_LOOPBACK         0x08        /**< Is a loopback net.  */
 #define ANS_ENET_IFF_POINTOPOINT   0x10
-#define ANS_ENET_IFF_RUNNING           0x40        /* resources allocated */
-#define ANS_ENET_IFF_NOARP              0x80         /* no address resolution protocol */
-#define ANS_ENET_IFF_PPROMISC         0x100       /* Receive all packets.  */
-#define ANS_ENET_IFF_STATICARP       0x80000   /* static ARP */
+#define ANS_ENET_IFF_RUNNING           0x40        /**< resources allocated */
+#define ANS_ENET_IFF_NOARP              0x80         /**< no address resolution protocol */
+#define ANS_ENET_IFF_PPROMISC         0x100       /**< Receive all packets.  */
+#define ANS_ENET_IFF_STATICARP       0x80000   /**< static ARP */
 
 /**
  * Add an interface.
  *
- * @param port      port of the interface 
- * @param if_name      name of the interface 
- * @param mac_addr   mac address of the interface
+ * @param port      
+ *   port of the interface 
+ * @param if_name   
+ *   name of the interface 
+ * @param mac_addr  
+ *   mac address of the interface
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
@@ -92,7 +102,8 @@ int ans_intf_add(uint8_t port, uint8_t *if_name, struct ether_addr *mac_addr);
 /**
  * Delete an interface.
  *
- * @param port      port of the interface 
+ * @param port  
+ *    port of the interface 
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
@@ -102,22 +113,23 @@ int ans_intf_del(uint8_t port);
 /**
  * Retrieves MTU value for an interface.
  *
- * @param name      name of the interface for which the MTU is retrieved
- * @param len       value of retrieved MTU
+ * @param name      
+ *   name of the interface for which the MTU is retrieved
+ * @param mtu 
+ *   value of retrieved MTU
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-
 int ans_intf_get_mtu(caddr_t name, int *mtu);
-
-
 
 /**
  * Set MTU value for an interface.
  *
- * @param name      name of the interface for which the MTU is set
- * @param len       value of MTU to be set
+ * @param name    
+ *   name of the interface for which the MTU is set
+ * @param mtu  
+ *   value of MTU to be set
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
@@ -125,18 +137,17 @@ int ans_intf_get_mtu(caddr_t name, int *mtu);
 
 int ans_intf_set_mtu(caddr_t name, int *mtu);
 
-
-
 /**
  * Retrieves flag value for an interface.
  *
- * @param name      name of the interface for which the flag value is retrieved
- * @param flags     value of retrieved flags
+ * @param name    
+ *   name of the interface for which the flag value is retrieved
+ * @param flags 
+ *   value of retrieved flags
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-
 int ans_intf_get_flags(caddr_t name, int *flags);
 
 
@@ -144,13 +155,14 @@ int ans_intf_get_flags(caddr_t name, int *flags);
 /**
  * Set flag value for an interface.
  *
- * @param name      name of the interface for which the flag value is set
- * @param flags     value of flag to be set
+ * @param name  
+ *   name of the interface for which the flag value is set
+ * @param flags   
+ *   value of flag to be set
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-
 int ans_intf_set_flags(caddr_t name, int *flags);
 
 
@@ -158,22 +170,27 @@ int ans_intf_set_flags(caddr_t name, int *flags);
 /**
  * Add IP address for an interface.
  *
- * @param name      name of the interface for which the IP address is set
- * @param ip_addr   IP address to add
- * @param netmask   mask for the IP address
+ * @param name   
+ *   name of the interface for which the IP address is set
+ * @param ip_addr   
+ *   IP address to add
+ * @param netmask 
+ *    mask for the IP address
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-
 int ans_intf_add_ipaddr(caddr_t name, int ip_addr, int netmask);
 
 /**
  * Delete IP address for an interface.
  *
- * @param name      name of the interface for which the IP address is set
- * @param ip_addr   IP address to add
- * @param netmask   mask for the IP address
+ * @param name    
+ *    name of the interface for which the IP address is set
+ * @param ip_addr  
+ *    IP address to add
+ * @param netmask  
+ *   mask for the IP address
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
@@ -187,7 +204,6 @@ int ans_intf_del_ipaddr(caddr_t name, int ip_addr, int netmask);
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-
 int ans_intf_show(void);
 
 

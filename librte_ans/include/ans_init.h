@@ -1,7 +1,8 @@
+
 /*-
  *   BSD LICENSE
  *
- *   Copyright(c) 2010-2014 ANS Corporation. All rights reserved.
+ *   Copyright(c) 2015-2017 Ansyun <anssupport@163.com>. All rights reserved.
  *   All rights reserved.
  *
  *   Redistribution and use in source and binary forms, with or without
@@ -14,7 +15,7 @@
  *       notice, this list of conditions and the following disclaimer in
  *       the documentation and/or other materials provided with the
  *       distribution.
- *     * Neither the name of ANS Corporation nor the names of its
+ *     * Neither the name of Ansyun <anssupport@163.com> nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -31,34 +32,38 @@
  *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #ifndef __ANS_INIT_H__
 #define __ANS_INIT_H__
 
-#define ANS_MAX_NB_SOCKETS 8
+/**
+ * @file
+ *
+ * ANS initialization API defines.
+ *
+ */
 
-#define ANS_HW_RSS_DISABLE 0     /* NIC don't support RSS */
-#define ANS_HW_RSS_ENABLE   1     /* NIC support RSS */
+#define ANS_MAX_NB_SOCKETS 8    /**< max number of sockets */
 
 
 /**
- *
- *
+ * ANS configuration
  */
 struct ans_init_config 
 {
-    uint64_t lcore_mask;                                                                   /* lcore which used to run ans */
-    uint32_t max_sock_conn;                                                            /* support max sock connection */
-    uint8_t   hw_rss;                                                                          /* If HW RSS enable */
-    cpu_set_t cpu_set;                                                                       /* system default cpu set */
-    struct rte_mempool *pktmbuf_pool[ANS_MAX_NB_SOCKETS];  /* mbuf pools for each sockets */
+    uint64_t lcore_mask;                                                                   /**< lcore which used to run ans */
+    uint32_t max_sock_conn;                                                            /**< support max sock connection */
+    uint8_t   hw_rss;                                                                          /**< If HW RSS enable */
+    cpu_set_t cpu_set;                                                                       /**< system default cpu set */
+    struct rte_mempool *pktmbuf_pool[ANS_MAX_NB_SOCKETS];     /**< mbuf pools for each sockets */
 } __rte_cache_aligned;
 
 
 typedef int (*ans_send_packet_cb)(struct rte_mbuf *m, uint8_t port);
 
 /**
- * @param user_conf   : user config.
+ * Init ans stack.
+ * @param user_conf   
+ *   user config.
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
@@ -66,8 +71,9 @@ typedef int (*ans_send_packet_cb)(struct rte_mbuf *m, uint8_t port);
 int ans_initialize(struct ans_init_config *user_conf);
 
 /**
- * 
+ * Register packet send callback to ans stack.
  * @param send_cb     
+ *   callback function.
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
@@ -75,10 +81,12 @@ int ans_initialize(struct ans_init_config *user_conf);
 int ans_register(ans_send_packet_cb send_cb);
 
 /**
- * 
+ * Handle the received packets by ans stack
  *
- * @param m      
- * @param portid   
+ * @param m 
+ *    packet buffer. 
+ * @param portid  
+ *    port id.
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
@@ -87,8 +95,12 @@ int ans_register(ans_send_packet_cb send_cb);
 
 
 /**
- * Dequeue message from ANS_SEC_2_PRI rte_ring, and then handle it.
- * Only handle one message for each loop.
+ * Handle ans internal message.
+ *
+ * @param lcore_id
+ *   current lcore id.
+ * @param cur_tsc   
+ *   current tsc.
  *
  * @return  
  *

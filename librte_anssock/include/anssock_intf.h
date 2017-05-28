@@ -1,7 +1,7 @@
 /*-
  *   BSD LICENSE
  *
- *   Copyright(c) 2010-2014 ANS Corporation. All rights reserved.
+ *   Copyright(c) 2015-2017 Ansyun <anssupport@163.com>. All rights reserved.
  *   All rights reserved.
  *
  *   Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *       notice, this list of conditions and the following disclaimer in
  *       the documentation and/or other materials provided with the
  *       distribution.
- *     * Neither the name of ANS Corporation nor the names of its
+ *     * Neither the name of Ansyun <anssupport@163.com> nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -31,20 +31,23 @@
  *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef __ANSSOCK_INTF_H__
+#define __ANSSOCK_INTF_H__
 
-#ifndef __ANS_SOCKET_INTF_H__
-#define __ANS_SOCKET_INTF_H__
-
-/*
-* Limitation: 
-* 1. After fork(), children process can't copy parent's ans socket, so children proces shall not handle any parent's ans socket.
-*
-*
-*/
+/**
+ * @file
+ *
+ * ANS socket API defines.
+ *
+ * Note: 
+ * 1. After fork(), children process can't copy parent's ans socket, so children proces shall not handle any parent's ans socket.
+ * 2. Anssock API parameters are same as BSD socket.
+ *
+ */
 
 
 /**
- *  Init ans socket lib and register a user to opendp. One process shall only call it once.
+ *  Init ans socket lib and register a user to ans. One process shall only call it once.
  *
  * @param  file_prefix 
  *  Prefix for hugepage filenames, shall be same as opendp startup parameter(--file-prefix).
@@ -99,8 +102,12 @@ int anssock_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 /**
  *  sendto user data via socket. This is nonblocking function, so shall check EAGAIN.
  *
- * @param       
- * @param 
+ * @param sockfd    
+ * @param buf
+ * @param len    
+ * @param flags
+ * @param dest_addr    
+ * @param addrlen
  *
  * @return  
  *   On success, these calls return the number of characters sent.  On error, -1 is returned, and errno is set appropriately.
@@ -113,8 +120,10 @@ ssize_t anssock_sendto(int sockfd, const void *buf, size_t len, int flags,
 /**
  *  Send user data via socket. This is nonblocking function, so shall check EAGAIN.
  *
- * @param       
- * @param 
+ * @param sockfd       
+ * @param buf
+ * @param len       
+ * @param flags
  *
  * @return  
  *  On success, these calls return the number of characters sent.  On error, -1 is returned, and errno is set appropriately.
@@ -125,8 +134,9 @@ ssize_t anssock_send(int sockfd, const void *buf, size_t len, int flags);
 /**
  *  Write user data via socket. This is nonblocking function, so shall check EAGAIN.
  *
- * @param       
- * @param 
+ * @param fd      
+ * @param buf
+ * @param count
  *
  * @return  
  *  On success, these calls return the number of characters sent.  On error, -1 is returned, and errno is set appropriately.
@@ -138,8 +148,9 @@ ssize_t anssock_write(int fd, const void *buf, size_t count);
  *  Writes iovcnt buffers of data described by iov to the file associated with the file descriptor fd ("gather output").
  *  Write user data via socket. This is nonblocking function, so shall check EAGAIN.
  *
- * @param       
- * @param 
+ * @param fd      
+ * @param iov
+ * @param iovcnt
  *
  * @return  
  *  On success, these calls return the number of characters sent.  On error, -1 is returned, and errno is set appropriately.
@@ -150,8 +161,12 @@ ssize_t anssock_writev(int fd, const struct iovec *iov, int iovcnt);
 /**
  * Receive user data from socket. This function is designed as nonblocking function, so shall not set socket as nonblocking and work with epoll.
  *
- * @param       
- * @param 
+ * @param sockfd      
+ * @param buf
+ * @param len       
+ * @param flags 
+ * @param src_addr       
+ * @param addrlen
  *
  * @return  
  *  These calls return the number of bytes received, or -1 if an error occurred.  In the event of an error, errno is set to indicate the error.  
@@ -164,8 +179,10 @@ ssize_t anssock_recvfrom(int sockfd, void *buf, size_t len, int flags,
 /**
  * Receive user data from socket. This function is designed as nonblocking function, so shall not set socket as nonblocking.
  *
- * @param       
- * @param 
+ * @param sockfd      
+ * @param buf
+ * @param len      
+ * @param flags
  *
  * @return  
  *  These calls return the number of bytes received, or -1 if an error occurred.  In the event of an error, errno is set to indicate the error.  
@@ -177,8 +194,9 @@ ssize_t anssock_recv(int sockfd, void *buf, size_t len, int flags);
 /**
  * Read user data from socket. This function is designed as nonblocking function, so shall not set socket as nonblocking.
  *
- * @param       
- * @param 
+ * @param fd      
+ * @param buf
+ * @param count
  *
  * @return  
  *  These calls return the number of bytes received, or -1 if an error occurred.  In the event of an error, errno is set to indicate the error.  
@@ -190,8 +208,9 @@ ssize_t anssock_read(int fd, void *buf, size_t count);
 /**
  * Reads iovcnt buffers from the file associated with the file descriptor fd into the buffers described by iov ("scatter input").
  *
- * @param       
- * @param 
+ * @param fd      
+ * @param iov
+ * @param iovcnt
  *
  * @return  
  *  These calls return the number of bytes received, or -1 if an error occurred.  In the event of an error, errno is set to indicate the error.  
@@ -202,7 +221,7 @@ ssize_t anssock_readv(int fd, const struct iovec *iov, int iovcnt);
 /**
  * Listen for connections on a socket
  *
- * @param       
+ * @param  sockfd     
  * @param  backlog 
  * The  backlog  argument defines the maximum length to which the queue of pending connection. default value is 2048
  * @return  
@@ -213,8 +232,9 @@ int anssock_listen(int sockfd, int backlog);
 /**
  * Accept a new socket. This function is designed as nonblocking function, so shall not set socket as nonblocking and work with epoll.
  *
- * @param       
- * @param  
+ * @param sockfd      
+ * @param addr 
+ * @param addrlen 
  *
  * @return  
  * On success, these system calls return a nonnegative integer that is a descriptor for the accepted socket.  On error, -1 is returned, and errno is set appropriately.
@@ -225,8 +245,7 @@ int anssock_accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 /**
  * Close a socket.
  *
- * @param       
- * @param 
+ * @param fd      
  *
  * @return  
  * Returns zero on success.  On error, -1 is returned, and errno is set appropriately.
@@ -236,8 +255,9 @@ int anssock_close(int fd);
 /**
  * Shutdown a socket.
  *
- * @param       
- * @param  SHUT_RD,  SHUT_WR,  SHUT_RDWR  have  the  value  0,  1,  2, respectively
+ * @param sockfd      
+ * @param how 
+ *   SHUT_RD,  SHUT_WR,  SHUT_RDWR  have  the  value  0,  1,  2, respectively
  *
  * @return  
  * Returns zero on success.  On error, -1 is returned, and errno is set appropriately.
@@ -248,8 +268,7 @@ int anssock_shutdown(int sockfd, int how);
 /**
  * Create a epoll socket.
  *
- * @param       
- * @param 
+ * @param size      
  *
  * @return  
  *
@@ -259,8 +278,10 @@ int anssock_shutdown(int sockfd, int how);
 /**
  * Update epoll socket event.
  *
- * @param       
- * @param 
+ * @param epfd     
+ * @param op
+ * @param fd     
+ * @param event
  *
  * @return  
  *
@@ -270,6 +291,8 @@ int anssock_shutdown(int sockfd, int how);
 /**
  * Waiting epoll socket event. Only support Edge Triggered.
  *
+ * @param epfd
+ * @param events
  * @param maxevents
  * max events shall less than 2048
  * @param timeout
@@ -285,8 +308,11 @@ int anssock_shutdown(int sockfd, int how);
 /**
  * This is dummy API, always return 0, it is still not implemented.
  *
- * @param       
- * @param 
+ * @param sockfd      
+ * @param level
+ * @param optname      
+ * @param optval
+ * @param optlen      
  *
  * @return  
  *
@@ -295,9 +321,13 @@ int anssock_getsockopt(int sockfd, int level, int optname, void *optval, socklen
 
 /**
  * 
- *
- * @param level: only support SOL_SOCKET       
- * @param optname: only support SO_REUSEPORT
+ * @param sockfd      
+ * @param level: 
+ *   only support SOL_SOCKET       
+ * @param optname: 
+ *   only support SO_REUSEPORT
+ * @param optval
+ * @param optlen      
  *
  * @return  
  * On  success,  zero is returned.  On error, -1 is returned, and errno is set appropriately.
@@ -307,8 +337,9 @@ int anssock_setsockopt(int sockfd, int level, int optname, const void *optval, s
 /**
  *  Returns  the address of the peer connected to the socket sockfd.
  *
- * @param       
- * @param 
+ * @param sockfd       
+ * @param addr
+ * @param addrlen
  *
  * @return  
  * On  success,  zero is returned.  On error, -1 is returned, and errno is set appropriately.
@@ -319,8 +350,9 @@ int anssock_getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 /**
  * Returns the current address to which the socket sockfd is bound.
  *
- * @param       
- * @param 
+ * @param sockfd      
+ * @param addr
+ * @param addrlen
  *
  * @return  
  * On  success,  zero is returned.  On error, -1 is returned, and errno is set appropriately.
@@ -337,4 +369,4 @@ int anssock_getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
  */
  void anssock_enable_log(int flag);
 
-#endif /* __ANS_SOCKET_INTF_H__ */
+#endif /* __ANSSOCK_INTF_H__ */

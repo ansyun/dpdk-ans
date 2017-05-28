@@ -1,6 +1,6 @@
 #   BSD LICENSE
 #
-#   Copyright(c) 2010-2014 ANS Corporation. All rights reserved.
+#   Copyright(c) 2015-2017 Ansyun <anssupport@163.com>. All rights reserved.
 #   All rights reserved.
 #
 #   Redistribution and use in source and binary forms, with or without
