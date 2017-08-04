@@ -306,20 +306,6 @@ int anssock_shutdown(int sockfd, int how);
  int anssock_epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
 
 /**
- * This is dummy API, always return 0, it is still not implemented.
- *
- * @param sockfd      
- * @param level
- * @param optname      
- * @param optval
- * @param optlen      
- *
- * @return  
- *
- */
-int anssock_getsockopt(int sockfd, int level, int optname, void *optval, socklen_t *optlen);
-
-/**
  * 
  * @param sockfd      
  * @param level: 
