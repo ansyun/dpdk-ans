@@ -13,7 +13,7 @@ ANS(accelerated network stack) is porting from [FreeBSD](http://freebsd.org) TCP
 - test: Example application with ANS for testing ANS tcp/ip stack
 
 Support environment
-  - EAL is based on dpdk-17.02;
+  - EAL is based on dpdk-17.02.1;
   - Development enviroment is based on x86_64-native-linuxapp-gcc;
   - linux version：
 4.4.0-45-generic (Ubuntu 16.04.1 LTS).
