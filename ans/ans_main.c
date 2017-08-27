@@ -464,7 +464,7 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
             /* user default tx conf */
 
             /* txconf = &ans_tx_conf; */
-            txconf->txq_flags = ans_tx_conf.txq_flags;
+            txconf->txq_flags = 0;
 
             printf("\t lcore id:%u, tx queue id:%d, socket id:%d \n", lcore_id, queueid, socketid);
             printf("\t Conf-- tx pthresh:%d, tx hthresh:%d, tx wthresh:%d, txq_flags:0x%x \n", txconf->tx_thresh.pthresh,
