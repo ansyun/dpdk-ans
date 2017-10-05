@@ -42,17 +42,20 @@ RTE_TARGET ?= x86_64-native-linuxapp-gcc
 
 include $(RTE_SDK)/mk/rte.vars.mk
 
-ODP_PATH = $(RTE_ANS)
 
 # binary name
 APP = anscli
 
+
+
 # all source are stored in SRCS-y
-SRCS-y := anscli_main.c anscli_conf.c anscli_ring.c
+SRCS-y := anscli_main.c 
 
 CFLAGS += -O3
 #CFLAGS += $(WERROR_FLAGS)
-CFLAGS += -I$(ODP_PATH)/librte_ans/include
-CFLAGS += -I$(ODP_PATH)/shared
+CFLAGS += -I$(RTE_ANS)/librte_anscli/include
+
+LDLIBS += $(RTE_ANS)/librte_anscli/librte_anscli.a 
+
 
 include $(RTE_SDK)/mk/rte.extapp.mk

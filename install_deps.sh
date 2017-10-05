@@ -4,7 +4,7 @@ set -e
 
 if test -e ans 
 then
-    echo "Start to generate librte_ans.a/librte_anssock.a for -mnative."
+    echo "Start to generate librte_ans.a/librte_anssock.a/librte_anscli.a for -mnative."
 else
     echo "You must run this script in the top-level dpdk-ans directory"
     exit 1
@@ -28,8 +28,12 @@ if [ $NATIVE_MATCH = "core2" ] ; then
     cd $RTE_ANS/librte_anssock/
     rm -f librte_anssock.a
     ln -s librte_anssock_core2.a librte_anssock.a
-    
-    echo "Generate librte_ans.a/librte_anssock.a for core2 successfully."
+ 
+    cd $RTE_ANS/librte_anscli/
+    rm -f librte_anscli.a
+    ln -s librte_anscli_core2.a librte_anscli.a
+       
+    echo "Generate librte_ans.a/librte_anssock.a/librte_anscli.a for core2 successfully."
 
 elif [ $NATIVE_MATCH = "westmere" ] ; then
 
@@ -40,8 +44,12 @@ elif [ $NATIVE_MATCH = "westmere" ] ; then
     cd $RTE_ANS/librte_anssock/
     rm -f librte_anssock.a
     ln -s librte_anssock_westmere.a librte_anssock.a
-    
-    echo "Generate librte_ans.a/librte_anssock.a for westmere successfully."
+
+    cd $RTE_ANS/librte_anscli/
+    rm -f librte_anscli.a
+    ln -s librte_anscli_westmere.a librte_anscli.a
+        
+    echo "Generate librte_ans.a/librte_anssock.a/librte_anscli.a for westmere successfully."
     
 elif [ $NATIVE_MATCH = "sandybridge" ] ; then   
 
@@ -53,7 +61,11 @@ elif [ $NATIVE_MATCH = "sandybridge" ] ; then
     rm -f librte_anssock.a
     ln -s librte_anssock_sandybridge.a librte_anssock.a
 
-    echo "Generate librte_ans.a/librte_anssock.a for sandybridge successfully."
+    cd $RTE_ANS/librte_anscli/
+    rm -f librte_anscli.a
+    ln -s librte_anscli_sandybridge.a librte_anscli.a
+    
+    echo "Generate librte_ans.a/librte_anssock.a/librte_anscli.a for sandybridge successfully."
 
 elif [ $NATIVE_MATCH = "ivybridge" ] ; then 
 
@@ -64,8 +76,12 @@ elif [ $NATIVE_MATCH = "ivybridge" ] ; then
     cd $RTE_ANS/librte_anssock/
     rm -f librte_anssock.a
     ln -s librte_anssock_ivybridge.a librte_anssock.a
- 
-    echo "Generate librte_ans.a/librte_anssock.a for ivybridge successfully."
+
+    cd $RTE_ANS/librte_anscli/
+    rm -f librte_anscli.a
+    ln -s librte_anscli_ivybridge.a librte_anscli.a
+     
+    echo "Generate librte_ans.a/librte_anssock.a/librte_anscli.a for ivybridge successfully."
 
 elif [ $NATIVE_MATCH = "haswell" ] ; then   
 
@@ -77,7 +93,11 @@ elif [ $NATIVE_MATCH = "haswell" ] ; then
     rm -f librte_anssock.a
     ln -s librte_anssock_haswell.a librte_anssock.a
 
-    echo "Generate librte_ans.a/librte_anssock.a for haswell successfully."
+    cd $RTE_ANS/librte_anscli/
+    rm -f librte_anscli.a
+    ln -s librte_anscli_haswell.a librte_anscli.a
+
+    echo "Generate librte_ans.a/librte_anssock.a/librte_anscli.a for haswell successfully."
 
 elif [ $NATIVE_MATCH = "broadwell" ] ; then   
 
@@ -89,7 +109,11 @@ elif [ $NATIVE_MATCH = "broadwell" ] ; then
     rm -f librte_anssock.a
     ln -s librte_anssock_broadwell.a librte_anssock.a
   
-    echo "Generate librte_ans.a/librte_anssock.a for broadwell successfully."
+    cd $RTE_ANS/librte_anscli/
+    rm -f librte_anscli.a
+    ln -s librte_anscli_broadwell.a librte_anscli.a
+    
+    echo "Generate librte_ans.a/librte_anssock.a/librte_anscli.a for broadwell successfully."
 
 else 
 

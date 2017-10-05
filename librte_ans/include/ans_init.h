@@ -52,7 +52,6 @@ struct ans_init_config
 {
     uint64_t lcore_mask;                                                                   /**< lcore which used to run ans */
     uint32_t max_sock_conn;                                                            /**< support max sock connection */
-    uint8_t   hw_rss;                                                                          /**< If HW RSS enable */
     cpu_set_t cpu_set;                                                                       /**< system default cpu set */
     struct rte_mempool *pktmbuf_pool[ANS_MAX_NB_SOCKETS];     /**< mbuf pools for each sockets */
 } __rte_cache_aligned;
@@ -99,13 +98,11 @@ int ans_register(ans_send_packet_cb send_cb);
  *
  * @param lcore_id
  *   current lcore id.
- * @param cur_tsc   
- *   current tsc.
  *
  * @return  
  *
  */
-void ans_message_handle(unsigned lcore_id, uint64_t cur_tsc);
+void ans_message_handle(unsigned lcore_id);
 
 
 #endif /* __ANS_INIT_H__ */

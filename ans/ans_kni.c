@@ -145,7 +145,7 @@ int ans_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned 
     if(unlikely(ring == NULL))
         return -ENOENT;
 
-    return rte_ring_enqueue_bulk(ring,(void **)mbufs,nb_mbufs);
+    return rte_ring_enqueue_bulk(ring,(void **)mbufs, nb_mbufs, NULL);
 }
 
 int ans_kni_init()
@@ -322,7 +322,7 @@ static void kni_ring_to_kni(struct kni_port_params *p)
     port_id = p->port_id;
 
     /* Burst rx from ring */
-    nb_rx = rte_ring_dequeue_burst(p->ring,(void **)&pkts_burst, PKT_BURST_SZ);
+    nb_rx = rte_ring_dequeue_burst(p->ring,(void **)&pkts_burst, PKT_BURST_SZ, NULL);
 
     if (unlikely(nb_rx > PKT_BURST_SZ))
     {

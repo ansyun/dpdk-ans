@@ -40,8 +40,10 @@ There are many libraries, so their headers may be grouped by topics:
   [init]               (@ref ans_init.h)
 
 - **layers**:
-  [ethernet]           (@ref ans_enet_intf.h),
   [IP]                 (@ref ans_ip_intf.h)
 
 - **socket**:
   [anssock]            (@ref anssock_intf.h)
+
+- **cli**:
+  [anscli]            (@ref anscli_intf.h)

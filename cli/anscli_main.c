@@ -48,15 +48,6 @@
   #endif
 #endif
 
-#include <cmdline_rdline.h>
-#include <cmdline_parse.h>
-#include <cmdline_parse_ipaddr.h>
-#include <cmdline_parse_num.h>
-#include <cmdline_parse_string.h>
-#include <cmdline.h>
-#include <cmdline_socket.h>
-
-
 #include <rte_memory.h>
 #include <rte_memzone.h>
 #include <rte_tailq.h>
@@ -65,14 +56,12 @@
 #include <rte_log.h>
 
 #include "anscli_main.h"
-#include "anscli_conf.h"
-#include "anscli_ring.h"
+#include "anscli_intf.h"
 
 
 int main(void)
 {
     int ret;
-    struct cmdline *cl;
     int     param_num = 8;
     char *param[] = {"anscli",
                                "-c",
@@ -85,22 +74,12 @@ int main(void)
                                NULL};
 
 
-    rte_set_log_level(RTE_LOG_ERR);
+    rte_log_set_global_level(RTE_LOG_ERR);
     ret = rte_eal_init(param_num, param);
     if (ret < 0)
         rte_panic("Cannot init EAL\n");
 
-    ret = anscli_ring_init();
-    if(ret != 0)
-        rte_panic("Cannot init ring\n");
-
-
-    cl = cmdline_stdin_new(ip_main_ctx, "ans> ");
-    if (cl == NULL)
-    rte_panic("Cannot create ans cmdline instance\n");
-
-    cmdline_interact(cl);
-    cmdline_stdin_exit(cl);
-
+    anscli_start();
+    
     return 0;
 }

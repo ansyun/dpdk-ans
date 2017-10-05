@@ -383,6 +383,11 @@
 
 #define  ANS_EIPFRAG          2000
 
+#define  ANS_EGATEWAY         3000    /* Invalid gateway */
+#define  ANS_EROUTE             3001    /* Add route failed */
+#define  ANS_EADDRESS         3002    /* Add ip address failed */
+#define  ANS_ENEIGHBOR       3003    /* Add neighbor route failed */
+
 
 #define ANS_ERRMEM        ANS_ENOMEM   /* Out of memory error.     */
 #define ANS_ERRBUF        ANS_ENOBUFS    /* Buffer error.            */

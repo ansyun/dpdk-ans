@@ -78,7 +78,6 @@
 #include <rte_spinlock.h>
 
 #include "ans_init.h"
-#include "ans_enet_intf.h"
 #include "ans_ip_intf.h"
 
 /* add by ans_team -- end */
@@ -464,7 +463,7 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
             /* user default tx conf */
 
             /* txconf = &ans_tx_conf; */
-            txconf->txq_flags = 0;
+            txconf->txq_flags = 0;  /* enable NIC all TX offload */
 
             printf("\t lcore id:%u, tx queue id:%d, socket id:%d \n", lcore_id, queueid, socketid);
             printf("\t Conf-- tx pthresh:%d, tx hthresh:%d, tx wthresh:%d, txq_flags:0x%x \n", txconf->tx_thresh.pthresh,
@@ -746,7 +745,7 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
         cur_tsc = rte_rdtsc();
 
         /* add by ans_team ---start */
-        ans_message_handle(lcore_id, cur_tsc);
+        ans_message_handle(lcore_id);
         /* add by ans_team ---end */
 
 
@@ -970,28 +969,31 @@ int main(int argc, char **argv)
         printf("add %s device\r\n", ifname);
         rte_eth_macaddr_get(portid, &eth_addr);
 
-        ans_intf_add(portid,  ifname, &eth_addr);
+        ans_iface_add(portid,  ifname, &eth_addr);
 
-        int ip_addr = 0x0200000a;
+        /* host byte order */
+        int ip_addr = 0x0a000002;
         ip_addr += portid << 16;
 
         printf("add IP %x on device %s \n", ip_addr, ifname);
-        ans_intf_add_ipaddr((caddr_t)ifname, ip_addr, 0x00ffffff);
+        ans_add_ipaddr((char *)ifname, ip_addr, 24);
     }
+
+    printf("show all IPs: \n");
+    ans_show_ipaddr();
+    printf("\n");
+    
     /* add by ans_team ---end */
 
     /* add by ans_team for testing ---start */
-
-    printf("Show interface \n");
-    ans_intf_show();
-
+    
     int route_ret = 0;
     printf("add static route \r\n");
 
-    route_ret = ans_add_route(0x00000a0a, 1, 0x0500000a, 0x00ffffff, ANS_IP_RTF_GATEWAY);
+    /* host byte order */
+    route_ret = ans_add_route(0x0a0a0000, 24, 0x0a000005);
 
-    ans_route_show_all();
-
+    ans_show_route();
     printf("\n");
     /* add by ans_team ---end */
 
