@@ -8,7 +8,11 @@ ANS(accelerated network stack) is porting from [FreeBSD](http://freebsd.org) TCP
 
 - librte_anssock: ANS socket lib for application, zero copy between ANS and application.
 
+- librte_anscli: ANS cli lib for route/ip/neigh/link configuration.
+
 - cli: Command for configure ANS tcp/ip stack.
+
+- example: ANS application example.
  
 - test: Example application with ANS for testing ANS tcp/ip stack
 
