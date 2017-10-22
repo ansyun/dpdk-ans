@@ -601,6 +601,8 @@ static inline int ans_send_burst(struct ans_lcore_queue *qconf, uint16_t n, uint
     ret = rte_eth_tx_burst(port, queueid, m_table, n);
     if (unlikely(ret < n))
     {
+        ans_packet_stats(port, n - ret);
+        
         do
         {
             rte_pktmbuf_free(m_table[ret]);

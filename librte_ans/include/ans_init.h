@@ -92,6 +92,18 @@ int ans_register(ans_send_packet_cb send_cb);
  */
  int ans_packet_handle(struct rte_mbuf *m, uint8_t portid);
 
+/**
+ * Handle the received packets by ans stack
+ *
+ * @param portid  
+ *    port id.
+ * @param packets_nb 
+ *    droped packets number. 
+ *
+ * @return  
+ *
+ */
+void ans_packet_stats(uint8_t portid, uint16_t packets_nb);
 
 /**
  * Handle ans internal message.
