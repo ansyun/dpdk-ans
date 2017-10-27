@@ -38,12 +38,15 @@
 
 /* Load Configure Information for ODP KNI module */
 int ans_kni_config(struct ans_user_config * common_config, struct rte_mempool * pktmbuf_pool[]);
+
 /* Destory ODP KNI module */
 int ans_kni_destory();
+
 /* Run ODP KNI module, should be called at main loop each lcore */
 void ans_kni_main();
+
 /* send packets which cannot be proceed to network stack */
-int ans_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned port_id);
+int ans_kni_send_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned port_id);
 
 #endif
 

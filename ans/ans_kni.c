@@ -80,7 +80,6 @@
 
 #define PKT_BURST_SZ                    32
 #define MAX_PACKET_SZ                 2048
-#define RTE_LOGTYPE_APP             RTE_LOGTYPE_USER1
 
 /* Total octets in ethernet header */
 #define KNI_ENET_HEADER_SIZE    14
@@ -108,35 +107,50 @@ struct kni_lcore_params
 struct kni_port_params  * kni_port_params_array[RTE_MAX_ETHPORTS];
 struct kni_lcore_params * kni_lcore_params_array[RTE_MAX_LCORE];
 
-//TODO:
 static struct rte_mempool ** kni_pktmbuf_pool;
 
-/* Options for configuring ethernet port */
-static struct rte_eth_conf port_conf =
-{
-  .rxmode =
-       {
-    .header_split = 0,      /* Header Split disabled */
-    .hw_ip_checksum = 0,    /* IP checksum offload disabled */
-    .hw_vlan_filter = 0,    /* VLAN filtering disabled */
-    .jumbo_frame = 0,       /* Jumbo Frame Support disabled */
-    .hw_strip_crc = 0,      /* CRC stripped by hardware */
-  },
-  .txmode =
-  {
-    .mq_mode = ETH_MQ_TX_NONE,
-  },
-};
-
-
-
 //static struct kni_interface_stats kni_stats[RTE_MAX_ETHPORTS];
-static int kni_change_mtu(uint8_t port_id, unsigned new_mtu);
-static int kni_config_network_interface(uint8_t port_id, uint8_t if_up);
-static int ans_kni_alloc(uint8_t port_id);
+
+
+/* Callback for request of configuring network interface up/down */
+static int ans_kni_config_iface(uint8_t port_id, uint8_t if_up)
+{
+    int ret = 0;
+
+    if (port_id >= rte_eth_dev_count())
+        return -EINVAL;
+
+    ret = (if_up) ?
+        rte_eth_dev_set_link_up(port_id) :
+        rte_eth_dev_set_link_down(port_id);
+
+    return ret;
+}
+
+
+/* Callback Functions */
+static int ans_kni_change_mtu(uint8_t port_id, unsigned new_mtu)
+{
+    int ret;
+    
+    if (port_id >= rte_eth_dev_count())
+        return -EINVAL;
+
+    if (new_mtu > ETHER_MAX_LEN)
+        return -EINVAL;
+
+    /* Set new MTU */
+    ret = rte_eth_dev_set_mtu(port_id, new_mtu);
+    if (ret < 0)
+        return ret;
+
+    return 0;
+
+}
+
 
 /* KNI Module Interface */
-int ans_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned port_id)
+int ans_kni_send_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned port_id)
 {
     if(unlikely(kni_port_params_array[port_id] == NULL))
         return -ENOENT;
@@ -148,6 +162,79 @@ int ans_kni_sendpkt_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned 
     return rte_ring_enqueue_bulk(ring,(void **)mbufs, nb_mbufs, NULL);
 }
 
+/**********************************************************************
+*@description:
+* Alloc KNI Devices for PORT_ID
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
+static int ans_kni_alloc(uint8_t port_id)
+{
+  uint8_t i;
+  struct rte_kni *kni;
+  struct rte_kni_conf conf;
+  struct kni_port_params **params = kni_port_params_array;
+
+  unsigned lcore_id = params[port_id]->lcore_id;
+  unsigned lcore_socket = rte_lcore_to_socket_id(lcore_id);
+  struct rte_mempool * kni_mempool = kni_pktmbuf_pool[lcore_socket];
+
+  if (port_id >= RTE_MAX_ETHPORTS || !params[port_id])
+    return -1;
+
+  memset(&conf, 0, sizeof(conf));
+  snprintf(conf.name, RTE_KNI_NAMESIZE,"keth%u", port_id);
+  conf.group_id = (uint16_t)port_id;
+  conf.mbuf_size = MAX_PACKET_SZ;
+
+  struct rte_kni_ops ops;
+  struct rte_eth_dev_info dev_info;
+
+  memset(&dev_info, 0, sizeof(dev_info));
+  rte_eth_dev_info_get(port_id, &dev_info);
+  conf.addr = dev_info.pci_dev->addr;
+  conf.id = dev_info.pci_dev->id;
+
+  memset(&ops, 0, sizeof(ops));
+  ops.port_id = port_id;
+  ops.change_mtu = ans_kni_change_mtu;
+  ops.config_network_if = ans_kni_config_iface;
+
+  kni = rte_kni_alloc(kni_mempool, &conf, &ops);
+
+  if (!kni)
+    rte_exit(EXIT_FAILURE, "Fail to create kni for " "port: %d\n", port_id);
+
+  params[port_id]->kni = kni;
+
+  /* Create Ring to recieve the pkts from other cores */
+  char ring_name[32];
+  snprintf(ring_name,sizeof(ring_name),"kni_ring_s%u_p%u",lcore_socket,port_id);
+
+  params[port_id]->ring = rte_ring_create(ring_name,ANS_KNI_RING_SIZE, lcore_socket,RING_F_SC_DEQ);
+
+  if(!params[port_id]->ring)
+    rte_exit(EXIT_FAILURE, "Fail to create ring for kni %s",ring_name);
+
+  return 0;
+}
+
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
 int ans_kni_init()
 {
     for (int port = 0; port < RTE_MAX_ETHPORTS; port++)
@@ -162,6 +249,17 @@ int ans_kni_init()
     return 0;
 }
 
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
 int ans_kni_config(struct ans_user_config * common_config, struct rte_mempool * pktmbuf_pool[])
 {
     uint32_t portmask    = common_config->port_mask;
@@ -215,7 +313,17 @@ int ans_kni_config(struct ans_user_config * common_config, struct rte_mempool * 
     return 0;
 }
 
-
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
 int ans_kni_destory()
 {
     for (int port = 0; port < RTE_MAX_ETHPORTS; port++)
@@ -229,11 +337,22 @@ int ans_kni_destory()
     }
 }
 
-static void kni_burst_free_mbufs(struct rte_mbuf **pkts, unsigned num)
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
+static inline void ans_kni_mbuf_free(struct rte_mbuf **pkts, unsigned num)
 {
     unsigned i;
 
-    if (pkts == NULL)
+    if (unlikely(pkts == NULL))
         return;
 
     for (i = 0; i < num; i++)
@@ -243,7 +362,18 @@ static void kni_burst_free_mbufs(struct rte_mbuf **pkts, unsigned num)
     }
 }
 
-static int kni_free_kni(uint8_t port_id)
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
+static int ans_kni_free(uint8_t port_id)
 {
     uint8_t i = 0;
     struct kni_port_params **p = kni_port_params_array;
@@ -258,59 +388,18 @@ static int kni_free_kni(uint8_t port_id)
     return 0;
 }
 
-/* Alloc KNI Devices for PORT_ID */
-static int ans_kni_alloc(uint8_t port_id)
-{
-  uint8_t i;
-  struct rte_kni *kni;
-  struct rte_kni_conf conf;
-  struct kni_port_params **params = kni_port_params_array;
-
-  unsigned lcore_id = params[port_id]->lcore_id;
-  unsigned lcore_socket = rte_lcore_to_socket_id(lcore_id);
-  struct rte_mempool * kni_mempool = kni_pktmbuf_pool[lcore_socket];
-
-  if (port_id >= RTE_MAX_ETHPORTS || !params[port_id])
-    return -1;
-
-  memset(&conf, 0, sizeof(conf));
-  snprintf(conf.name, RTE_KNI_NAMESIZE,"keth%u", port_id);
-  conf.group_id = (uint16_t)port_id;
-  conf.mbuf_size = MAX_PACKET_SZ;
-
-  struct rte_kni_ops ops;
-  struct rte_eth_dev_info dev_info;
-
-  memset(&dev_info, 0, sizeof(dev_info));
-  rte_eth_dev_info_get(port_id, &dev_info);
-  conf.addr = dev_info.pci_dev->addr;
-  conf.id = dev_info.pci_dev->id;
-
-  memset(&ops, 0, sizeof(ops));
-  ops.port_id = port_id;
-  ops.change_mtu = kni_change_mtu;
-  ops.config_network_if = kni_config_network_interface;
-
-  kni = rte_kni_alloc(kni_mempool, &conf, &ops);
-
-  if (!kni)
-    rte_exit(EXIT_FAILURE, "Fail to create kni for " "port: %d\n", port_id);
-
-  params[port_id]->kni = kni;
-
-  /* Create Ring to recieve the pkts from other cores */
-  char ring_name[32];
-  snprintf(ring_name,sizeof(ring_name),"kni_ring_s%u_p%u",lcore_socket,port_id);
-
-  params[port_id]->ring = rte_ring_create(ring_name,ANS_KNI_RING_SIZE, lcore_socket,RING_F_SC_DEQ);
-
-  if(!params[port_id]->ring)
-    rte_exit(EXIT_FAILURE, "Fail to create ring for kni %s",ring_name);
-
-  return 0;
-}
-
-static void kni_ring_to_kni(struct kni_port_params *p)
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
+static inline void ans_kni_to_linux(struct kni_port_params *p)
 {
     uint8_t i, port_id;
     unsigned nb_rx, num;
@@ -326,10 +415,15 @@ static void kni_ring_to_kni(struct kni_port_params *p)
 
     if (unlikely(nb_rx > PKT_BURST_SZ))
     {
-        RTE_LOG(ERR, APP, "Error receiving from eth\n");
+        RTE_LOG(ERR, USER8, "Error receiving from eth\n");
         return;
     }
 
+    if(nb_rx == 0)
+    {
+        return;
+    }
+    
     /* Burst tx to kni */
     num = rte_kni_tx_burst(p->kni, pkts_burst, nb_rx);
     //kni_stats[port_id].rx_packets += num;
@@ -338,17 +432,25 @@ static void kni_ring_to_kni(struct kni_port_params *p)
     if (unlikely(num < nb_rx))
     {
         /* Free mbufs not tx to kni interface */
-        kni_burst_free_mbufs(&pkts_burst[num], nb_rx - num);
+        ans_kni_mbuf_free(&pkts_burst[num], nb_rx - num);
         //kni_stats[port_id].rx_dropped += nb_rx - num;
     }
 
     return;
 }
 
-/**
- * Interface to dequeue mbufs from tx_q and burst tx
- */
-static void kni_kni_to_eth(struct kni_port_params *p)
+ /**********************************************************************
+*@description:
+* Interface to dequeue mbufs from tx_q and burst tx
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
+static inline void ans_kni_to_eth(struct kni_port_params *p)
 {
     uint8_t i, port_id;
     unsigned nb_tx, num;
@@ -364,7 +466,12 @@ static void kni_kni_to_eth(struct kni_port_params *p)
     num = rte_kni_rx_burst(p->kni, pkts_burst, PKT_BURST_SZ);
     if (unlikely(num > PKT_BURST_SZ))
     {
-        RTE_LOG(ERR, APP, "Error receiving from KNI\n");
+        RTE_LOG(ERR, USER8, "Error receiving from KNI\n");
+        return;
+    }
+
+    if(num == 0)
+    {
         return;
     }
 
@@ -375,14 +482,24 @@ static void kni_kni_to_eth(struct kni_port_params *p)
     if (unlikely(nb_tx < num))
     {
         /* Free mbufs not tx to NIC */
-        kni_burst_free_mbufs(&pkts_burst[nb_tx], num - nb_tx);
+        ans_kni_mbuf_free(&pkts_burst[nb_tx], num - nb_tx);
         // kni_stats[port_id].tx_dropped += num - nb_tx;
     }
 
     return;
 }
 
-
+ /**********************************************************************
+*@description:
+* 
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
 void ans_kni_main()
 {
     uint8_t lcore_id = rte_lcore_id();
@@ -395,80 +512,10 @@ void ans_kni_main()
     {
         struct kni_port_params * port = lcore->port[i];
 
-        kni_ring_to_kni(port);
-        kni_kni_to_eth(port);
+        ans_kni_to_linux(port);
+        ans_kni_to_eth(port);
     }
 
     return;
 }
-
-
-/* Callback Functions */
-
-static int kni_change_mtu(uint8_t port_id, unsigned new_mtu)
-{
-  int ret;
-  struct rte_eth_conf conf;
-
-  if (port_id >= rte_eth_dev_count()) {
-    RTE_LOG(ERR, APP, "Invalid port id %d\n", port_id);
-    return -EINVAL;
-  }
-
-  RTE_LOG(INFO, APP, "Change MTU of port %d to %u\n", port_id, new_mtu);
-
-  /* Stop specific port */
-  rte_eth_dev_stop(port_id);
-
-  memcpy(&conf, &port_conf, sizeof(conf));
-  /* Set new MTU */
-  if (new_mtu > ETHER_MAX_LEN)
-    conf.rxmode.jumbo_frame = 1;
-  else
-    conf.rxmode.jumbo_frame = 0;
-
-  /* mtu + length of header + length of FCS = max pkt length */
-  conf.rxmode.max_rx_pkt_len = new_mtu + KNI_ENET_HEADER_SIZE +
-              KNI_ENET_FCS_SIZE;
-  ret = rte_eth_dev_configure(port_id, 1, 1, &conf);
-  if (ret < 0) {
-    RTE_LOG(ERR, APP, "Fail to reconfigure port %d\n", port_id);
-    return ret;
-  }
-
-  /* Restart specific port */
-  ret = rte_eth_dev_start(port_id);
-  if (ret < 0) {
-    RTE_LOG(ERR, APP, "Fail to restart port %d\n", port_id);
-    return ret;
-  }
-
-  return 0;
-}
-
-/* Callback for request of configuring network interface up/down */
-static int kni_config_network_interface(uint8_t port_id, uint8_t if_up)
-{
-  int ret = 0;
-
-  if (port_id >= rte_eth_dev_count() || port_id >= RTE_MAX_ETHPORTS) {
-    RTE_LOG(ERR, APP, "Invalid port id %d\n", port_id);
-    return -EINVAL;
-  }
-
-  RTE_LOG(INFO, APP, "Configure network interface of %d %s\n",
-          port_id, if_up ? "up" : "down");
-
-  if (if_up != 0) { /* Configure network interface up */
-    rte_eth_dev_stop(port_id);
-    ret = rte_eth_dev_start(port_id);
-  } else /* Configure network interface down */
-    rte_eth_dev_stop(port_id);
-
-  if (ret < 0)
-    RTE_LOG(ERR, APP, "Failed to start port %d\n", port_id);
-
-  return ret;
-}
-
 

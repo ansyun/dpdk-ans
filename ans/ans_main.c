@@ -174,6 +174,7 @@ static struct rte_eth_conf ans_port_conf =
     .header_split   = 0,      /**< Header Split disabled */
     .hw_ip_checksum = 1, /**< IP/UDP/TCP checksum offload enable */
     .hw_vlan_filter = 0,     /**< VLAN filtering disabled */
+    .hw_vlan_strip = 1,     /**< VLAN strip */
     .jumbo_frame    = 0,   /**< Jumbo Frame Support disabled */
     .hw_strip_crc   = 0,    /**< CRC stripped by hardware */
   //  .enable_lro = 1,  /* enable LRO */
@@ -686,7 +687,7 @@ static inline void ans_to_linux(unsigned port_id, struct rte_mbuf *m)
         return;
     }
 
-    ret = ans_kni_sendpkt_burst(&m, 1, port_id);
+    ret = ans_kni_send_burst(&m, 1, port_id);
     if(ret != 0 )
         rte_pktmbuf_free(m);
 
