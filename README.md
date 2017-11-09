@@ -33,7 +33,9 @@ Support feature:
  - ICMP;
  - Commands for adding, deleting, showing IP address;
  - Commands for adding, deleting, showing static route;
- - Commands for showing ARP table;
+ - Commands for showing neigh table;
+ - Commands for showing inteface and statistics;
+ - Commands for showing IP statistics;
  - UDP protocol;
  - Socket layer, share memory;
  - Socket API, socket/close/send/recv/epoll/writev/readv/shutdown;
