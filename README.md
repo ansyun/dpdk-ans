@@ -29,12 +29,12 @@ Support feature:
  - Ether, zero copy between NIC and ANS TCP/IP stack;
  - ARP, ARP timeout;
  - IP layer, IP fragmentation and reassemble;
- - Routing;
+ - High performance routing;
  - ICMP;
  - Commands for adding, deleting, showing IP address;
  - Commands for adding, deleting, showing static route;
  - Commands for showing neigh table;
- - Commands for showing inteface and statistics;
+ - Commands for showing interface and statistics;
  - Commands for showing IP statistics;
  - UDP protocol;
  - Socket layer, share memory;
