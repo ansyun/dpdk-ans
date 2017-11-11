@@ -30,12 +30,14 @@ Support feature:
  - ARP, ARP timeout;
  - IP layer, IP fragmentation and reassemble;
  - High performance routing;
+ - ACL;
  - ICMP;
  - Commands for adding, deleting, showing IP address;
  - Commands for adding, deleting, showing static route;
  - Commands for showing neigh table;
  - Commands for showing interface and statistics;
  - Commands for showing IP statistics;
+ - Commands for adding, deleting, showing ACL; 
  - UDP protocol;
  - Socket layer, share memory;
  - Socket API, socket/close/send/recv/epoll/writev/readv/shutdown;
@@ -46,10 +48,7 @@ Support feature:
     - Support multicore tcp stack, per tcp stack per lcore;
     - Support TSO.
  - 
-Next Planning;
-- Enhance socket API;
-- Performance testing.
-
+ 
 #### Build ANS
 --------------
 ```
