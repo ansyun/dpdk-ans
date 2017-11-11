@@ -387,6 +387,7 @@
 #define  ANS_EROUTE             3001    /* Add route failed */
 #define  ANS_EADDRESS         3002    /* Add ip address failed */
 #define  ANS_ENEIGHBOR       3003    /* Add neighbor route failed */
+#define  ANS_EACL                3004        /* Add ACL failed */
 
 
 #define ANS_ERRMEM        ANS_ENOMEM   /* Out of memory error.     */
