@@ -51,6 +51,13 @@ Support feature:
  
 #### ANS User Guide
 --------------
+```
+# git clone https://github.com/ansyun/dpdk-ans.git
+# export RTE_ANS=/home/mytest/dpdk-ans
+# ./install_deps.sh
+# cd ans
+# make
+```
 [ANS User Guide](https://github.com/ansyun/dpdk-ans/tree/master/doc/guides/ans_user_guide.pdf)
 
 #### TCP Deployment
@@ -129,7 +136,7 @@ ANS          |               |               |
     |--------------------------------------| 
  
 ```
-[ANS Performance Report](https://github.com/ansyun/dpdk-ans/tree/master/doc/guides/ans_performance_report.pdf)
+  [ANS Performance Report](https://github.com/ansyun/dpdk-ans/tree/master/doc/guides/ans_performance_report.pdf)
 
 - dpdk-redis performance testing
 ```
