@@ -49,15 +49,10 @@ Support feature:
     - Support TSO.
  - 
  
-#### Build ANS
+#### ANS User Guide
 --------------
-```
-# git clone https://github.com/ansyun/dpdk-ans.git
-# export RTE_ANS=/home/mytest/dpdk-ans
-# ./install_deps.sh
-# cd ans
-# make
-```
+[ANS User Guide](https://github.com/ansyun/dpdk-ans/tree/master/doc/guides/ans_user_guide.pdf)
+
 #### TCP Deployment
 --------------
 ```
@@ -120,7 +115,7 @@ ANS          |               |               |
 ```
 - L3 forwarding performance testing
 
-  ENV: CPU- intel xeon 2.3G, NIC- 10G, one lcore rx packets-->l3 forwarding --> tx packets,  Test tool:pktgen-DPDK
+  ENV: CPU- Intel(R) Xeon(R) CPU E5-2683 v3 @ 2.00GHz, NIC- Intel 82599ES 10-Gigabit,  Test tool:pktgen-DPDK
 ```
     |--------------------------------------| 
     |      L3 forwarding performance       |
@@ -128,19 +123,14 @@ ANS          |               |               |
     |--------------------------------------| 
     | Packet size(byte)| Throughput(Mpps)  | 
     |--------------------------------------|
-    |     64           |      3.682        | 
+    |     64           |      7.78        | 
     |--------------------------------------| 
-    |     128          |      3.682        | 
+    |     128          |      Line Rate    | 
     |--------------------------------------| 
-    |     256          |      3.683        | 
-    |--------------------------------------| 
-    |     512          |      2.35         |
-    |--------------------------------------| 
-    |     1024         |      1.197        | 
-    |--------------------------------------| 
-    |     1500         |      0.822        | 
-    |--------------------------------------| 
+ 
 ```
+[ANS Performance Report](https://github.com/ansyun/dpdk-ans/tree/master/doc/guides/ans_performance_report.pdf)
+
 - dpdk-redis performance testing
 ```
 ====ENV=== 
