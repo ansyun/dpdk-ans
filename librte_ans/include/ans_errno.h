@@ -77,7 +77,7 @@
 #include <errno.h>
 
 #define	ANS_EPERM		EPERM		/* Operation not permitted */
-#define	ANS_ENOENT	ENOENT		/* No such file or directory */
+#define	ANS_ENOENT 	ENOENT		/* No such file or directory */
 #define	ANS_ESRCH		ESRCH		/* No such process */
 #define	ANS_EINTR		EINTR		/* Interrupted system call */
 #define	ANS_EIO		EIO  		/* Input/output error */

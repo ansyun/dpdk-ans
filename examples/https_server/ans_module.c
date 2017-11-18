@@ -72,12 +72,12 @@
 
 
 /* 
- *  opendp socket fd large than linux "ulimit -n " value
+ *  ANS socket fd large than linux "ulimit -n " value
  *  
 */
 #define ANS_FD_BASE 2000
 
-/* 1: redis socket will go through opendp stack, 0: go through linux stack */
+/* 1: redis socket will go through ANS stack, 0: go through linux stack */
 int ans_sock_enable = 1; 
 
 int ansfd_debug_flag = 0;
