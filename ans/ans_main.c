@@ -602,7 +602,7 @@ static inline int ans_send_burst(struct ans_lcore_queue *qconf, uint16_t n, uint
     ret = rte_eth_tx_burst(port, queueid, m_table, n);
     if (unlikely(ret < n))
     {
-        ans_packet_stats(port, n - ret);
+        ans_eth_stats(port, n - ret);
         
         do
         {
@@ -624,7 +624,7 @@ static inline int ans_send_burst(struct ans_lcore_queue *qconf, uint16_t n, uint
 *@return values:
 *
 **********************************************************************/
-static inline int ans_send_single_packet(struct rte_mbuf *m, uint8_t port)
+static inline int ans_send_packet(uint8_t port, struct rte_mbuf *m)
 {
     uint32_t lcore_id;
     uint16_t len;
@@ -659,6 +659,34 @@ static inline int ans_send_single_packet(struct rte_mbuf *m, uint8_t port)
 *@return values:
 *
 **********************************************************************/
+static inline int ans_bypass_packet(uint8_t port_id, struct rte_mbuf *m)
+{
+    int ret = 0;
+
+    if(ans_user_conf.kni_on != 1)
+    {
+        rte_pktmbuf_free(m);
+        return 0 ;
+    }
+
+    ret = ans_kni_send_burst(&m, 1, port_id);
+    if(ret != 0 )
+        rte_pktmbuf_free(m);
+
+    return 0;
+}
+
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
 static void ans_init_timer()
 {
     /* init RTE timer library */
@@ -677,37 +705,8 @@ static void ans_init_timer()
 *@return values:
 *
 **********************************************************************/
-static inline void ans_to_linux(unsigned port_id, struct rte_mbuf *m)
-{
-    int ret = 0;
-
-    if(ans_user_conf.kni_on != 1)
-    {
-        rte_pktmbuf_free(m);
-        return;
-    }
-
-    ret = ans_kni_send_burst(&m, 1, port_id);
-    if(ret != 0 )
-        rte_pktmbuf_free(m);
-
-    return;
-}
-
-/**********************************************************************
-*@description:
-*
-*
-*@parameters:
-* [in]:
-* [in]:
-*
-*@return values:
-*
-**********************************************************************/
 static int ans_main_loop(__attribute__((unused)) void *dummy)
 {
-    int ret;
     unsigned nb_ports;
     int i, j, nb_rx;
     unsigned lcore_id;
@@ -802,38 +801,8 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
             if (nb_rx == 0)
                 continue;
 
-            /* Prefetch first packets */
-            for (j = 0; j < PREFETCH_OFFSET && j < nb_rx; j++)
-            {
-                rte_prefetch0(rte_pktmbuf_mtod(pkts_burst[j], void *));
-            }
-
-            /* Prefetch and forward already prefetched packets */
-            for (j = 0; j < (nb_rx - PREFETCH_OFFSET); j++)
-            {
-                rte_prefetch0(rte_pktmbuf_mtod(pkts_burst[j + PREFETCH_OFFSET], void *));
-
-                /* add by ans_team ---start */
-
-                ret = ans_packet_handle(pkts_burst[j], portid);
-                if(ret == ANS_MBUF_CONTINUE)
-                    ans_to_linux(portid, pkts_burst[j]);
-
-                /* add by ans_team ---end */
-            }
-
-            /* Forward remaining prefetched packets */
-            for (; j < nb_rx; j++)
-            {
-
-                /* add by ans_team ---start */
-
-                ret = ans_packet_handle(pkts_burst[j], portid);
-               if(ret == ANS_MBUF_CONTINUE)
-                   ans_to_linux(portid, pkts_burst[j]);
-
-                /* add by ans_team ---end */
-            }
+            ans_eth_rx_burst(portid, pkts_burst, nb_rx);
+          
         }
 
         /* to support KNI, at 2014-12-15 */
@@ -935,7 +904,7 @@ int main(int argc, char **argv)
     printf("\ncore mask: %x, sockets number:%d, lcore number:%d \n", ans_user_conf.lcore_mask, ans_user_conf.socket_nb, ans_user_conf.lcore_nb);
 
     printf("start to init ans \n");
-    init_conf.max_sock_conn = ans_user_conf.lcore_nb * 128 * 1024;
+    init_conf.sock_nb = ans_user_conf.lcore_nb * 128 * 1024;
 
     init_conf.lcore_mask = ans_user_conf.lcore_mask;
     for(i = 0 ; i < MAX_NB_SOCKETS; i++)
@@ -943,12 +912,13 @@ int main(int argc, char **argv)
         init_conf.pktmbuf_pool[i] = ans_pktmbuf_pool[i];
     }
 
+    init_conf.port_send = ans_send_packet;
+    init_conf.port_bypass = ans_bypass_packet;
+
     ret = ans_initialize(&init_conf);
     if (ret != 0)
     rte_exit(EXIT_FAILURE, "Init ans failed \n");
 
-
-    ans_register(ans_send_single_packet);
     /* add by ans_team ---end */
 
     /* add by ans_team for testing ---start */

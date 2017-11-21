@@ -411,5 +411,7 @@
 #define ANS_FALSE   0
 #define ANS_TRUE    1
 
+#define ANS_PKT_DONE              0
+#define ANS_PKT_CONTINUE       1
 
 #endif

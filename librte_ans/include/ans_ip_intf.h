@@ -71,10 +71,6 @@
  *
  */
 
-/* mbuf handle action */
-#define ANS_MBUF_DONE            0    /**< mbuf is handled by ans */
-#define ANS_MBUF_CONTINUE    1    /**<  mbuf isn't handled by ans */
-
 
 /**
  * Add an interface.

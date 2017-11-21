@@ -50,14 +50,18 @@
  */
 struct ans_init_config 
 {
-    uint64_t lcore_mask;                                                                   /**< lcore which used to run ans */
-    uint32_t max_sock_conn;                                                            /**< support max sock connection */
-    cpu_set_t cpu_set;                                                                       /**< system default cpu set */
+    uint64_t lcore_mask;                                                           /**< lcore which used to run ans */
+    uint32_t sock_nb;                                                                /**< support max sock connection number */
+    cpu_set_t cpu_set;                                                              /**< system default cpu set */
     struct rte_mempool *pktmbuf_pool[ANS_MAX_NB_SOCKETS];     /**< mbuf pools for each sockets */
+
+   int (*port_send)(uint8_t port, struct rte_mbuf *m);                  /** callback for sending one mbuf to port */
+   
+   int (*port_bypass)(uint8_t port, struct rte_mbuf *m);              /** callback for bypassing one mbuf to linux */
+
+
 } __rte_cache_aligned;
 
-
-typedef int (*ans_send_packet_cb)(struct rte_mbuf *m, uint8_t port);
 
 /**
  * Init ans stack.
@@ -70,30 +74,23 @@ typedef int (*ans_send_packet_cb)(struct rte_mbuf *m, uint8_t port);
 int ans_initialize(struct ans_init_config *user_conf);
 
 /**
- * Register packet send callback to ans stack.
- * @param send_cb     
- *   callback function.
- *
- * @return  0 - SUCCESS, non-zero - FAILURE
- *
- */
-int ans_register(ans_send_packet_cb send_cb);
-
-/**
  * Handle the received packets by ans stack
  *
- * @param m 
- *    packet buffer. 
  * @param portid  
  *    port id.
+ * @param rx_pkts 
+ *    packet buffer array. 
+ * @param nb_pkts  
+ *    packets number.
  *
- * @return  0 - SUCCESS, non-zero - FAILURE
+ * @return  void
  *
  */
- int ans_packet_handle(struct rte_mbuf *m, uint8_t portid);
+void ans_eth_rx_burst(uint8_t portid, struct rte_mbuf **rx_pkts, const uint16_t nb_pkts);
+
 
 /**
- * Handle the received packets by ans stack
+ * Statistics dropped packets by port
  *
  * @param portid  
  *    port id.
@@ -103,7 +100,7 @@ int ans_register(ans_send_packet_cb send_cb);
  * @return  
  *
  */
-void ans_packet_stats(uint8_t portid, uint16_t packets_nb);
+void ans_eth_stats(uint8_t portid, uint16_t packets_nb);
 
 /**
  * Handle ans internal message.
