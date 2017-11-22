@@ -91,7 +91,7 @@ int udp_sock_create(int epfd, unsigned port)
     memset(&addr_in, 0, sizeof(addr_in));      
     addr_in.sin_family = AF_INET;  
     addr_in.sin_port   = htons(port);  
-    addr_in.sin_addr.s_addr = htonl(0x02020202); 
+    addr_in.sin_addr.s_addr = inet_addr("10.0.0.2"); 
 
     ret =  anssock_bind(fd, (struct sockaddr *)&addr_in, sizeof(addr_in) );
     if(ret != 0)

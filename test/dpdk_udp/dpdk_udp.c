@@ -30,12 +30,14 @@
  *   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-
+#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdlib.h>
+#include <sched.h>
+#include <unistd.h>
+#include <sys/times.h>
 #include <stdint.h>
 #include <string.h>
-#include <stdlib.h>
 #include <stdarg.h>
 #include <errno.h>
 #include <netinet/in.h>
@@ -50,6 +52,9 @@
   #endif
 #endif
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <sys/time.h>
 
 #include "anssock_intf.h"
@@ -58,7 +63,7 @@
 
 struct epoll_event events[20];
 
-int main(void)
+int main(int argc, char *argv[])
 {
     int ret;
     int i = 0 ;
@@ -72,6 +77,24 @@ int main(void)
     struct epoll_event event;
     char recv_buf[2038];
     int recv_len; 
+    int core = -1;
+
+    if(argc >= 2)
+    {
+        core = atoi(argv[1]);
+        printf("affinity to core %d \n", core);
+
+        /*initialize thread bind cpu*/
+        cpu_set_t cpus;
+
+        CPU_ZERO(&cpus);
+        CPU_SET((unsigned)core, &cpus);
+        sched_setaffinity(0, sizeof(cpus), &cpus);  
+    }
+    else
+    {
+        printf("no affinity by default \n");
+    }
 
     ret = anssock_init(NULL);
     if(ret != 0)
@@ -97,7 +120,7 @@ int main(void)
     memset(&addr_in, 0, sizeof(addr_in));      
     addr_in.sin_family = AF_INET;  
     addr_in.sin_port   = htons(8888);  
-    addr_in.sin_addr.s_addr = htonl(0x02020202); 
+    addr_in.sin_addr.s_addr = inet_addr("10.0.0.2"); 
 
     ret =  anssock_bind(fd, (struct sockaddr *)&addr_in, sizeof(addr_in) );
     if(ret != 0)
@@ -111,7 +134,7 @@ int main(void)
     memset(&remote_addr, 0, sizeof(remote_addr));      
     remote_addr.sin_family = AF_INET;  
     remote_addr.sin_port   = htons(9999);  
-    remote_addr.sin_addr.s_addr = htonl(0x02020205); 
+    remote_addr.sin_addr.s_addr = inet_addr("10.0.0.10");; 
 
 
     event.data.fd = fd;  

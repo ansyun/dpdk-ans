@@ -66,7 +66,7 @@ void udp_send_thread()
         {
             remote_addr.sin_family = AF_INET;
             remote_addr.sin_port = htons(UDP_REMOTE_PORT_START + i);
-            remote_addr.sin_addr.s_addr = inet_addr("2.2.2.2");
+            remote_addr.sin_addr.s_addr = inet_addr("10.0.0.2");
 
             sprintf(sendline, "Hello, dpdk_udp, num:%d !", data_num);
             sendline[SEND_MAX_SIZE -1] = 0;
