@@ -1,6 +1,6 @@
 #### TCP/IP stack for dpdk
 --------------
-ANS(accelerated network stack) is porting from [FreeBSD](http://freebsd.org) TCP/IP stack, and provide a userspace TCP/IP stack for use with the Intel [dpdk](http://dpdk.org/). 
+ANS(accelerated network stack) is DPDK native TCP/IP stack and also refer to [FreeBSD](http://freebsd.org) implementation. ANS provides a userspace TCP/IP stack for use with the Intel [DPDK](http://dpdk.org/). 
 
 - ans: accelerated network stack process.
  
