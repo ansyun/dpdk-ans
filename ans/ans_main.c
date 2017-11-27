@@ -747,7 +747,7 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
         cur_tsc = rte_rdtsc();
 
         /* add by ans_team ---start */
-        ans_message_handle(lcore_id);
+        ans_message_handle();
         /* add by ans_team ---end */
 
 

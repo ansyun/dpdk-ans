@@ -105,13 +105,11 @@ void ans_eth_stats(uint8_t portid, uint16_t packets_nb);
 /**
  * Handle ans internal message.
  *
- * @param lcore_id
- *   current lcore id.
  *
  * @return  
  *
  */
-void ans_message_handle(unsigned lcore_id);
+void ans_message_handle(void);
 
 
 #endif /* __ANS_INIT_H__ */
