@@ -762,8 +762,8 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
         timer_diff_tsc = timer_cur_tsc - timer_prev_tsc;
         if (timer_diff_tsc > TIMER_RESOLUTION_CYCLES)
         {
-          rte_timer_manage();
-          timer_prev_tsc = timer_cur_tsc;
+            rte_timer_manage();
+            timer_prev_tsc = timer_cur_tsc;
         }
 
         /*

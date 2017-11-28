@@ -41,10 +41,12 @@
 #include <errno.h>
 #include <getopt.h>
 #include <assert.h>
+#include <unistd.h>
+#include <net/if.h>
+#include <arpa/inet.h>
+#include <spawn.h>
 
 #include <netinet/in.h>
-#include <linux/if.h>
-#include <linux/if_tun.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -117,13 +119,16 @@ static int ans_kni_config_iface(uint8_t port_id, uint8_t if_up)
 {
     int ret = 0;
 
+    printf("Don't allow to set port UP/DOWN. Always return successfully \n");
+    
+/*
     if (port_id >= rte_eth_dev_count())
         return -EINVAL;
 
     ret = (if_up) ?
         rte_eth_dev_set_link_up(port_id) :
         rte_eth_dev_set_link_down(port_id);
-
+*/
     return ret;
 }
 
@@ -203,7 +208,7 @@ static int ans_kni_alloc(uint8_t port_id)
   memset(&ops, 0, sizeof(ops));
   ops.port_id = port_id;
   ops.change_mtu = ans_kni_change_mtu;
-  ops.config_network_if = ans_kni_config_iface;
+  ops.config_network_if =  ans_kni_config_iface;
 
   kni = rte_kni_alloc(kni_mempool, &conf, &ops);
 
@@ -324,6 +329,38 @@ int ans_kni_config(struct ans_user_config * common_config, struct rte_mempool * 
 *@return values:
 *
 **********************************************************************/
+uint16_t ans_kni_id_get(uint8_t port)
+{
+    uint32_t kni_id;
+    const char *kni_name;
+    struct kni_port_params *kni_port  = kni_port_params_array[port];
+
+    if(kni_port == NULL)
+    {
+        return 0;
+    }
+    else
+    {
+        kni_name = rte_kni_get_name(kni_port->kni);
+        kni_id = if_nametoindex(kni_name);
+            
+        return kni_id;
+    }
+
+    return 0;
+}
+
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
 int ans_kni_destory()
 {
     for (int port = 0; port < RTE_MAX_ETHPORTS; port++)
@@ -399,36 +436,27 @@ static int ans_kni_free(uint8_t port_id)
 *@return values:
 *
 **********************************************************************/
-static inline void ans_kni_to_linux(struct kni_port_params *p)
+static inline void ans_kni_to_linux(struct kni_port_params *port_param)
 {
     uint8_t i, port_id;
     unsigned nb_rx, num;
     struct rte_mbuf *pkts_burst[PKT_BURST_SZ];
 
-    if (p == NULL)
-        return;
+    /* handle kin request event */
+    rte_kni_handle_request(port_param->kni);
 
-    port_id = p->port_id;
+    port_id = port_param->port_id;
 
     /* Burst rx from ring */
-    nb_rx = rte_ring_dequeue_burst(p->ring,(void **)&pkts_burst, PKT_BURST_SZ, NULL);
-
-    if (unlikely(nb_rx > PKT_BURST_SZ))
-    {
-        RTE_LOG(ERR, USER8, "Error receiving from eth\n");
-        return;
-    }
-
+    nb_rx = rte_ring_dequeue_burst(port_param->ring,(void **)&pkts_burst, PKT_BURST_SZ, NULL);
     if(nb_rx == 0)
     {
         return;
     }
     
     /* Burst tx to kni */
-    num = rte_kni_tx_burst(p->kni, pkts_burst, nb_rx);
+    num = rte_kni_tx_burst(port_param->kni, pkts_burst, nb_rx);
     //kni_stats[port_id].rx_packets += num;
-
-    rte_kni_handle_request(p->kni);
     if (unlikely(num < nb_rx))
     {
         /* Free mbufs not tx to kni interface */
@@ -450,20 +478,17 @@ static inline void ans_kni_to_linux(struct kni_port_params *p)
 *@return values:
 *
 **********************************************************************/
-static inline void ans_kni_to_eth(struct kni_port_params *p)
+static inline void ans_kni_to_eth(struct kni_port_params *port_param)
 {
     uint8_t i, port_id;
     unsigned nb_tx, num;
     uint32_t nb_kni;
     struct rte_mbuf *pkts_burst[PKT_BURST_SZ];
 
-    if (p == NULL)
-        return;
-
-    port_id = p->port_id;
+    port_id = port_param->port_id;
 
     /* Burst rx from kni */
-    num = rte_kni_rx_burst(p->kni, pkts_burst, PKT_BURST_SZ);
+    num = rte_kni_rx_burst(port_param->kni, pkts_burst, PKT_BURST_SZ);
     if (unlikely(num > PKT_BURST_SZ))
     {
         RTE_LOG(ERR, USER8, "Error receiving from KNI\n");
@@ -502,18 +527,20 @@ static inline void ans_kni_to_eth(struct kni_port_params *p)
 **********************************************************************/
 void ans_kni_main()
 {
+    int i;
     uint8_t lcore_id = rte_lcore_id();
-    struct kni_lcore_params * lcore = kni_lcore_params_array[lcore_id];
+    struct kni_port_params * port_param;
+    struct kni_lcore_params * lcore_param = kni_lcore_params_array[lcore_id];
 
-    if(unlikely(lcore == NULL))
+    if(unlikely(!lcore_param))
         return;
 
-    for(int i = 0; i < lcore->nb_ports; i++)
+    for(i = 0; i < lcore_param->nb_ports; i++)
     {
-        struct kni_port_params * port = lcore->port[i];
+         port_param = lcore_param->port[i];
 
-        ans_kni_to_linux(port);
-        ans_kni_to_eth(port);
+        ans_kni_to_linux(port_param);
+        ans_kni_to_eth(port_param);
     }
 
     return;

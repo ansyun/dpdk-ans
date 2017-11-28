@@ -48,5 +48,8 @@ void ans_kni_main();
 /* send packets which cannot be proceed to network stack */
 int ans_kni_send_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned port_id);
 
+/* get kni id by port*/
+uint16_t ans_kni_id_get(uint8_t port);
+
 #endif
 
