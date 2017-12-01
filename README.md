@@ -49,8 +49,7 @@ Support feature:
     - Free lock, hash table;
     - Support SO_REUSEPORT, multi application can listen the same port;
     - Support multicore tcp stack, per tcp stack per lcore;
-    - Support TSO.
- - 
+    - Support TSO. 
  
 #### ANS User Guide
 --------------
