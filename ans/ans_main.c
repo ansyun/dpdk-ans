@@ -861,13 +861,18 @@ int main(int argc, char **argv)
     /* parse application arguments (after the EAL ones) */
     ret = ans_parse_args(argc, argv, &ans_user_conf);
     if (ret < 0)
-      rte_exit(EXIT_FAILURE, "Invalid ODP parameters\n");
+      rte_exit(EXIT_FAILURE, "Invalid ANS parameters\n");
 
 
     if(ans_user_conf.jumbo_frame_on)
     {
         ans_port_conf.rxmode.jumbo_frame = 1;
         ans_port_conf.rxmode.max_rx_pkt_len = ans_user_conf.max_rx_pkt_len;
+    }
+
+    if(ans_user_conf.ipsync_on && !ans_user_conf.kni_on)
+    {
+        rte_exit(EXIT_FAILURE, "ipsync is enable, kni shall be enable too.\n");
     }
 
     ans_user_conf.lcore_nb = rte_lcore_count();
@@ -912,6 +917,7 @@ int main(int argc, char **argv)
         init_conf.pktmbuf_pool[i] = ans_pktmbuf_pool[i];
     }
 
+    init_conf.ip_sync = ans_user_conf.ipsync_on;
     init_conf.port_send = ans_send_packet;
     init_conf.port_bypass = ans_bypass_packet;
 
@@ -924,6 +930,7 @@ int main(int argc, char **argv)
     /* add by ans_team for testing ---start */
     uint8_t ifname[16];
     int portid;
+    uint16_t kni_id;
     struct ether_addr eth_addr;
 
     for(portid= 0; portid < nb_ports; portid++)
@@ -937,12 +944,13 @@ int main(int argc, char **argv)
 
         memset(ifname, 0, sizeof(ifname));
 
-        sprintf(ifname, "eth%d", portid);
-
-        printf("add %s device\r\n", ifname);
+        sprintf(ifname, "veth%d", portid);
+        kni_id = ans_kni_id_get(portid);
+        
+        printf("add %s device, kni id %d \n", ifname, kni_id);
         rte_eth_macaddr_get(portid, &eth_addr);
-
-        ans_iface_add(portid,  ifname, &eth_addr);
+        
+        ans_iface_add(portid, kni_id, ifname, &eth_addr);
 
         /* host byte order */
         int ip_addr = 0x0a000002;

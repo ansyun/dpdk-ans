@@ -193,7 +193,7 @@ static int ans_kni_alloc(uint8_t port_id)
     return -1;
 
   memset(&conf, 0, sizeof(conf));
-  snprintf(conf.name, RTE_KNI_NAMESIZE,"keth%u", port_id);
+  snprintf(conf.name, RTE_KNI_NAMESIZE, "veth%u", port_id);
   conf.group_id = (uint16_t)port_id;
   conf.mbuf_size = MAX_PACKET_SZ;
 

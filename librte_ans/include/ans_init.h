@@ -52,6 +52,7 @@ struct ans_init_config
 {
     uint64_t lcore_mask;                                                           /**< lcore which used to run ans */
     uint32_t sock_nb;                                                                /**< support max sock connection number */
+    uint8_t  ip_sync;                                                                 /**< 1: enable ip/route sync from kernel, otherwise disable sync */    
     cpu_set_t cpu_set;                                                              /**< system default cpu set */
     struct rte_mempool *pktmbuf_pool[ANS_MAX_NB_SOCKETS];     /**< mbuf pools for each sockets */
 

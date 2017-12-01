@@ -70,10 +70,12 @@
 #define MAX_TX_QUEUE_PER_PORT RTE_MAX_ETHPORTS
 #define MAX_RX_QUEUE_PER_PORT 128
 
-#define CMD_LINE_OPT_CONFIG              "config"
-#define CMD_LINE_OPT_NO_NUMA          "no-numa"
-#define CMD_LINE_OPT_ENABLE_KNI      "enable-kni"
-#define CMD_LINE_OPT_ENABLE_JUMBO "enable-jumbo"
+#define CMD_LINE_OPT_CONFIG               "config"
+#define CMD_LINE_OPT_NO_NUMA            "no-numa"
+#define CMD_LINE_OPT_ENABLE_KNI        "enable-kni"
+#define CMD_LINE_OPT_ENABLE_JUMBO   "enable-jumbo"
+#define CMD_LINE_OPT_ENABLE_IPSYNC  "enable-ipsync"
+
 
 #define MAX_LCORE_PARAMS 512
 
@@ -106,6 +108,7 @@ struct ans_user_config
     uint32_t port_mask;
     uint8_t promiscuous_on;        /*  Ports set in promiscuous mode off by default. */
     uint8_t kni_on;                        /*  kni is disable by default. */
+    uint8_t ipsync_on;                 /*  ipsync is disable by default. sync ip/route from kernel, if ipsync is enable, kni shall also enable */
     uint8_t numa_on ;                  /* NUMA is enabled by default. */
     uint8_t jumbo_frame_on;
     uint16_t max_rx_pkt_len;

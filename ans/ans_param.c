@@ -172,6 +172,7 @@ static void ans_print_usage(const char *prgname)
     "  --config (port,queue,lcore): rx queues configuration\n"
     "  --no-numa: optional, disable numa awareness\n"
     "  --enable-kni: optional, disable kni awareness\n"
+    "  --enable-ipsync: optional, sync ip/route from kernel kni interface\n"
     "  --enable-jumbo: enable jumbo frame"
     " which max packet len is PKTLEN in decimal (64-9600)\n",
     prgname);
@@ -326,6 +327,7 @@ int ans_parse_args(int argc, char **argv, struct ans_user_config *user_conf)
       {CMD_LINE_OPT_CONFIG, 1, 0, 0},
       {CMD_LINE_OPT_NO_NUMA, 0, 0, 0},
       {CMD_LINE_OPT_ENABLE_KNI, 0, 0, 0},
+      {CMD_LINE_OPT_ENABLE_IPSYNC, 0, 0, 0},
       {CMD_LINE_OPT_ENABLE_JUMBO, 0, 0, 0},
       {NULL, 0, 0, 0}
     };
@@ -357,48 +359,54 @@ int ans_parse_args(int argc, char **argv, struct ans_user_config *user_conf)
           /* long options */
           case 0:
             if (!strncmp(lgopts[option_index].name, CMD_LINE_OPT_CONFIG, sizeof (CMD_LINE_OPT_CONFIG)))
-               {
-              ret = ans_parse_config(optarg, user_conf);
-              if (ret)
-                            {
-                printf("Invalid config\n");
-                ans_print_usage(prgname);
-                return -1;
-              }
+            {
+                ret = ans_parse_config(optarg, user_conf);
+                if (ret)
+                {
+                    printf("Invalid config\n");
+                    ans_print_usage(prgname);
+                    return -1;
+                }
             }
 
             if (!strncmp(lgopts[option_index].name, CMD_LINE_OPT_NO_NUMA, sizeof(CMD_LINE_OPT_NO_NUMA)))
-               {
-              printf("numa is disabled \n");
-              user_conf->numa_on = 0;
+            {
+                printf("numa is disabled \n");
+                user_conf->numa_on = 0;
             }
 
             if (!strncmp(lgopts[option_index].name, CMD_LINE_OPT_ENABLE_KNI, sizeof(CMD_LINE_OPT_ENABLE_KNI)))
-               {
-              printf("KNI is enable \n");
-              user_conf->kni_on = 1;
+            {
+                printf("KNI is enable \n");
+                user_conf->kni_on = 1;
             }
 
+            if (!strncmp(lgopts[option_index].name, CMD_LINE_OPT_ENABLE_IPSYNC, sizeof(CMD_LINE_OPT_ENABLE_IPSYNC)))
+            {
+                printf("IPSYNC is enable \n");
+                user_conf->ipsync_on = 1;
+            }
+            
             if (!strncmp(lgopts[option_index].name, CMD_LINE_OPT_ENABLE_JUMBO, sizeof (CMD_LINE_OPT_ENABLE_JUMBO)))
-               {
-              struct option lenopts = {"max-pkt-len", required_argument, 0, 0};
+            {
+                struct option lenopts = {"max-pkt-len", required_argument, 0, 0};
 
-              printf("jumbo frame is enabled - disabling simple TX path\n");
-                            user_conf->jumbo_frame_on = 1;
+                printf("jumbo frame is enabled - disabling simple TX path\n");
+                user_conf->jumbo_frame_on = 1;
 
-              /* if no max-pkt-len set, use the default value ETHER_MAX_LEN */
-                  if (0 == getopt_long(argc, argvopt, "", &lenopts, &option_index))
-                           {
-                ret = ans_parse_max_pkt_len(optarg);
-                if ((ret < 64) || (ret > MAX_JUMBO_PKT_LEN))
-                                   {
-                  printf("invalid packet length\n");
-                  ans_print_usage(prgname);
-                  return -1;
+                /* if no max-pkt-len set, use the default value ETHER_MAX_LEN */
+                if (0 == getopt_long(argc, argvopt, "", &lenopts, &option_index))
+                {
+                    ret = ans_parse_max_pkt_len(optarg);
+                    if ((ret < 64) || (ret > MAX_JUMBO_PKT_LEN))
+                    {
+                        printf("invalid packet length\n");
+                        ans_print_usage(prgname);
+                        return -1;
+                    }
+                    user_conf->max_rx_pkt_len = ret;
                 }
-                                    user_conf->max_rx_pkt_len = ret;
-              }
-              printf("set jumbo frame max packet length to %u\n", (unsigned int)user_conf->max_rx_pkt_len);
+                printf("set jumbo frame max packet length to %u\n", (unsigned int)user_conf->max_rx_pkt_len);
             }
             break;
 

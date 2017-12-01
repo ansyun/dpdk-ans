@@ -59,7 +59,7 @@
 #include "anscli_intf.h"
 
 
-int main(void)
+int main(int argc, char **argv)
 {
     int ret;
     int     param_num = 8;
@@ -73,13 +73,17 @@ int main(void)
                                "--proc-type=secondary",
                                NULL};
 
-
     rte_log_set_global_level(RTE_LOG_ERR);
     ret = rte_eal_init(param_num, param);
     if (ret < 0)
         rte_panic("Cannot init EAL\n");
-
-    anscli_start();
-    
+    if(argc > 1)
+    {
+        anscli_start(argv[1]);
+    }
+    else
+    {
+        anscli_start(NULL);
+    }
     return 0;
 }

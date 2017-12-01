@@ -48,7 +48,7 @@
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-void anscli_start();
+void anscli_start(char *cmd);
 
 
 #endif /* __ANSCLI_INTF_H__ */

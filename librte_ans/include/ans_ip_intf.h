@@ -77,6 +77,8 @@
  *
  * @param port      
  *   port of the interface 
+ * @param kni_index      
+ *   kni index in kernel 
  * @param if_name   
  *   name of the interface 
  * @param mac_addr  
@@ -85,7 +87,7 @@
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-int ans_iface_add(uint8_t port, char *if_name, struct ether_addr *mac_addr);
+int ans_iface_add(uint8_t port, uint16_t kni_index, char *if_name, struct ether_addr *mac_addr);
 
 /**
  * Delete an interface.
@@ -130,9 +132,9 @@ int ans_iface_set_mtu(char *if_name, uint16_t mtu);
  * Routing table addition.
  *
  * @param dest_ipaddr  
- *   ip address of the destination for which the route is being added
+ *   ip address of the destination for which the route is being added, host byte order
  * @param gateway_addr 
- *   ip address of gateway
+ *   ip address of gateway, host byte order
  * @param netmask   
  *   netmask to be used with route
  *
@@ -145,7 +147,7 @@ int ans_add_route(uint32_t dest_ipaddr, uint8_t netmask, uint32_t gateway_addr);
  * Routing table deletion.
  *
  * @param dest_ipaddr  
- *   ip address of the destination for which the route is being deleted
+ *   ip address of the destination for which the route is being deleted, host byte order.
  * @param netmask   
  *   netmask to be used with route
  *
@@ -169,7 +171,7 @@ int ans_del_route(uint32_t dest_ipaddr, uint8_t netmask);
  * @param ifname  
  *   interface name
  * @param ip_addr   
- *   IP address
+ *   IP address, host byte order
  * @param netmask
  *   netmask length
  *
@@ -184,7 +186,7 @@ int ans_add_ipaddr(char *ifname, uint32_t ip_addr, uint8_t netmask);
  * @param ifname  
  *   interface name
  * @param ip_addr   
- *   IP address
+ *   IP address, host byte order
  * @param netmask
  *   netmask length
  *
