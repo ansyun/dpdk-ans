@@ -30,8 +30,11 @@ Support feature:
  - ARP, ARP timeout;
  - IP layer, IP fragmentation and reassemble;
  - High performance routing;
- - ACL;
  - ICMP;
+ - ACL;
+ - Bypass traffic to linux kernel;
+ - Sync IP/Route from linux kernel;
+ - Support dynamic routing(OSPF/BGP...) and DHCP client;
  - Commands for adding, deleting, showing IP address;
  - Commands for adding, deleting, showing static route;
  - Commands for showing neigh table;
@@ -145,7 +148,7 @@ CPU:Intel(R) Xeon(R) CPU E5-2430 0 @ 2.20GHz.
 NIC:Intel Corporation 82576 Gigabit Network Connection (rev 01) 
 ANS run on a lcore.
 
-root@h163:~/dpdk-redis# ./src/redis-benchmark -h 2.2.2.2  -p 6379 -n 100000 -c 50 -q
+root@h163:~/dpdk-redis# ./src/redis-benchmark -h 10.0.0.2  -p 6379 -n 100000 -c 50 -q
 PING_INLINE: 86655.11 requests per second
 PING_BULK: 90497.73 requests per second
 SET: 84317.03 requests per second
@@ -170,12 +173,12 @@ NIC:Intel Corporation 82576 Gigabit Network Connection (rev 01)
 ANS run on a lcore.
 examples/http_server run as http server.
 
-root@h163:~# ab -n 30000 -c 500 2.2.2.2:8089/
+root@h163:~# ab -n 30000 -c 500 10.0.0.2:8089/
 This is ApacheBench, Version 2.3 <$Revision: 1528965 $>
 Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
 Licensed to The Apache Software Foundation, http://www.apache.org/
 
-Benchmarking 2.2.2.2 (be patient)
+Benchmarking 10.0.0.2 (be patient)
 Completed 3000 requests
 Completed 6000 requests
 Completed 9000 requests
@@ -190,7 +193,7 @@ Finished 30000 requests
 
 
 Server Software:
-Server Hostname:        2.2.2.2
+Server Hostname:        10.0.0.2
 Server Port:            8089
 
 Document Path:          /
@@ -233,9 +236,9 @@ CPU:Intel(R) Xeon(R) CPU E5-2430 0 @ 2.20GHz.
 NIC:Intel Corporation 82576 Gigabit Network Connection (rev 01) 
 ANS run on a lcore.
 
-# wget  2.2.2.2:80/nginx_large_data
---2016-04-24 08:46:24--  http://2.2.2.2/nginx_large_data
-Connecting to 2.2.2.2:80... connected.
+# wget  10.0.0.2:80/nginx_large_data
+--2016-04-24 08:46:24--  http://10.0.0.2/nginx_large_data
+Connecting to 10.0.0.2:80... connected.
 HTTP request sent, awaiting response... 200 OK
 Length: 80185146 (76M) [application/octet-stream]
 Saving to: ‘nginx_large_data.3’
