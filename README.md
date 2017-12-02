@@ -62,33 +62,31 @@ Support feature:
 ```
 [ANS User Guide](https://github.com/ansyun/dpdk-ans/tree/master/doc/guides/ans_user_guide.pdf)
 
+#### ANS Architecture
+--------------
+![](/doc/design/ans_arch.png)
+
+
 #### TCP Deployment
 --------------
 ```
          |-------|       |-------|       |-------|
-         |  APP  |       |  APP  |       |  APP  |
+APP      |anssock|       |anssock|       |anssock|
          |-------|       |-------|       |-------|
-             |               |               |
---------------------------------------------------
-anssock      |               |               |			
-             fd              fd              fd
-             |               |               |
+             |               |               |			
+            fd              fd              fd
 --------------------------------------------------
 ANS          |               |               |
          |-------|       |-------|       |-------|
          | TCP   |       |  TCP  |       | TCP   |
-         |       |       |       |       |       |
          |---------------------------------------|       
          |               IP/ARP/ICMP             |
          |---------------------------------------|       
-         |       |       |       |       |       |
          |LCORE0 |       |LCORE1 |       |LCORE2 |
          |-------|       |-------|       |-------|
              |               |               |
-             ---------------RSS---------------
-                             | 
          |---------------------------------------| 
-         |                  NIC                  | 
+         |                  NIC + RSS            | 
          |---------------------------------------| 
 ```
  - NIC distribute packets to different lcore based on RSS, so same TCP flow are handled in the same lcore.
