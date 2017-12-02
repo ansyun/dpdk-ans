@@ -258,7 +258,8 @@ Transfer/sec:    233.95MB
 
 #### Examples
 -------
-- dpdk_tcp_server, tcp server run on ANS tcp/ip stack.
+- [dpdk http server](https://github.com/ansyun/dpdk-ans/tree/master/examples/http_server): http server run on ANS tcp/ip stack.
+- [dpdk https server](https://github.com/ansyun/dpdk-ans/tree/master/examples/https_server): https server run on ANS tcp/ip stack.
 - [dpdk-nginx](https://github.com/ansyun/dpdk-nginx), nginx was porting to run on ANS tcp/ip stack.
 
 #### [Wiki Page](https://github.com/ansyun/dpdk-ans/wiki)
