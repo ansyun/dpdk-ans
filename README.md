@@ -101,24 +101,18 @@ ANS          |               |               |
 
 #### Performance Testing
 --------------
+  [ANS Performance Test Report](https://github.com/ansyun/dpdk-ans/tree/master/doc/guides/ans_performance_report.pdf)
 - TCP server performance testing
- 
- ENV: CPU- intel xeon 2.3G, NIC- 10G, Test tool:ab 
-
- Procedure: ab establish tcp connection to ANS tcp server, ab download one data, ANS tcp server close socket.
-
- Command: ab -n 1000000 -c 500  2.2.2.2:8089/
- 
- Notes: shall increase test linux PC local port range (net.ipv4.ip_local_port_range = 1024 65000).
+  
 ```
-    |--------------------------------------| 
-    |      TCP Server accept performance   |
-    |--------------------------------------| 
-    | Linux with epoll |   ANS with epoll  | 
-    |    (Multi core)  |    (one core)     |
-    |--------------------------------------|
-    | 53k connection/s | 43k connection/s  | 
-    |--------------------------------------| 
+    |------------------------------| 
+    |      TCP Server CPS          |
+    |------------------------------| 
+    |       ANS with epoll         | 
+    |         (one core)           |
+    |------------------------------|
+    |     80k connection/s         | 
+    |------------------------------| 
 ```
 - L3 forwarding performance testing
 
@@ -136,8 +130,6 @@ ANS          |               |               |
     |--------------------------------------| 
  
 ```
-  [ANS Performance Report](https://github.com/ansyun/dpdk-ans/tree/master/doc/guides/ans_performance_report.pdf)
-
 - dpdk-redis performance testing
 ```
 ====ENV=== 
