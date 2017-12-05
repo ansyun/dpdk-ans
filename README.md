@@ -219,24 +219,7 @@ Percentage of the requests served within a certain time (ms)
 root@h163:~#
 
 ```
-- Downloading file from dpdk-nginx
-```
-CPU:Intel(R) Xeon(R) CPU E5-2430 0 @ 2.20GHz.
-NIC:Intel Corporation 82576 Gigabit Network Connection (rev 01) 
-ANS run on a lcore.
 
-# wget  10.0.0.2:80/nginx_large_data
---2016-04-24 08:46:24--  http://10.0.0.2/nginx_large_data
-Connecting to 10.0.0.2:80... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 80185146 (76M) [application/octet-stream]
-Saving to: ‘nginx_large_data.3’
-
-100%[=================================================>] 80,185,146   111MB/s   in 0.7s
-
-2016-04-24 08:46:25 (111 MB/s) - ‘nginx_large_data.3’ saved [80185146/80185146]
-
-```
 - dpdk-nginx over ans performance
 ```
 CPU:Intel(R) Xeon(R) CPU E5-2670 0 @ 2.60GHz.
@@ -261,6 +244,7 @@ Transfer/sec:    233.95MB
 - [dpdk http server](https://github.com/ansyun/dpdk-ans/tree/master/examples/http_server): http server run on ANS tcp/ip stack.
 - [dpdk https server](https://github.com/ansyun/dpdk-ans/tree/master/examples/https_server): https server run on ANS tcp/ip stack.
 - [dpdk-nginx](https://github.com/ansyun/dpdk-nginx), nginx was porting to run on ANS tcp/ip stack.
+- [dpdk-redis](https://github.com/ansyun/dpdk-redis), redis was porting to run on ANS tcp/ip stack.
 
 #### [Wiki Page](https://github.com/ansyun/dpdk-ans/wiki)
 -------
