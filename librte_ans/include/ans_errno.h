@@ -414,5 +414,7 @@
 
 #define ANS_PKT_DONE              0
 #define ANS_PKT_CONTINUE       1
+#define ANS_PKT_FWD                2
+#define ANS_PKT_LOCAL             3
 
 #endif

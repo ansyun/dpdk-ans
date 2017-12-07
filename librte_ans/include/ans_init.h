@@ -101,7 +101,7 @@ void ans_eth_rx_burst(uint8_t portid, struct rte_mbuf **rx_pkts, const uint16_t 
  * @return  
  *
  */
-void ans_eth_stats(uint8_t portid, uint16_t packets_nb);
+void ans_eth_stats(uint8_t portid, uint16_t packets_nb, uint16_t droped_nb);
 
 /**
  * Handle ans internal message.

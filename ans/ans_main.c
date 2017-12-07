@@ -289,8 +289,8 @@ static int ans_init_lcore_rx_queues(struct ans_user_config  *user_conf, struct a
         }
         else
         {
-            lcore_conf[lcore].rx_queue_list[nb_rx_queue].port_id = user_conf->lcore_param[i].port_id;
-            lcore_conf[lcore].rx_queue_list[nb_rx_queue].queue_id = user_conf->lcore_param[i].queue_id;
+            lcore_conf[lcore].rx_queue[nb_rx_queue].port_id = user_conf->lcore_param[i].port_id;
+            lcore_conf[lcore].rx_queue[nb_rx_queue].queue_id = user_conf->lcore_param[i].queue_id;
             lcore_conf[lcore].n_rx_queue++;
         }
     }
@@ -474,7 +474,7 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
             if (ret < 0)
               rte_exit(EXIT_FAILURE, "rte_eth_tx_queue_setup: err=%d, " "port=%d\n", ret, portid);
 
-            lcore_conf[lcore_id].tx_queue_id[portid] = queueid;
+            lcore_conf[lcore_id].tx_queue[portid].queue_id = queueid;
 
             queueid++;
         }
@@ -503,8 +503,8 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
         /* init RX queues */
         for(queue = 0; queue < lcore_conf[lcore_id].n_rx_queue; ++queue)
         {
-            portid = lcore_conf[lcore_id].rx_queue_list[queue].port_id;
-            queueid = lcore_conf[lcore_id].rx_queue_list[queue].queue_id;
+            portid = lcore_conf[lcore_id].rx_queue[queue].port_id;
+            queueid = lcore_conf[lcore_id].rx_queue[queue].queue_id;
 
             if (user_conf->numa_on)
                 socketid = (uint8_t)rte_lcore_to_socket_id(lcore_id);
@@ -590,25 +590,21 @@ static int ans_start_ports(unsigned short nb_ports, struct ans_user_config  *use
 *@return values:
 *
 **********************************************************************/
-static inline int ans_send_burst(struct ans_lcore_queue *qconf, uint16_t n, uint8_t port)
+static inline int ans_send_burst(uint8_t port_id, uint16_t queue_id, struct rte_mbuf **tx_pkts, uint16_t nb_pkts)
 {
-    struct rte_mbuf **m_table;
-    int ret;
-    uint16_t queueid;
+    uint16_t send_nb, left_nb;
 
-    queueid = qconf->tx_queue_id[port];
-    m_table = (struct rte_mbuf **)qconf->tx_mbufs[port].m_table;
-
-    ret = rte_eth_tx_burst(port, queueid, m_table, n);
-    if (unlikely(ret < n))
+    send_nb = rte_eth_tx_burst(port_id, queue_id, tx_pkts, nb_pkts);
+    if (unlikely(send_nb < nb_pkts))
     {
-        ans_eth_stats(port, n - ret);
-        
+        left_nb = send_nb;
         do
         {
-            rte_pktmbuf_free(m_table[ret]);
-        } while (++ret < n);
+            rte_pktmbuf_free(tx_pkts[left_nb]);
+        } while (++left_nb < nb_pkts);
     }
+    
+    ans_eth_stats(port_id, nb_pkts, nb_pkts - send_nb);
 
     return 0;
 }
@@ -626,25 +622,22 @@ static inline int ans_send_burst(struct ans_lcore_queue *qconf, uint16_t n, uint
 **********************************************************************/
 static inline int ans_send_packet(uint8_t port, struct rte_mbuf *m)
 {
-    uint32_t lcore_id;
-    uint16_t len;
     struct ans_lcore_queue *qconf;
+    struct ans_tx_queue  *tx_queue;
+    
+    qconf = &ans_lcore_conf[rte_lcore_id()];
 
-    lcore_id = rte_lcore_id();
+    tx_queue = &qconf->tx_queue[port];
 
-    qconf = &ans_lcore_conf[lcore_id];
-    len = qconf->tx_mbufs[port].len;
-    qconf->tx_mbufs[port].m_table[len] = m;
-    len++;
+    tx_queue->pkts[tx_queue->pkts_nb++] = m;
 
-    /* enough pkts to be sent */
-    if (unlikely(len == MAX_TX_BURST))
+    if(tx_queue->pkts_nb == MAX_TX_BURST)
     {
-        ans_send_burst(qconf, MAX_TX_BURST, port);
-        len = 0;
+        ans_send_burst(port, tx_queue->queue_id, tx_queue->pkts, tx_queue->pkts_nb);
+    
+        tx_queue->pkts_nb = 0;  
     }
 
-    qconf->tx_mbufs[port].len = len;
     return 0;
 }
 
@@ -715,7 +708,8 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
     struct ans_lcore_queue *qconf;
     uint64_t timer_prev_tsc = 0, timer_cur_tsc, timer_diff_tsc;
     struct rte_mbuf *pkts_burst[MAX_PKT_BURST];
-
+    struct ans_tx_queue *tx_queue;
+    struct ans_rx_queue *rx_queue;
     const uint64_t drain_tsc = (rte_get_tsc_hz() + US_PER_S - 1) / US_PER_S * BURST_TX_DRAIN_US;
 
     prev_tsc = 0;
@@ -733,8 +727,8 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
 
     for (i = 0; i < qconf->n_rx_queue; i++)
     {
-        portid = qconf->rx_queue_list[i].port_id;
-        queueid = qconf->rx_queue_list[i].queue_id;
+        portid = qconf->rx_queue[i].port_id;
+        queueid = qconf->rx_queue[i].queue_id;
         RTE_LOG(INFO, USER8, " -- lcoreid=%u portid=%hhu rxqueueid=%hhu\n", lcore_id, portid, queueid);
     }
 
@@ -743,14 +737,13 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
 
     while (1)
     {
-
-        cur_tsc = rte_rdtsc();
-
         /* add by ans_team ---start */
         ans_message_handle();
         /* add by ans_team ---end */
 
-
+        cur_tsc = rte_rdtsc();
+        timer_cur_tsc = cur_tsc;
+        
         /*
          * Call the timer handler on each core: as we don't
          * need a very precise timer, so only call
@@ -758,7 +751,6 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
          * application, this will enhance performances as
          * reading the HPET timer is not efficient.
          */
-        timer_cur_tsc = rte_rdtsc();
         timer_diff_tsc = timer_cur_tsc - timer_prev_tsc;
         if (timer_diff_tsc > TIMER_RESOLUTION_CYCLES)
         {
@@ -779,12 +771,12 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
             */
             for (portid = 0; portid < nb_ports; portid++)
             {
-                if (qconf->tx_mbufs[portid].len == 0)
+                tx_queue = &qconf->tx_queue[portid];
+                if(tx_queue->pkts_nb == 0)
                     continue;
 
-                ans_send_burst(qconf, qconf->tx_mbufs[portid].len,  portid);
-
-                qconf->tx_mbufs[portid].len = 0;
+                ans_send_burst(portid, tx_queue->queue_id, tx_queue->pkts, tx_queue->pkts_nb);
+                tx_queue->pkts_nb = 0;
             }
 
             prev_tsc = cur_tsc;
@@ -795,14 +787,13 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
         */
         for (i = 0; i < qconf->n_rx_queue; ++i)
         {
-            portid = qconf->rx_queue_list[i].port_id;
-            queueid = qconf->rx_queue_list[i].queue_id;
-            nb_rx = rte_eth_rx_burst(portid, queueid, pkts_burst, MAX_PKT_BURST);
+            rx_queue = &qconf->rx_queue[i];
+
+            nb_rx = rte_eth_rx_burst(rx_queue->port_id, rx_queue->queue_id, pkts_burst, MAX_PKT_BURST);
             if (nb_rx == 0)
                 continue;
 
-            ans_eth_rx_burst(portid, pkts_burst, nb_rx);
-          
+            ans_eth_rx_burst(rx_queue->port_id, pkts_burst, nb_rx);
         }
 
         /* to support KNI, at 2014-12-15 */

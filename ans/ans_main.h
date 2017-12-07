@@ -54,7 +54,7 @@
 #define TX_WTHRESH 0  /**< Default values of TX write-back threshold reg. */
 
 #define MAX_PKT_BURST     32
-#define MAX_TX_BURST      16         /* set tx burst as 1 for lower packet latency */
+#define MAX_TX_BURST      16         /* set tx burst as 1 for lower packet latency, shall set to 32 ? */
 #define BURST_TX_DRAIN_US 100 /* TX drain every ~100us */
 
 #define MAX_MBUF_NB     (1024 * 16)
@@ -87,13 +87,14 @@ struct ans_lcore_params
 } __rte_cache_aligned;
 
 
-struct ans_mbuf_table
+struct ans_tx_queue
 {
-  uint16_t len;
-  struct rte_mbuf *m_table[MAX_PKT_BURST];
-};
+  struct rte_mbuf *pkts[MAX_PKT_BURST];
+  uint16_t pkts_nb;
+  uint8_t queue_id;
+}__rte_cache_aligned;
 
-struct ans_lcore_rx_queue
+struct ans_rx_queue
 {
   uint8_t port_id;
   uint8_t queue_id;
@@ -118,10 +119,11 @@ struct ans_user_config
 
 struct ans_lcore_queue
 {
-  uint16_t n_rx_queue;
-  struct ans_lcore_rx_queue rx_queue_list[MAX_RX_QUEUE_PER_LCORE];
-  uint16_t tx_queue_id[RTE_MAX_ETHPORTS];
-  struct ans_mbuf_table tx_mbufs[RTE_MAX_ETHPORTS];
+    uint16_t n_rx_queue;
+    struct ans_rx_queue rx_queue[MAX_RX_QUEUE_PER_LCORE];
+
+    struct ans_tx_queue tx_queue[RTE_MAX_ETHPORTS];
+
 } __rte_cache_aligned;
 
 #define MAX_NB_SOCKETS    8
