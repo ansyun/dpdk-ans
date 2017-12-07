@@ -54,7 +54,7 @@
 #define TX_WTHRESH 0  /**< Default values of TX write-back threshold reg. */
 
 #define MAX_PKT_BURST     32
-#define MAX_TX_BURST      16         /* set tx burst as 1 for lower packet latency, shall set to 32 ? */
+#define MAX_TX_BURST      32         /* set tx burst as 1 for lower packet latency, shall set to 32 ? */
 #define BURST_TX_DRAIN_US 100 /* TX drain every ~100us */
 
 #define MAX_MBUF_NB     (1024 * 16)
