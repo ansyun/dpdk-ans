@@ -892,7 +892,7 @@ int main(int argc, char **argv)
 
     /* add by ans_team: support KNI interface at 2014-12-15 */
     if(ans_user_conf.kni_on == 1)
-        ans_kni_config(&ans_user_conf, ans_pktmbuf_pool);
+        ans_kni_config(&ans_user_conf, ans_lcore_conf, ans_pktmbuf_pool);
 
 
     /* add by ans_team ---start */

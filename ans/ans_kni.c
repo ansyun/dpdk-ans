@@ -51,6 +51,8 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <signal.h>
+#include <net/if.h>
+#include <net/if_arp.h>
 
 #include <rte_common.h>
 #include <rte_log.h>
@@ -92,10 +94,12 @@
 
 struct kni_port_params
 {
-  uint8_t port_id;  /* Port ID */
-  unsigned lcore_id;  /* lcore ID bind to port */
-  struct rte_kni  * kni; /* KNI context pointers */
-  struct rte_ring * ring; /* Ring used to recieve packets from other cores */
+    uint8_t port_id;  /* Port ID */
+    unsigned lcore_id;  /* lcore ID bind to port */
+    uint8_t queue_id;   /* tx queue id of lcore of the port */
+
+    struct rte_kni  * kni; /* KNI context pointers */
+    struct rte_ring * ring; /* Ring used to recieve packets from other cores */
 
 } __rte_cache_aligned;
 
@@ -167,6 +171,40 @@ int ans_kni_send_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned por
     return rte_ring_enqueue_bulk(ring,(void **)mbufs, nb_mbufs, NULL);
 }
 
+/* Set kni interface mac */
+int ans_kni_set_mac(char *name, uint8_t port)  
+{  
+    int fd = 0;  
+    int ret = -1;  
+    struct ifreq temp;  
+    struct sockaddr* addr;  
+    struct ether_addr eth_addr;
+
+    rte_eth_macaddr_get(port, &eth_addr);
+
+    if((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)  
+    {  
+        printf("create fd failed when set kni MAC \n");
+        return -1;  
+    }  
+
+    strcpy(temp.ifr_name, name);  
+    addr = (struct sockaddr*)&temp.ifr_hwaddr;  
+
+    addr->sa_family = ARPHRD_ETHER;  
+    memcpy(addr->sa_data, eth_addr.addr_bytes, ETHER_ADDR_LEN);  
+
+    ret = ioctl(fd, SIOCSIFHWADDR, &temp);  
+    if(ret != 0)
+    {
+        printf("set mac failed, ret %d \n", ret);
+    }
+    
+    close(fd);  
+    return ret;  
+}  
+
+
 /**********************************************************************
 *@description:
 * Alloc KNI Devices for PORT_ID
@@ -180,51 +218,53 @@ int ans_kni_send_burst(struct rte_mbuf ** mbufs, unsigned nb_mbufs, unsigned por
 **********************************************************************/
 static int ans_kni_alloc(uint8_t port_id)
 {
-  uint8_t i;
-  struct rte_kni *kni;
-  struct rte_kni_conf conf;
-  struct kni_port_params **params = kni_port_params_array;
+    uint8_t i;
+    struct rte_kni *kni;
+    struct rte_kni_conf conf;
+    struct kni_port_params **params = kni_port_params_array;
 
-  unsigned lcore_id = params[port_id]->lcore_id;
-  unsigned lcore_socket = rte_lcore_to_socket_id(lcore_id);
-  struct rte_mempool * kni_mempool = kni_pktmbuf_pool[lcore_socket];
+    unsigned lcore_id = params[port_id]->lcore_id;
+    unsigned lcore_socket = rte_lcore_to_socket_id(lcore_id);
+    struct rte_mempool * kni_mempool = kni_pktmbuf_pool[lcore_socket];
 
-  if (port_id >= RTE_MAX_ETHPORTS || !params[port_id])
-    return -1;
+    if (port_id >= RTE_MAX_ETHPORTS || !params[port_id])
+        return -1;
 
-  memset(&conf, 0, sizeof(conf));
-  snprintf(conf.name, RTE_KNI_NAMESIZE, "veth%u", port_id);
-  conf.group_id = (uint16_t)port_id;
-  conf.mbuf_size = MAX_PACKET_SZ;
+    memset(&conf, 0, sizeof(conf));
+    snprintf(conf.name, RTE_KNI_NAMESIZE, "veth%u", port_id);
+    conf.group_id = (uint16_t)port_id;
+    conf.mbuf_size = MAX_PACKET_SZ;
 
-  struct rte_kni_ops ops;
-  struct rte_eth_dev_info dev_info;
+    struct rte_kni_ops ops;
+    struct rte_eth_dev_info dev_info;
 
-  memset(&dev_info, 0, sizeof(dev_info));
-  rte_eth_dev_info_get(port_id, &dev_info);
-  conf.addr = dev_info.pci_dev->addr;
-  conf.id = dev_info.pci_dev->id;
+    memset(&dev_info, 0, sizeof(dev_info));
+    rte_eth_dev_info_get(port_id, &dev_info);
+    conf.addr = dev_info.pci_dev->addr;
+    conf.id = dev_info.pci_dev->id;
 
-  memset(&ops, 0, sizeof(ops));
-  ops.port_id = port_id;
-  ops.change_mtu = ans_kni_change_mtu;
-  ops.config_network_if =  ans_kni_config_iface;
+    memset(&ops, 0, sizeof(ops));
+    ops.port_id = port_id;
+    ops.change_mtu = ans_kni_change_mtu;
+    ops.config_network_if =  ans_kni_config_iface;
 
-  kni = rte_kni_alloc(kni_mempool, &conf, &ops);
+    kni = rte_kni_alloc(kni_mempool, &conf, &ops);
 
-  if (!kni)
-    rte_exit(EXIT_FAILURE, "Fail to create kni for " "port: %d\n", port_id);
+    if (!kni)
+        rte_exit(EXIT_FAILURE, "Fail to create kni for " "port: %d\n", port_id);
 
-  params[port_id]->kni = kni;
+    params[port_id]->kni = kni;
 
-  /* Create Ring to recieve the pkts from other cores */
-  char ring_name[32];
-  snprintf(ring_name,sizeof(ring_name),"kni_ring_s%u_p%u",lcore_socket,port_id);
+    /* Create Ring to recieve the pkts from other cores */
+    char ring_name[32];
+    snprintf(ring_name,sizeof(ring_name),"kni_ring_s%u_p%u",lcore_socket,port_id);
 
-  params[port_id]->ring = rte_ring_create(ring_name,ANS_KNI_RING_SIZE, lcore_socket,RING_F_SC_DEQ);
+    params[port_id]->ring = rte_ring_create(ring_name,ANS_KNI_RING_SIZE, lcore_socket,RING_F_SC_DEQ);
 
-  if(!params[port_id]->ring)
-    rte_exit(EXIT_FAILURE, "Fail to create ring for kni %s",ring_name);
+    if(!params[port_id]->ring)
+        rte_exit(EXIT_FAILURE, "Fail to create ring for kni %s",ring_name);
+
+    ans_kni_set_mac(conf.name, port_id);
 
   return 0;
 }
@@ -265,11 +305,13 @@ int ans_kni_init()
 *@return values:
 *
 **********************************************************************/
-int ans_kni_config(struct ans_user_config * common_config, struct rte_mempool * pktmbuf_pool[])
+int ans_kni_config(struct ans_user_config * common_config, struct ans_lcore_queue *lcore_conf, struct rte_mempool * pktmbuf_pool[])
 {
     uint32_t portmask    = common_config->port_mask;
     unsigned lcore_item  = 0;
     unsigned port_id = 0;
+    unsigned lcore_id;
+    uint8_t queue_id;
 
     // Link mbufs pool from outside modules.
     kni_pktmbuf_pool = pktmbuf_pool;
@@ -282,14 +324,16 @@ int ans_kni_config(struct ans_user_config * common_config, struct rte_mempool * 
 
         assert(kni_port_params_array[port_id] == NULL);
 
-        unsigned lcore_id = lcore_item >= common_config->lcore_param_nb
+        lcore_id = lcore_item >= common_config->lcore_param_nb
             ? common_config->lcore_param[lcore_item = 0].lcore_id : common_config->lcore_param[lcore_item++].lcore_id;
 
         kni_port_params_array[port_id] = rte_zmalloc(NULL,sizeof(struct kni_port_params),0);
         kni_port_params_array[port_id]->port_id  = port_id;
         kni_port_params_array[port_id]->lcore_id = lcore_id;
+        queue_id = lcore_conf[lcore_id].tx_queue[port_id].queue_id;
+        kni_port_params_array[port_id]->queue_id = queue_id;
 
-        printf("ans_kni: port_id=%d,lcore_id=%d\n",port_id,lcore_id);
+        printf("ans_kni: port_id=%d, lcore_id=%d, tx queue id=%d \n",port_id,lcore_id, queue_id);
     }
 
     for(int i = 0; i < RTE_MAX_ETHPORTS; i++)
@@ -438,17 +482,14 @@ static int ans_kni_free(uint8_t port_id)
 **********************************************************************/
 static inline void ans_kni_to_linux(struct kni_port_params *port_param)
 {
-    uint8_t i, port_id;
     unsigned nb_rx, num;
     struct rte_mbuf *pkts_burst[PKT_BURST_SZ];
 
     /* handle kin request event */
     rte_kni_handle_request(port_param->kni);
 
-    port_id = port_param->port_id;
-
     /* Burst rx from ring */
-    nb_rx = rte_ring_dequeue_burst(port_param->ring,(void **)&pkts_burst, PKT_BURST_SZ, NULL);
+    nb_rx = rte_ring_dequeue_burst(port_param->ring, (void **)&pkts_burst, PKT_BURST_SZ, NULL);
     if(nb_rx == 0)
     {
         return;
@@ -480,12 +521,9 @@ static inline void ans_kni_to_linux(struct kni_port_params *port_param)
 **********************************************************************/
 static inline void ans_kni_to_eth(struct kni_port_params *port_param)
 {
-    uint8_t i, port_id;
     unsigned nb_tx, num;
     uint32_t nb_kni;
     struct rte_mbuf *pkts_burst[PKT_BURST_SZ];
-
-    port_id = port_param->port_id;
 
     /* Burst rx from kni */
     num = rte_kni_rx_burst(port_param->kni, pkts_burst, PKT_BURST_SZ);
@@ -501,7 +539,7 @@ static inline void ans_kni_to_eth(struct kni_port_params *port_param)
     }
 
     /* Burst tx to eth, only send to the first queue */
-    nb_tx = rte_eth_tx_burst(port_id, 0, pkts_burst, (uint16_t)num);
+    nb_tx = rte_eth_tx_burst(port_param->port_id, port_param->queue_id, pkts_burst, (uint16_t)num);
     // kni_stats[port_id].tx_packets += nb_tx;
 
     if (unlikely(nb_tx < num))
