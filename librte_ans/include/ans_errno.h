@@ -388,7 +388,8 @@
 #define  ANS_EADDRESS         3002    /* Add ip address failed */
 #define  ANS_ENEIGHBOR       3003    /* Add neighbor route failed */
 #define  ANS_EACL                3004     /* Add ACL failed */
-#define  ANS_ENETLINK          3005    /* parse netlink message failed */
+#define  ANS_EBYPASS          3005     /* Add ACL failed */
+#define  ANS_ENETLINK         3006    /* parse netlink message failed */
 
 
 #define ANS_ERRMEM        ANS_ENOMEM   /* Out of memory error.     */
