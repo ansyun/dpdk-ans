@@ -34,13 +34,15 @@ Support feature:
  - ACL;
  - Bypass traffic to linux kernel;
  - Sync IP/Route from linux kernel;
- - Support dynamic routing(OSPF/BGP...) and DHCP client;
+ - Support dynamic routing(OSPF/BGP...);
+ - Support DHCP client;
  - Commands for adding, deleting, showing IP address;
  - Commands for adding, deleting, showing static route;
  - Commands for showing neigh table;
  - Commands for showing interface and statistics;
  - Commands for showing IP statistics;
  - Commands for adding, deleting, showing ACL; 
+ - Commands for adding, deleting, showing bypass rule; 
  - UDP protocol;
  - Socket layer, share memory;
  - Socket API, socket/close/send/recv/epoll/writev/readv/shutdown;
