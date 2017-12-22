@@ -123,30 +123,51 @@ int ans_check_port_config(const unsigned nb_ports, struct ans_user_config *user_
 **********************************************************************/
 int ans_check_lcore_params(struct ans_user_config *user_conf)
 {
-    uint8_t queue, lcore;
-    uint16_t i;
+    uint8_t queue, lcore, port;
+    uint16_t i, j;
     int socketid;
 
     for (i = 0; i < user_conf->lcore_param_nb; ++i)
     {
-      queue = user_conf->lcore_param[i].queue_id;
-      if (queue >= MAX_RX_QUEUE_PER_PORT)
-       {
-        printf("invalid queue number: %hhu\n", queue);
-        return -1;
-      }
-      lcore = user_conf->lcore_param[i].lcore_id;
-      if (!rte_lcore_is_enabled(lcore))
-       {
-        printf("error: lcore %hhu is not enabled in lcore mask\n", lcore);
-        return -1;
-      }
+        queue = user_conf->lcore_param[i].queue_id;
+        if (queue >= MAX_RX_QUEUE_PER_PORT)
+        {
+            printf("invalid queue number: %hhu\n", queue);
+            return -1;
+        }
+        
+        lcore = user_conf->lcore_param[i].lcore_id;
+        if (!rte_lcore_is_enabled(lcore))
+        {
+            printf("error: lcore %hhu is not enabled in lcore mask\n", lcore);
+            return -1;
+        }
 
-      if ((socketid = rte_lcore_to_socket_id(lcore) != 0) && (user_conf->numa_on == 0))
-  {
-        printf("warning: lcore %hhu is on socket %d with numa off \n",  lcore, socketid);
-      }
+        if ((socketid = rte_lcore_to_socket_id(lcore) != 0) && (user_conf->numa_on == 0))
+        {
+            printf("warning: lcore %hhu is on socket %d with numa off \n",  lcore, socketid);
+        }
     }
+
+    /* check if same port and queue mapping to different lcore */
+    for (i = 0; i < user_conf->lcore_param_nb; ++i)
+    {
+        port = user_conf->lcore_param[i].port_id;
+        queue = user_conf->lcore_param[i].queue_id;
+        lcore = user_conf->lcore_param[i].lcore_id;
+
+        for(j = i + 1; j < user_conf->lcore_param_nb; ++j )
+        {
+            if( port == user_conf->lcore_param[j].port_id &&
+                queue == user_conf->lcore_param[j].queue_id &&
+                lcore != user_conf->lcore_param[j].lcore_id)
+            {
+                printf("error: same port(%d) and queue(%d) mapping to different lcore \n", port, queue);
+                return -1;
+            }
+        }
+    }
+    
     return 0;
 }
 
