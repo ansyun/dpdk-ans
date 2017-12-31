@@ -75,35 +75,6 @@ struct ans_init_config
 int ans_initialize(struct ans_init_config *user_conf);
 
 /**
- * Handle the received packets by ans stack
- *
- * @param portid  
- *    port id.
- * @param rx_pkts 
- *    packet buffer array. 
- * @param nb_pkts  
- *    packets number.
- *
- * @return  void
- *
- */
-void ans_eth_rx_burst(uint8_t portid, struct rte_mbuf **rx_pkts, const uint16_t nb_pkts);
-
-
-/**
- * Statistics dropped packets by port
- *
- * @param portid  
- *    port id.
- * @param packets_nb 
- *    droped packets number. 
- *
- * @return  
- *
- */
-void ans_eth_stats(uint8_t portid, uint16_t packets_nb, uint16_t droped_nb);
-
-/**
  * Handle ans internal message.
  *
  *
