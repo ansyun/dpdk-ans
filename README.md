@@ -133,26 +133,26 @@ ANS          |               |               |
 - dpdk-redis performance testing
 ```
 ====ENV=== 
-CPU:Intel(R) Xeon(R) CPU E5-2430 0 @ 2.20GHz.
-NIC:Intel Corporation 82576 Gigabit Network Connection (rev 01) 
+CPU:Intel(R) Xeon(R) CPU E5-2609 v4 @ 1.70GHz.
+NIC:Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01) 
 ANS run on a lcore.
 
-root@h163:~/dpdk-redis# ./src/redis-benchmark -h 10.0.0.2  -p 6379 -n 100000 -c 50 -q
-PING_INLINE: 86655.11 requests per second
-PING_BULK: 90497.73 requests per second
-SET: 84317.03 requests per second
-GET: 85106.38 requests per second
-INCR: 86580.09 requests per second
-LPUSH: 83263.95 requests per second
-LPOP: 83612.04 requests per second
-SADD: 85034.02 requests per second
-SPOP: 86430.43 requests per second
-LPUSH (needed to benchmark LRANGE): 84245.99 requests per second
-LRANGE_100 (first 100 elements): 46948.36 requests per second
-LRANGE_300 (first 300 elements): 19615.54 requests per second
-LRANGE_500 (first 450 elements): 11584.80 requests per second
-LRANGE_600 (first 600 elements): 10324.18 requests per second
-MSET (10 keys): 66401.06 requests per second
+root@ubuntu:~/src/dpdk-redis# ./src/redis-benchmark -h 10.0.0.2 -p 6379 -n 100000 -c 50 -q
+PING_INLINE: 138888.89 requests per second
+PING_BULK: 141242.94 requests per second
+SET: 140449.44 requests per second
+GET: 141043.72 requests per second
+INCR: 141442.72 requests per second
+LPUSH: 141043.72 requests per second
+LPOP: 140449.44 requests per second
+SADD: 141643.06 requests per second
+SPOP: 141843.97 requests per second
+LPUSH (needed to benchmark LRANGE): 141442.72 requests per second
+LRANGE_100 (first 100 elements): 48192.77 requests per second
+LRANGE_300 (first 300 elements): 14330.75 requests per second
+LRANGE_500 (first 450 elements): 10405.83 requests per second
+LRANGE_600 (first 600 elements): 7964.95 requests per second
+MSET (10 keys): 107758.62 requests per second
 
 ```
 - http server connection performance
