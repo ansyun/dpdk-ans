@@ -35,6 +35,7 @@
 * This program is used to test ans user space tcp stack
 */
 
+#include <unistd.h>
 #include <stdio.h>     
 #include <sys/types.h>     
 #include <sys/socket.h>     
@@ -70,8 +71,9 @@ void set_nonblocking(int sockfd)
 
 int handle_event(struct epoll_event ev)
 {
-    char recv_buf[BUFFER_SIZE];       
     int len;     
+    int send_len;
+    char recv_buf[BUFFER_SIZE];       
     char send_buf[BUFFER_SIZE];       
 
     if (ev.events&EPOLLIN)
@@ -82,11 +84,14 @@ int handle_event(struct epoll_event ev)
             len= recv(ev.data.fd, recv_buf, BUFFER_SIZE, 0);  
             if(len > 0)  
             {  
+                printf("receive from client(%d) , data len:%d \n", ev.data.fd, len);  
+
                 sprintf(send_buf, "I have received your message.");
                 
-                 send(ev.data.fd, send_buf, 1500, 0);  
+                send_len = send(ev.data.fd, send_buf, 1500, 0);  
 
-                printf("receive from client(%d) , data len:%d \n", ev.data.fd, len);  
+                printf("send to client(%d) , data len:%d \n", ev.data.fd, send_len);  
+
             } 
             else if(len < 0)
             {

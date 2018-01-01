@@ -86,8 +86,12 @@ int anssock_socket(int domain, int type, int protocol);
 int anssock_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 /**
- * Connect to remote IP address.
+ * Connect to remote IP address. This is nonblocking function, so shall check EINPROGRESS.
  *
+ * EINPROGRESS
+ *             The  socket  is  nonblocking  and  the  connection  cannot  be  completed immediately.  It is possible to
+ *             use epoll to check whether connect() completed successfully (EPOLLOUT event) or unsuccessfully (EPOLLERR event)
+ *   
  * @param sockfd      
  *
  * @param addr

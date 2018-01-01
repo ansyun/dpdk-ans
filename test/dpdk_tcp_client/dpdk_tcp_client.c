@@ -32,9 +32,12 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <sched.h>
+#include <unistd.h>
+#include <sys/times.h>
 #include <stdint.h>
 #include <string.h>
-#include <stdlib.h>
 #include <stdarg.h>
 #include <errno.h>
 #include <netinet/in.h>
@@ -49,20 +52,28 @@
   #endif
 #endif
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <sys/time.h>
-
+#include <pthread.h>
+ 
 #include "anssock_intf.h"
 #include "ans_errno.h"
 
-
-int fd = -1;
-
 #define TCP_CLIENT_SEND_LEN 2000
+#define TCP_CLIENT_NB   10
+
+int fd[TCP_CLIENT_NB];
+
+/* flag of connected */
+int fd_connected[TCP_CLIENT_NB];
 
 struct epoll_event events[20];
 
 void tcp_send_thread()  
 {  
+    int i;
     int data_num = 0;
     int data_len = 0;
     char send_data[5000];
@@ -71,27 +82,104 @@ void tcp_send_thread()
 
     while(1)
     {
-        if(fd > 0)
+        for(i = 0; i < TCP_CLIENT_NB; i++)
         {
-            data_num++;
-            sprintf(send_data, "Hello, linux tcp server, num:%d !", data_num);
-            send_len = 0;
-            
-            send_len = anssock_send(fd, send_data, 2000, 0);
-            data_len += send_len;
+            if(fd[i] > 0)
+            {
+                data_num++;
+                sprintf(send_data, "Hello, linux tcp server, num:%d !", data_num);
+                send_len = 0;
+                
+                send_len = anssock_send(fd[i], send_data, 2000, 0);
+                data_len += send_len;
 
-            printf("send len %d, data num %d, data len:%d \n", send_len, data_num, data_len);
+                printf("fd(%d) send len %d, data num %d, total data len:%d \n", fd[i], send_len, data_num, data_len);
+            }
+            usleep(20000);
         }
-        usleep(20000);
     }
-    
 }
 
+int check_connected(int epfd)
+{
+    int i, j;
+    int event_num = 0;
+    char isFinish = 0;
+    char hasSuccess = 0;
+    
+    while(1)
+    {
+        event_num = anssock_epoll_wait (epfd, events, 20, -1);
+        if(event_num <= 0)
+        {
+            printf("epoll_wait failed \n");
+            continue;
+        }
+            
+        for(i = 0; i < event_num; i++)
+        {
+            if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) )  
+            {  
+                printf("fd(%d) connect to remote server failed\n", events[i].data.fd);
+                anssock_close (events[i].data.fd);  
+                for(j = 0; j < TCP_CLIENT_NB; j++)
+                {
+                    if(fd[j] == events[i].data.fd)
+                    {
+                        fd[j] = -1;
+                        fd_connected[j] = -1;
+                        break;
+                    }
+                }
+                continue;  
+            }   
+
+            if (events[i].events & EPOLLOUT)
+            {
+                printf("fd(%d) connect to remote server successfully \n", events[i].data.fd);
+                for(j = 0; j < TCP_CLIENT_NB; j++)
+                {
+                    if(fd[j] == events[i].data.fd)
+                    {
+                        fd_connected[j] = 1;
+                        hasSuccess = 1;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                printf("unknow event %x, fd:%d \n", events[i].events, events[i].data.fd);
+            }
+            
+        }
+
+        isFinish = 1;
+        for(j = 0; j < TCP_CLIENT_NB; j++)
+        {
+            if(fd_connected[j] == 0)
+            {
+                isFinish = 0;
+            }
+        }
+
+        if(isFinish == 1)
+            break;
+    }
+
+    if(hasSuccess == 1)
+        return 0;
+    else
+        return -1;   
+
+    return 0;
+}
 
 int main(void)
 {
     int ret;
     int i = 0 ;
+    int j;
     int epfd;
     int data_num =0;
     struct sockaddr_in addr_in;  
@@ -113,40 +201,52 @@ int main(void)
         return -1;
     }
 
-    fd = anssock_socket(AF_INET, SOCK_STREAM, 0);	
-    if(fd < 0)
+    for(i = 0; i < TCP_CLIENT_NB; i++)
     {
-        printf("create socket failed \n");
-        anssock_close(epfd);
-        return -1;
+        fd[i] = anssock_socket(AF_INET, SOCK_STREAM, 0);	
+        if(fd[i] < 0)
+        {
+            printf("create socket failed \n");
+            anssock_close(epfd);
+            return -1;
+        }
+
+        memset(&remote_addr, 0, sizeof(remote_addr));      
+        remote_addr.sin_family = AF_INET;  
+        remote_addr.sin_port   = htons(8000);  
+        remote_addr.sin_addr.s_addr = inet_addr("10.0.0.10"); ; 
+
+        if(anssock_connect(fd[i], (struct sockaddr *)&remote_addr, sizeof(struct sockaddr)) < 0)     
+        {     
+            printf("connect to server failed \n");
+            anssock_close(fd[i]);
+            anssock_close(epfd);
+            return -1;  
+        } 
+
+        fd_connected[i] = 0;
+        
+        event.data.fd = fd[i];  
+        event.events = EPOLLIN | EPOLLET;  
+
+        ret = anssock_epoll_ctl(epfd, EPOLL_CTL_ADD, fd[i], &event);
+        if(ret != 0)
+        {
+            printf("epoll ctl failed \n");
+            anssock_close(fd[i]);
+            anssock_close(epfd);
+            return -1;
+        }
     }
 
-    memset(&remote_addr, 0, sizeof(remote_addr));      
-    remote_addr.sin_family = AF_INET;  
-    remote_addr.sin_port   = htons(8000);  
-    remote_addr.sin_addr.s_addr = htonl(0x02020205); 
-//    remote_addr.sin_addr.s_addr = htonl(0x03030303); 
-
-    if(anssock_connect(fd, (struct sockaddr *)&remote_addr, sizeof(struct sockaddr)) < 0)     
-    {     
-        printf("onnect to server failed \n");
-        anssock_close(fd);
-        anssock_close(epfd);
-        return -1;  
-    } 
-    
-    event.data.fd = fd;  
-    event.events = EPOLLIN | EPOLLET;  
-
-    ret = anssock_epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
+    ret = check_connected(epfd);
     if(ret != 0)
     {
-        printf("epoll ctl failed \n");
-        anssock_close(fd);
-        anssock_close(epfd);
+        printf("all fd connect to server failed \n");
         return -1;
     }
 
+    
     printf("start dpdk tcp client application \n");
 
     ret=pthread_create(&id, NULL, (void *) tcp_send_thread, NULL);  
@@ -169,11 +269,15 @@ int main(void)
             
         for(i = 0; i < event_num; i++)
         {
-            if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))  
+            if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) )  
             {  
                 printf("dpdk socket(%d) error\n", events[i].data.fd);
                 anssock_close (events[i].data.fd);  
-                fd = -1;
+                for(j = 0; j < TCP_CLIENT_NB; j++)
+                {
+                    if(fd[j] == events[i].data.fd)
+                        fd[j] = -1;
+                }
                 continue;  
             }   
 
@@ -196,7 +300,7 @@ int main(void)
 
                     }
 
-                    printf("Recv data,  len: %d \n", recv_len);
+                    printf("fd(%d) recv data,  len: %d, num: %d \n", events[i].data.fd, recv_len, data_num);
 
                     data_num++;
                 }
@@ -212,8 +316,12 @@ int main(void)
     }
 
 
+    for(j = 0; j < TCP_CLIENT_NB; j++)
+    {
+        if(fd[j] > 0)
+            anssock_close(fd[j]);
+    }
 
-    anssock_close(fd);
     anssock_close(epfd);
 
     return 0;
