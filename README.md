@@ -45,7 +45,7 @@ Support feature:
  - Commands for adding, deleting, showing bypass rule; 
  - UDP protocol;
  - Socket layer, share memory;
- - Socket API, socket/close/send/recv/epoll/writev/readv/shutdown;
+ - Socket API, socket/bind/connect/listen/close/send/recv/epoll/writev/readv/shutdown;
  - Support openssl;
  - TCP protocol;
     - Free lock, hash table;
@@ -92,12 +92,10 @@ ANS          |               |               |
          |---------------------------------------| 
 ```
  - NIC distribute packets to different lcore based on RSS, so same TCP flow are handled in the same lcore.
- - Each lcore has own TCP stack. so no share data between lcores, free lock.
+ - Each lcore has own TCP stack, free lock.
  - IP/ARP/ICMP are shared between lcores.
  - APP process runs as a tcp server.
   - If App process only creates one listen socket, the listen socket only listens on one lcore and accept tcp connections from the lcore, so the APP process number shall large than the lcore number. The listen sockets of APP processes are created on each lcore averagely. For example: ans(with -c 0x3) run on two lcore, shall run two nginx(only run master ), one nginx listens on lcore0, another nginx listens on lcore1.
-  - If App process creates many listen sockets, the listen sockets number shall be equal to the lcore numbers. these listen sockets can be created on each lcore averagely too. For example: ans(with -c 0x3) run on two lcore, redis server(one process) shall create two listen socket, one listen socket is created on lcore0, another listen socket is created on lcore1.
- - APP process runs as a tcp client. App process can communicate with each lcore. The tcp connection can be located in specified lcore automaticly.
  - APP process can bind the same port if enable reuseport, APP process could accept tcp connection by round robin.
  - If NIC don't support multi queue or RSS, shall enhance ans_main.c, reserve one lcore to receive and send packets from NIC, and distribute packets to lcores of ANS tcp stack by software RSS.
 
