@@ -71,6 +71,15 @@
  *
  */
 
+/*
+ *  define rx queue to lcore mapping
+*/
+struct ans_port_qmapping
+{
+    uint8_t queue_id;
+    uint8_t lcore_id; 
+};
+
  /**
  * Handle the received packets by ans stack
  *
@@ -155,6 +164,36 @@ int ans_iface_get_mtu(char *if_name, uint16_t *mtu);
  */
 int ans_iface_set_mtu(char *if_name, uint16_t mtu);
 
+/**
+ * Retrieves rx queue to lcore mapping for an interface.
+ *
+ * @param name      
+ *   name of the interface for which the queue mapping is retrieved
+ * @param qmapping_nb 
+ *   queue_mapping array size, and also return the queue mapping number.
+ * @param qmapping 
+ *   rx queue to lcore mapping 
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
+int ans_iface_get_queue(char *if_name, uint8_t *qmapping_nb, struct ans_port_qmapping *qmapping);
+
+
+/**
+ * Set rx queue to lcore mapping for an interface.
+ *
+ * @param name      
+ *   name of the interface for which the queue mapping is retrieved
+ * @param qmapping_nb 
+ *   queue_mapping array size.
+ * @param qmapping 
+ *   rx queue to lcore mapping 
+ *
+ * @return  0 - SUCCESS, non-zero - FAILURE
+ *
+ */
+int ans_iface_set_queue(char *if_name, uint8_t qmapping_nb, struct ans_port_qmapping *qmapping);
 
 /**
  * Routing table addition.

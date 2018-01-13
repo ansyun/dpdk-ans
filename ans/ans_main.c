@@ -87,7 +87,7 @@
 #include "ans_kni.h"
 
 static struct ans_user_config  ans_user_conf;
-static struct ans_lcore_queue ans_lcore_conf[RTE_MAX_LCORE];
+static struct ans_lcore_queue g_lcore_queue[RTE_MAX_LCORE];
 static struct rte_mempool *ans_pktmbuf_pool[MAX_NB_SOCKETS];
 
 static struct ans_lcore_params ans_lcore_params_default[] =
@@ -372,6 +372,34 @@ static uint8_t ans_get_port_rx_queues_nb(const uint8_t port, struct ans_user_con
     }
     return (uint8_t)(++queue);
 }
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
+static uint8_t ans_get_port_rx_qmapping(const uint8_t port, uint8_t qmapping_size, struct ans_port_qmapping *qmapping, struct ans_user_config  *user_conf)
+{
+    uint16_t i;
+    uint8_t queue_nb = 0;
+
+    for (i = 0; i < user_conf->lcore_param_nb && queue_nb < qmapping_size; ++i)
+    {
+        if (user_conf->lcore_param[i].port_id == port)
+        {
+            qmapping[queue_nb].lcore_id = user_conf->lcore_param[i].lcore_id;
+            qmapping[queue_nb].queue_id = user_conf->lcore_param[i].queue_id;
+            queue_nb++;
+        }
+    }
+
+    return (queue_nb);
+}
 
 /**********************************************************************
 *@description:
@@ -625,7 +653,7 @@ static inline int ans_send_packet(uint8_t port, struct rte_mbuf *m)
     struct ans_lcore_queue *qconf;
     struct ans_tx_queue  *tx_queue;
     
-    qconf = &ans_lcore_conf[rte_lcore_id()];
+    qconf = &g_lcore_queue[rte_lcore_id()];
 
     tx_queue = &qconf->tx_queue[port];
 
@@ -715,7 +743,7 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
     prev_tsc = 0;
 
     lcore_id = rte_lcore_id();
-    qconf = &ans_lcore_conf[lcore_id];
+    qconf = &g_lcore_queue[lcore_id];
 
     if (qconf->n_rx_queue == 0)
     {
@@ -825,7 +853,7 @@ int main(int argc, char **argv)
     int s;
 
     memset(&ans_user_conf, 0, sizeof(ans_user_conf));
-    memset(ans_lcore_conf, 0, sizeof(ans_lcore_conf));
+    memset(g_lcore_queue, 0, sizeof(g_lcore_queue));
 
     ans_user_conf.numa_on = 1;
     ans_user_conf.lcore_param_nb = sizeof(ans_lcore_params_default) / sizeof(ans_lcore_params_default[0]);
@@ -871,7 +899,7 @@ int main(int argc, char **argv)
     if (ans_check_lcore_params(&ans_user_conf) < 0)
         rte_exit(EXIT_FAILURE, "check_lcore_params failed\n");
 
-    ret = ans_init_lcore_rx_queues(&ans_user_conf, ans_lcore_conf);
+    ret = ans_init_lcore_rx_queues(&ans_user_conf, g_lcore_queue);
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "init_lcore_rx_queues failed\n");
 
@@ -885,14 +913,14 @@ int main(int argc, char **argv)
       rte_exit(EXIT_FAILURE, "check_port_config failed\n");
 
 
-    ret = ans_init_ports(nb_ports, &ans_user_conf, ans_lcore_conf);
+    ret = ans_init_ports(nb_ports, &ans_user_conf, g_lcore_queue);
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "Init ports failed\n");
 
 
     /* add by ans_team: support KNI interface at 2014-12-15 */
     if(ans_user_conf.kni_on == 1)
-        ans_kni_config(&ans_user_conf, ans_lcore_conf, ans_pktmbuf_pool);
+        ans_kni_config(&ans_user_conf, g_lcore_queue, ans_pktmbuf_pool);
 
 
     /* add by ans_team ---start */
@@ -923,7 +951,9 @@ int main(int argc, char **argv)
     int portid;
     uint16_t kni_id;
     struct ether_addr eth_addr;
-
+    uint16_t qmapping_nb;
+    struct ans_port_qmapping qmapping[32];
+    
     for(portid= 0; portid < nb_ports; portid++)
     {
         /* skip ports that are not enabled */
@@ -942,6 +972,11 @@ int main(int argc, char **argv)
         rte_eth_macaddr_get(portid, &eth_addr);
         
         ans_iface_add(portid, kni_id, ifname, &eth_addr);
+
+        /* set port rx queue mapping */
+        qmapping_nb = ans_get_port_rx_qmapping(portid, 32, qmapping, &ans_user_conf);
+        
+        ans_iface_set_queue(ifname, qmapping_nb, qmapping);
 
         /* host byte order */
         int ip_addr = 0x0a000002;
