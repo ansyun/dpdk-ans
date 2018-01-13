@@ -43,6 +43,8 @@ Support feature:
  - Commands for showing IP statistics;
  - Commands for adding, deleting, showing ACL; 
  - Commands for adding, deleting, showing bypass rule; 
+ - Commands for showing port queue lcore mapping;
+ - Commands for adding, deleting, showing flow filter rule;
  - UDP protocol;
  - Socket layer, share memory;
  - Socket API, socket/bind/connect/listen/close/send/recv/epoll/writev/readv/shutdown;
