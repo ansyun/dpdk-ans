@@ -36,18 +36,19 @@ Support feature:
  - Sync IP/Route from linux kernel;
  - Support dynamic routing(OSPF/BGP...);
  - Support DHCP client;
- - Commands for adding, deleting, showing IP address;
- - Commands for adding, deleting, showing static route;
- - Commands for showing neigh table;
- - Commands for showing interface and statistics;
- - Commands for showing IP statistics;
- - Commands for adding, deleting, showing ACL; 
- - Commands for adding, deleting, showing bypass rule; 
- - Commands for showing port queue lcore mapping;
- - Commands for adding, deleting, showing flow filter rule;
+ - Command Line Interface:
+     - Adding, deleting, showing IP addres;
+     - Adding, deleting, showing static route;
+     - Showing neigh table;
+     - Showing interface and statistics;
+     - Showing IP statistics;
+     - Adding, deleting, showing ACL;
+     - Adding, deleting, showing bypass rule;
+     - Showing port queue lcore mapping;
+     - Adding, deleting, showing flow filter rule;     
  - UDP protocol;
- - Socket layer, share memory;
- - Socket API, socket/bind/connect/listen/close/send/recv/epoll/writev/readv/shutdown;
+ - Socket layer;
+ - Socket API compatible with BSD, socket/bind/connect/listen/close/send/recv/epoll/writev/readv/shutdown...;
  - Support openssl;
  - TCP protocol;
     - Free lock, hash table;
@@ -97,7 +98,7 @@ ANS          |               |               |
  - Each lcore has own TCP stack, free lock.
  - IP/ARP/ICMP are shared between lcores.
  - APP process runs as a tcp server.
-  - If App process only creates one listen socket, the listen socket only listens on one lcore and accept tcp connections from the lcore, so the APP process number shall large than the lcore number. The listen sockets of APP processes are created on each lcore averagely. For example: ans(with -c 0x3) run on two lcore, shall run two nginx(only run master ), one nginx listens on lcore0, another nginx listens on lcore1.
+    - If App process only creates one listen socket, the listen socket only listens on one lcore and accept tcp connections from the lcore, so the APP process number shall large than the lcore number. The listen sockets of APP processes are created on each lcore averagely. For example: ans(with -c 0x3) run on two lcore, shall run two nginx(only run master ), one nginx listens on lcore0, another nginx listens on lcore1.
  - APP process can bind the same port if enable reuseport, APP process could accept tcp connection by round robin.
  - If NIC don't support multi queue or RSS, shall enhance ans_main.c, reserve one lcore to receive and send packets from NIC, and distribute packets to lcores of ANS tcp stack by software RSS.
 
