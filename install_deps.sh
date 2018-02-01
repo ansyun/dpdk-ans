@@ -127,7 +127,7 @@ elif [ $NATIVE_MATCH = "knl" ] ; then
   
     cd $RTE_ANS/librte_anscli/
     rm -f librte_anscli.a
-#    ln -s librte_anscli_knl.a librte_anscli.a
+    ln -s librte_anscli_knl.a librte_anscli.a
     
     echo "Generate librte_ans.a/librte_anssock.a/librte_anscli.a for knl successfully."
 	
