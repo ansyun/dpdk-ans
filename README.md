@@ -2,6 +2,8 @@
 --------------
 ANS(accelerated network stack) is DPDK native TCP/IP stack and also refer to [FreeBSD](http://freebsd.org) implementation. ANS provides a userspace TCP/IP stack for use with the Intel [DPDK](http://dpdk.org/). 
 
+--------------
+![](/doc/design/ans_code.png)
 - ans: accelerated network stack process.
  
 - librte_ans: TCP/IP stack static library. ANS use dpdk mbuf, ring, memzone, mempool, timer, spinlock. so zero copy mbuf between dpdk and ANS. 
