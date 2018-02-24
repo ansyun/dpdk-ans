@@ -74,6 +74,10 @@
 #include <rte_cycles.h>
 #include <rte_malloc.h>
 #include <rte_kni.h>
+#include <rte_version.h>
+#if RTE_VERSION >= RTE_VERSION_NUM(17,11,0,0)
+#  include <rte_bus_pci.h>
+#endif
 
 #include "ans_kni.h"
 
