@@ -109,7 +109,7 @@ int anssock_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
  * @param sockfd    
  * @param buf
  * @param len    
- * @param flags
+ * @param flags: don't support MSG_OOB
  * @param dest_addr    
  * @param addrlen
  *
@@ -127,7 +127,7 @@ ssize_t anssock_sendto(int sockfd, const void *buf, size_t len, int flags,
  * @param sockfd       
  * @param buf
  * @param len       
- * @param flags
+ * @param flags: don't support MSG_OOB
  *
  * @return  
  *  On success, these calls return the number of characters sent.  On error, -1 is returned, and errno is set appropriately.

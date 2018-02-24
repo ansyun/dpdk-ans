@@ -216,7 +216,7 @@ int main(void)
         remote_addr.sin_port   = htons(8000);  
         remote_addr.sin_addr.s_addr = inet_addr("10.0.0.10"); ; 
 
-        if(anssock_connect(fd[i], (struct sockaddr *)&remote_addr, sizeof(struct sockaddr)) < 0)     
+        if(anssock_connect(fd[i], (struct sockaddr *)&remote_addr, sizeof(struct sockaddr)) < 0 && errno != EINPROGRESS)     
         {     
             printf("connect to server failed \n");
             anssock_close(fd[i]);
@@ -288,14 +288,20 @@ int main(void)
                     recv_len = anssock_recvfrom(events[i].data.fd, recv_buf, 5000, 0, NULL, NULL);
                     if((recv_len < 0) && (errno == ANS_EAGAIN))
                     {
-                       // printf("no data in socket \n");
+                     //   printf("no data in socket \n");
 
                         break;
                     }
-                    else if(recv_len < 0)
+                    else if(recv_len <= 0)
                     {
                          // socket error
-                         //anssock_close(fd);
+                         printf("socket error \n");
+                         anssock_close(events[i].data.fd);
+                         for(j = 0; j < TCP_CLIENT_NB; j++)
+                         {
+                             if(fd[j] == events[i].data.fd)
+                                 fd[j] = -1;
+                         }
                          break;
 
                     }
