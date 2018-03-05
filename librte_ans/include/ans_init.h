@@ -81,7 +81,7 @@ int ans_initialize(struct ans_init_config *user_conf);
  * @return  
  *
  */
-void ans_message_handle(void);
+void ans_message_handle(uint64_t cur_tsc);
 
 
 #endif /* __ANS_INIT_H__ */

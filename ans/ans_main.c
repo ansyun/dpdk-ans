@@ -734,7 +734,7 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
     uint64_t prev_tsc, diff_tsc, cur_tsc;
     uint8_t portid, queueid;
     struct ans_lcore_queue *qconf;
-    uint64_t timer_prev_tsc = 0, timer_cur_tsc, timer_diff_tsc;
+    uint64_t timer_prev_tsc = 0, timer_cur_tsc, timer_diff_tsc, timer_10ms_tsc;
     struct rte_mbuf *pkts_burst[MAX_PKT_BURST];
     struct ans_tx_queue *tx_queue;
     struct ans_rx_queue *rx_queue;
@@ -762,16 +762,19 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
 
     nb_ports = rte_eth_dev_count();
     printf("nb ports %d hz: %ld \n", nb_ports, rte_get_tsc_hz());
-
+    
+    timer_10ms_tsc = rte_get_tsc_hz() / 100;
+    
     while (1)
     {
-        /* add by ans_team ---start */
-        ans_message_handle();
-        /* add by ans_team ---end */
 
         cur_tsc = rte_rdtsc();
         timer_cur_tsc = cur_tsc;
         
+        /* add by ans_team ---start */
+        ans_message_handle(cur_tsc);
+        /* add by ans_team ---end */
+  
         /*
          * Call the timer handler on each core: as we don't
          * need a very precise timer, so only call
@@ -780,7 +783,7 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
          * reading the HPET timer is not efficient.
          */
         timer_diff_tsc = timer_cur_tsc - timer_prev_tsc;
-        if (timer_diff_tsc > TIMER_RESOLUTION_CYCLES)
+        if (timer_diff_tsc > timer_10ms_tsc)
         {
             rte_timer_manage();
             timer_prev_tsc = timer_cur_tsc;
