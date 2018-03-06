@@ -52,8 +52,8 @@ Support feature:
  - Socket layer;
  - Socket API compatible with BSD, socket/bind/connect/listen/close/send/recv/epoll/writev/readv/shutdown...;
  - Support openssl;
- - TCP protocol;
-    - Support reliable transmission;
+ - TCP protocol; 
+    - Support reliable transmission;
     - Support dupack-based retransmission, timeout-based retransmission;
     - Support flow control;
     - Support congestion control: newreno/cubic/vegas...;
