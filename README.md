@@ -53,7 +53,15 @@ Support feature:
  - Socket API compatible with BSD, socket/bind/connect/listen/close/send/recv/epoll/writev/readv/shutdown...;
  - Support openssl;
  - TCP protocol;
-    - Free lock, hash table;
+    - Support reliable transmission;
+    - Support dupack-based retransmission, timeout-based retransmission;
+    - Support flow control;
+    - Support congestion control: newreno/cubic/vegas...;
+    - Support maximum segment size;
+    - Support selective acknowledgments;
+    - Support window scaling;
+    - Support TCP timestamps;
+    - Support keep alive;
     - Support SO_REUSEPORT, multi application can listen the same port;
     - Support multicore tcp stack, per tcp stack per lcore;
     - Support TSO. 
