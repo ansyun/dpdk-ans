@@ -28,6 +28,7 @@ gcc version 5.4.0 20160609.
 
 Support feature:
  - ANS initialize;
+ - ANS run in container;
  - Ether, zero copy between NIC and ANS TCP/IP stack;
  - ARP, ARP timeout;
  - IP layer, IP fragmentation and reassemble;
