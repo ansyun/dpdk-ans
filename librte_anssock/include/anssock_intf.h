@@ -313,9 +313,9 @@ int anssock_shutdown(int sockfd, int how);
  * 
  * @param sockfd      
  * @param level: 
- *   only support SOL_SOCKET       
+ *   only support SOL_SOCKET, IPPROTO_TCP       
  * @param optname: 
- *   only support SO_REUSEPORT
+ *   only support SO_REUSEPORT, SO_KEEPALIVE, TCP_NODELAY, TCP_KEEPIDLE, TCP_KEEPINTVL, TCP_KEEPCNT
  * @param optval
  * @param optlen      
  *
