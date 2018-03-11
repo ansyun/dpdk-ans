@@ -268,6 +268,7 @@ You can get more information and instructions from [wiki page](https://github.co
 
 #### Notes
 -------
+- You shall use the same dpdk version as ans libs used.
 - Shall use the same gcc version to compile your application.
 - ANS socket application run as a secondary dpdk process, If you got below log, shall execute below commands to disable ASLR.
 ```
