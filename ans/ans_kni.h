@@ -36,13 +36,13 @@
 #include <rte_mempool.h>
 #include "ans_main.h"
 
-/* Load Configure Information for ODP KNI module */
+/* Load Configure Information for KNI module */
 int ans_kni_config(struct ans_user_config * common_config, struct ans_lcore_queue *lcore_conf, struct rte_mempool * pktmbuf_pool[]);
 
-/* Destory ODP KNI module */
+/* Destory KNI module */
 int ans_kni_destory();
 
-/* Run ODP KNI module, should be called at main loop each lcore */
+/* Run KNI module, should be called at main loop each lcore */
 void ans_kni_main();
 
 /* send packets which cannot be proceed to network stack */

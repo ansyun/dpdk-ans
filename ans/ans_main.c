@@ -875,7 +875,7 @@ int main(int argc, char **argv)
 
     ret = rte_eal_init(argc, argv);
     if (ret < 0)
-      rte_exit(EXIT_FAILURE, "ODP:Invalid EAL parameters\n");
+      rte_exit(EXIT_FAILURE, "Invalid EAL parameters\n");
 
     argc -= ret;
     argv += ret;

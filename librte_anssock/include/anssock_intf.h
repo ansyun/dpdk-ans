@@ -168,7 +168,7 @@ ssize_t anssock_writev(int fd, const struct iovec *iov, int iovcnt);
  * @param sockfd      
  * @param buf
  * @param len       
- * @param flags 
+ * @param flags: only support MSG_PEEK
  * @param src_addr       
  * @param addrlen
  *
@@ -186,8 +186,8 @@ ssize_t anssock_recvfrom(int sockfd, void *buf, size_t len, int flags,
  * @param sockfd      
  * @param buf
  * @param len      
- * @param flags
- *
+ * @param flags: only support MSG_PEEK
+ *   
  * @return  
  *  These calls return the number of bytes received, or -1 if an error occurred.  In the event of an error, errno is set to indicate the error.  
  *  If errno is EAGAIN, no data are present to be received.
