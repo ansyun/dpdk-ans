@@ -51,7 +51,8 @@ Support feature:
      - Adding, deleting, showing flow filter rule;     
  - UDP protocol;
  - Socket layer;
- - Socket API compatible with BSD, socket/bind/connect/listen/close/send/recv/epoll/writev/readv/shutdown...;
+ - Socket API compatible with BSD, APP can choice ANS socket or linux socket based on a switch.
+    - socket/bind/connect/listen/close/send/recv/epoll/writev/readv/shutdown...;
  - Support openssl;
  - TCP protocol; 
     - Support reliable transmission;
