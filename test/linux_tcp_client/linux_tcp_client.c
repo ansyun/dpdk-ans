@@ -132,7 +132,7 @@ int main(void)
     memset(&remote_addr, 0, sizeof(remote_addr));      
     remote_addr.sin_family = AF_INET;  
     remote_addr.sin_port   = htons(8000);  
-    remote_addr.sin_addr.s_addr = htonl(0x02020202); 
+    remote_addr.sin_addr.s_addr = inet_addr("10.0.0.2"); 
 
     if(connect(fd, (struct sockaddr *)&remote_addr, sizeof(struct sockaddr)) < 0)     
     {     
