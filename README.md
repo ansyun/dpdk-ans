@@ -63,7 +63,8 @@ Support feature:
     - Support selective acknowledgments;
     - Support window scaling;
     - Support TCP timestamps;
-    - Support keep alive;
+    - Support TCP ECN;
+    - Support keep alive;
     - Support SO_REUSEPORT, multi application can listen the same port;
     - Support multicore tcp stack, per tcp stack per lcore;
     - Support TSO. 
