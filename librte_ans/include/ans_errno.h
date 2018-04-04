@@ -392,25 +392,6 @@
 #define  ANS_ENETLINK         3006    /* parse netlink message failed */
 #define  ANS_EFFILTER         3007     /* Add flow filter rule failed */
 
-
-#define ANS_ERRMEM        ANS_ENOMEM   /* Out of memory error.     */
-#define ANS_ERRBUF        ANS_ENOBUFS    /* Buffer error.            */
-#define ANS_ERRTIMEOUT    ANS_EWOULDBLOCK    /* Timeout.                 */
-#define ANS_ERRRTE        ANS_EHOSTUNREACH    /* Routing problem.         */
-#define ANS_ERRINPROGRESS ANS_EINPROGRESS    /* Operation in progress    */
-#define ANS_ERRVAL        ANS_EINVAL    /* Illegal value.           */
-#define ANS_ERRWOULDBLOCK ANS_EWOULDBLOCK    /* Operation would block.   */
-#define ANS_ERRUSE        ANS_EADDRINUSE    /* Address in use.          */
-#define ANS_ERRISCONN     ANS_EALREADY    /* Already connected.       */
-
-//#define ANS_ERRIS_FATAL(e) ((e) < ANS_ERRISCONN)
-
-#define ANS_ERRABRT       ANS_ECONNABORTED   /* Connection aborted.      */
-#define ANS_ERRRST        ANS_ECONNRESET   /* Connection reset.        */
-#define ANS_ERRCLSD       ANS_ENOTCONN   /* Connection closed.       */
-#define ANS_ERRCONN       ANS_ENOTCONN   /* Not connected.           */
-#define ANS_ERRARG        ANS_EIO   /* Illegal argument.        */
-
 #define ANS_FALSE   0
 #define ANS_TRUE    1
 
