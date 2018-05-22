@@ -42,12 +42,12 @@ RTE_TARGET ?= x86_64-native-linuxapp-gcc
 
 include $(RTE_SDK)/mk/rte.vars.mk
 
-ODP_PATH = $(RTE_ANS)
+ANS_PATH = $(RTE_ANS)
 
-CFLAGS += -I$(ODP_PATH)/librte_ans/include
-CFLAGS += -I$(ODP_PATH)/librte_anssock/include
+CFLAGS += -I$(ANS_PATH)/librte_ans/include
+CFLAGS += -I$(ANS_PATH)/librte_anssock/include
 
-LDLIBS += $(ODP_PATH)/librte_anssock/librte_anssock.a 
+LDLIBS += $(ANS_PATH)/librte_anssock/librte_anssock.a 
 
 # binary name
 APP = dpdk_tcp_server
@@ -57,6 +57,6 @@ SRCS-y := dpdk_tcp_server.c
 
 CFLAGS += -O3
 #CFLAGS += $(WERROR_FLAGS)
-CFLAGS += -I$(ODP_PATH)/include
+CFLAGS += -I$(ANS_PATH)/include
 
 include $(RTE_SDK)/mk/rte.extapp.mk
