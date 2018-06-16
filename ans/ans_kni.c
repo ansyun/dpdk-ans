@@ -121,9 +121,8 @@ static struct rte_mempool ** kni_pktmbuf_pool;
 
 //static struct kni_interface_stats kni_stats[RTE_MAX_ETHPORTS];
 
-
 /* Callback for request of configuring network interface up/down */
-static int ans_kni_config_iface(uint8_t port_id, uint8_t if_up)
+static int ans_kni_config_iface(uint16_t port_id, uint8_t if_up)
 {
     int ret = 0;
 
@@ -140,9 +139,8 @@ static int ans_kni_config_iface(uint8_t port_id, uint8_t if_up)
     return ret;
 }
 
-
 /* Callback Functions */
-static int ans_kni_change_mtu(uint8_t port_id, unsigned new_mtu)
+static int ans_kni_change_mtu(uint16_t port_id, unsigned int new_mtu)
 {
     int ret;
     

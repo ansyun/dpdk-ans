@@ -51,7 +51,7 @@ CFLAGS += -O3 \
 LDLIBS += $(RTE_ANS)/librte_anssock/librte_anssock.a \
           -L$(RTE_SDK)/$(RTE_TARGET)/lib \
           -Wl,--whole-archive -Wl,-lrte_mbuf -Wl,-lrte_mempool_ring -Wl,-lrte_mempool -Wl,-lrte_ring -Wl,-lrte_eal -Wl,--no-whole-archive -Wl,-export-dynamic \
-          -lrt -pthread -ldl
+          -lrt -pthread -ldl -lnuma
 
 OBJS = http_server.o 
 TARGET = http_server

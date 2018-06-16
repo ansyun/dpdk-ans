@@ -449,7 +449,7 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
         rte_eth_dev_info_get(portid, &dev_info);
         printf("\t port name %s:  \n", dev_info.driver_name );
         printf("\t max_rx_queues %d: max_tx_queues:%d \n", dev_info.max_rx_queues, dev_info.max_tx_queues);
-        printf("\t rx_offload_capa 0x%x: tx_offload_capa:0x%x \n", dev_info.rx_offload_capa, dev_info.tx_offload_capa);
+        printf("\t rx_offload_capa 0x%lx: tx_offload_capa:0x%lx \n", dev_info.rx_offload_capa, dev_info.tx_offload_capa);
 
         nb_rx_queue = ans_get_port_rx_queues_nb(portid, user_conf);
 
