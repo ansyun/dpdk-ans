@@ -20,7 +20,6 @@ ANS(accelerated network stack) is DPDK native TCP/IP stack and also refer to [Fr
 
 Support environment
   - EAL is based on dpdk-17.11.3;
-  - Development enviroment is based on x86_64-native-linuxapp-gcc;
   - linux version：
 4.4.0-45-generic (Ubuntu 16.04.1 LTS).
   - gcc version：
