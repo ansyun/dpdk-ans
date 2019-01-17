@@ -19,7 +19,7 @@ ANS(accelerated network stack) is DPDK native TCP/IP stack and also refer to [Fr
 - test: Example application with ANS for testing ANS tcp/ip stack
 
 Support environment
-  - EAL is based on dpdk-17.11.3;
+  - EAL is based on dpdk-17.11.4;
   - linux version：
 4.4.0-45-generic (Ubuntu 16.04.1 LTS).
   - gcc version：
@@ -67,7 +67,12 @@ Support feature:
     - Support SO_REUSEPORT, multi application can listen the same port;
     - Support multicore tcp stack, per tcp stack per lcore;
     - Support TSO. 
- 
+  - Vrouter;
+     - Support vhost;
+     - Support virtio-user;     
+     - Support kni; 
+     - Support tap; 
+
 #### ANS User Guide
 --------------
 ```
@@ -129,7 +134,7 @@ ANS          |               |               |
     |     80k connection/s         | 
     |------------------------------| 
 ```
-- L3 forwarding performance testing
+- L3 forwarding with NIC performance testing
 
   ENV: CPU- Intel(R) Xeon(R) CPU E5-2683 v3 @ 2.00GHz, NIC- Intel 82599ES 10-Gigabit,  Test tool:pktgen-DPDK
 ```
@@ -145,6 +150,24 @@ ANS          |               |               |
     |--------------------------------------| 
  
 ```
+- L3 forwarding with vhost/virtio performance testing
+
+  ENV: Intel(R) Xeon(R) CPU E5-2618L v4 @ 2.20GHz, NIC- vhost/virtio,  Test tool:pktgen-DPDK
+```
+    |--------------------------------------| 
+    |      L3 forwarding performance       |
+    |             (one lcore)              |
+    |--------------------------------------| 
+    | Packet size(byte)| Throughput(Mpps)  | 
+    |--------------------------------------|
+    |     64           |       6.33        | 
+    |--------------------------------------| 
+    |     128          |       5.94        | 
+    |--------------------------------------| 
+    |     256          |     Line Rate     | 
+    |--------------------------------------| 
+```
+
 - dpdk-redis performance testing
 ```
 ====ENV=== 
