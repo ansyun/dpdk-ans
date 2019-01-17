@@ -93,7 +93,6 @@ int ans_check_port_config(const unsigned nb_ports, struct ans_user_config *user_
     for (i = 0; i < user_conf->lcore_param_nb; i++)
     {
         portid = user_conf->lcore_param[i].port_id;
-        printf("port id %d \n ", portid);
 
         if ((user_conf->port_mask & (1 << portid)) == 0)
         {

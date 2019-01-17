@@ -44,6 +44,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <sched.h>
+#include <signal.h>
 
 #include <rte_common.h>
 #include <rte_vect.h>
@@ -89,6 +90,7 @@
 static struct ans_user_config  ans_user_conf;
 static struct ans_lcore_queue g_lcore_queue[RTE_MAX_LCORE];
 static struct rte_mempool *ans_pktmbuf_pool[MAX_NB_SOCKETS];
+static uint8_t ans_stopped = 0;
 
 static struct ans_lcore_params ans_lcore_params_default[] =
 {
@@ -214,9 +216,15 @@ static void ans_check_ports_link_status(uint8_t port_num, uint32_t port_mask)
 
     for (count = 0; count <= max_check_time; count++)
     {
+        if (ans_stopped)
+            return;
+
         all_ports_up = 1;
         for (portid = 0; portid < port_num; portid++)
         {
+            if (ans_stopped)
+                return;
+       
             if ((port_mask & (1 << portid)) == 0)
                 continue;
 
@@ -563,8 +571,6 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
     return 0;
 }
 
-
-
 /**********************************************************************
 *@description:
 *
@@ -604,6 +610,35 @@ static int ans_start_ports(unsigned short nb_ports, struct ans_user_config  *use
     }
 
     ans_check_ports_link_status((uint8_t)nb_ports, user_conf->port_mask);
+
+    return 0;
+}
+
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
+static int ans_stop_ports(unsigned short nb_ports, struct ans_user_config  *user_conf)
+{
+    int portid;
+    /* stop ports */
+    for (portid = 0; portid < nb_ports; portid++) {
+        if ((user_conf->port_mask & (1 << portid)) == 0)
+        	continue;
+        
+            printf("Closing port %d...", portid);
+            rte_eth_dev_stop(portid);
+            rte_eth_dev_close(portid);
+            printf(" Done\n");
+    }
+    printf("Bye...\n");
 
     return 0;
 }
@@ -765,7 +800,7 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
     
     timer_10ms_tsc = rte_get_tsc_hz() / 100;
     
-    while (1)
+    while (!ans_stopped)
     {
 
         cur_tsc = rte_rdtsc();
@@ -834,6 +869,30 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
     }
 }
 
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
+static void ans_signal_handler(int signum)
+{
+    int nb_ports;
+    if (signum == SIGINT || signum == SIGTERM) 
+    {
+        printf("\nSignal %d received, preparing to exit...\n", signum);
+
+        printf("Telling cores to stop...\n");
+        ans_stopped = 1;
+    }
+
+    return;
+}
 
 /**********************************************************************
 *@description:
@@ -876,6 +935,9 @@ int main(int argc, char **argv)
     ret = rte_eal_init(argc, argv);
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "Invalid EAL parameters\n");
+
+    signal(SIGINT, ans_signal_handler);
+    signal(SIGTERM, ans_signal_handler);
 
     argc -= ret;
     argv += ret;
@@ -945,7 +1007,7 @@ int main(int argc, char **argv)
 
     ret = ans_initialize(&init_conf);
     if (ret != 0)
-    rte_exit(EXIT_FAILURE, "Init ans failed \n");
+        rte_exit(EXIT_FAILURE, "Init ans failed \n");
 
     /* add by ans_team ---end */
 
@@ -956,6 +1018,7 @@ int main(int argc, char **argv)
     struct ether_addr eth_addr;
     uint16_t qmapping_nb;
     struct ans_port_qmapping qmapping[32];
+    struct rte_eth_dev_info dev_info;
     
     for(portid= 0; portid < nb_ports; portid++)
     {
@@ -965,10 +1028,23 @@ int main(int argc, char **argv)
             printf("\nSkipping disabled port %d\n", portid);
             continue;
         }
-
+        
+        rte_eth_dev_info_get(portid, &dev_info);
+        
         memset(ifname, 0, sizeof(ifname));
-
-        sprintf(ifname, "veth%d", portid);
+        if(strcmp(dev_info.driver_name, "net_vhost") == 0)
+        {
+            sprintf(ifname, "vhost%d", portid);
+        }
+        else if(strcmp(dev_info.driver_name, "net_virtio_user") == 0)
+        {
+            sprintf(ifname, "virtio%d", portid);
+        }
+        else
+        {
+            sprintf(ifname, "veth%d", portid);
+        }
+        
         kni_id = ans_kni_id_get(portid);
         
         printf("add %s device, kni id %d \n", ifname, kni_id);
@@ -1013,6 +1089,11 @@ int main(int argc, char **argv)
     rte_eal_mp_remote_launch(ans_main_loop, NULL, CALL_MASTER);
     RTE_LCORE_FOREACH_SLAVE(lcore_id){
       if (rte_eal_wait_lcore(lcore_id) < 0)
-        return -1;
+        ret = -1;
+        break;
     }
+
+    ans_stop_ports(nb_ports, &ans_user_conf);
+
+    return ret;
 }

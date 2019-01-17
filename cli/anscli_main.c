@@ -59,11 +59,37 @@
 #include "anscli_intf.h"
 
 
+/**********************************************************************
+*@description:
+*  display usage
+*
+*
+**********************************************************************/
+static void anscli_print_usage(void)
+{
+    printf ("anscli has four input format: \n"
+    "  ./anscli  - enter cli window with default file-prefix \n"
+    "  ./anscli --file-prefix=NAME - enter cli window with specified file-prefix,  eg: ./anscli --file-prefix=testprefix \n"
+    "  ./anscli \"CMD\" - enter CMD with default file-prefix, eg: ./anscli \"help\" \n"
+    "  ./anscli --file-prefix=NAME \"CMD\" - enter CMD with specified file-prefix, eg: ./anscli --file-prefix=testprefix \"help\" \n"
+    "  Notes: the file-prefix shall same as ans's file-prefix \n");
+    
+    return;
+}
+
+/**********************************************************************
+*@description:
+*  anscli main
+*
+*
+**********************************************************************/
 int main(int argc, char **argv)
 {
     int ret;
+    char *cmd;
+    short has_cmd = 0;
     int     param_num = 8;
-    char *param[] = {"anscli",
+    char *param[9] = {"anscli",
                                "-c",
                                "1",
                                "-n",
@@ -73,17 +99,54 @@ int main(int argc, char **argv)
                                "--proc-type=secondary",
                                NULL};
 
+    if(argc >= 2)
+    {
+        if(strcmp(argv[1], "help") == 0 || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
+        {
+            anscli_print_usage();
+            return 0;
+        }
+
+        if(strncmp(argv[1], "--file-prefix", strlen("--file-prefix")) == 0)
+        {
+            param[8] = argv[1];
+            param_num++;
+
+            if(argc > 2)
+            {
+                has_cmd = 1;
+                cmd = argv[2];
+            }
+            else
+            {
+                has_cmd = 0;
+            }
+        }
+        else
+        {
+            has_cmd = 1;
+            cmd = argv[1];
+        }
+
+    }
+    else
+    {
+        has_cmd = 0;
+    }
+    
     rte_log_set_global_level(RTE_LOG_ERR);
     ret = rte_eal_init(param_num, param);
     if (ret < 0)
         rte_panic("Cannot init EAL\n");
-    if(argc > 1)
+    
+    if(has_cmd)
     {
-        anscli_start(argv[1]);
+        anscli_start(cmd);
     }
     else
     {
         anscli_start(NULL);
     }
+    
     return 0;
 }
