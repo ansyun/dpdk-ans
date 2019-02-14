@@ -380,6 +380,7 @@ static uint8_t ans_get_port_rx_queues_nb(const uint8_t port, struct ans_user_con
     }
     return (uint8_t)(++queue);
 }
+
 /**********************************************************************
 *@description:
 *
@@ -391,23 +392,46 @@ static uint8_t ans_get_port_rx_queues_nb(const uint8_t port, struct ans_user_con
 *@return values:
 *
 **********************************************************************/
-static uint8_t ans_get_port_rx_qmapping(const uint8_t port, uint8_t qmapping_size, struct ans_port_qmapping *qmapping, struct ans_user_config  *user_conf)
+static void ans_get_port_queue(const uint8_t port, struct ans_port_queue *port_queue, struct ans_lcore_queue *lcore_conf)
 {
     uint16_t i;
-    uint8_t queue_nb = 0;
+    uint8_t lcore_id;
+    struct ans_lcore_queue *lcore_queue;
 
-    for (i = 0; i < user_conf->lcore_param_nb && queue_nb < qmapping_size; ++i)
+    port_queue->rxq_nb = 0;
+    port_queue->txq_nb = 0;
+    
+    for(lcore_id = 0; lcore_id < RTE_MAX_LCORE; lcore_id++)
     {
-        if (user_conf->lcore_param[i].port_id == port)
+        if (rte_lcore_is_enabled(lcore_id) == 0)
+            continue;
+
+        lcore_queue = &lcore_conf[lcore_id];
+
+        /* get rx queue */
+        for(i = 0; i < lcore_queue->n_rx_queue; i++)
         {
-            qmapping[queue_nb].lcore_id = user_conf->lcore_param[i].lcore_id;
-            qmapping[queue_nb].queue_id = user_conf->lcore_param[i].queue_id;
-            queue_nb++;
+            if(lcore_queue->rx_queue[i].port_id == port)
+            {
+                port_queue->rx_qmapping[port_queue->rxq_nb].lcore_id  = lcore_id;
+                port_queue->rx_qmapping[port_queue->rxq_nb].queue_id = lcore_queue->rx_queue[i].queue_id;
+                port_queue->rxq_nb++;
+            }
         }
+
+        /* get tx queue */
+        if(lcore_queue->tx_queue[port].queue_id != INVALID_QUEUE_ID)
+        {
+            port_queue->tx_qmapping[port_queue->txq_nb].lcore_id = lcore_id;
+            port_queue->tx_qmapping[port_queue->txq_nb].queue_id = lcore_queue->tx_queue[port].queue_id;
+            port_queue->txq_nb++;
+        }
+
     }
 
-    return (queue_nb);
+    return;
 }
+
 
 /**********************************************************************
 *@description:
@@ -427,7 +451,6 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
     uint16_t queueid;
     unsigned lcore_id;
     uint8_t nb_rx_queue =0;
-    uint8_t max_rx_queue =0;
     uint8_t queue, socketid;
     uint32_t n_tx_queue, nb_lcores, nb_mbuf;
     struct ether_addr eth_addr;
@@ -438,7 +461,7 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
     nb_lcores = rte_lcore_count();
     n_tx_queue = nb_lcores;
     if (n_tx_queue > MAX_TX_QUEUE_PER_PORT)
-      n_tx_queue = MAX_TX_QUEUE_PER_PORT;
+        n_tx_queue = MAX_TX_QUEUE_PER_PORT;
 
     printf("\nStart to Init port \n" );
 
@@ -461,9 +484,12 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
 
         nb_rx_queue = ans_get_port_rx_queues_nb(portid, user_conf);
 
-        if(max_rx_queue < nb_rx_queue)
-            max_rx_queue = nb_rx_queue;
-
+		/*
+        if(dev_info.max_rx_queues < nb_rx_queue)
+        {
+            rte_exit(EXIT_FAILURE, "Cannot configure not existed rxq: ""port=%d\n", portid);
+        }
+        */
         printf("\t Creating queues: rx queue number=%d tx queue number=%u... \n", nb_rx_queue, (unsigned)n_tx_queue );
 
         ret = rte_eth_dev_configure(portid, nb_rx_queue, (uint16_t)n_tx_queue, &ans_port_conf);
@@ -482,8 +508,12 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
         for (lcore_id = 0; lcore_id < RTE_MAX_LCORE; lcore_id++)
         {
             if (rte_lcore_is_enabled(lcore_id) == 0)
-              continue;
-
+            {
+                /* if lcore is enable, set as a invalid queue id */
+                lcore_conf[lcore_id].tx_queue[portid].queue_id  = INVALID_QUEUE_ID;
+                continue;
+            }
+            
             if (user_conf->numa_on)
               socketid = (uint8_t)rte_lcore_to_socket_id(lcore_id);
             else
@@ -500,7 +530,7 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
             /* user default tx conf */
 
             /* txconf = &ans_tx_conf; */
-            txconf->txq_flags = 0;  /* enable NIC all TX offload */
+            txconf->txq_flags = 0;  /* enable NIC all TX offload, shall set it to 0 for some nic to enable hw offload */
 
             printf("\t lcore id:%u, tx queue id:%d, socket id:%d \n", lcore_id, queueid, socketid);
             printf("\t Conf-- tx pthresh:%d, tx hthresh:%d, tx wthresh:%d, txq_flags:0x%x \n", txconf->tx_thresh.pthresh,
@@ -510,9 +540,14 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
             if (ret < 0)
               rte_exit(EXIT_FAILURE, "rte_eth_tx_queue_setup: err=%d, " "port=%d\n", ret, portid);
 
-            lcore_conf[lcore_id].tx_queue[portid].queue_id = queueid;
 
+            struct ans_lcore_queue * qconf = &lcore_conf[lcore_id];
+            qconf->tx_queue[portid].queue_id = queueid;
             queueid++;
+
+            qconf->port_id[qconf->n_tx_port] = portid;
+            qconf->n_tx_port++;
+            
         }
 
         printf("\n");
@@ -715,6 +750,21 @@ static inline int ans_send_packet(uint8_t port, struct rte_mbuf *m)
 *@return values:
 *
 **********************************************************************/
+uint16_t ans_tx_burst(uint16_t port_id, uint16_t queue_id, struct rte_mbuf **tx_pkts, uint16_t nb_pkts)
+{
+    return rte_eth_tx_burst(port_id, queue_id, tx_pkts, nb_pkts);
+}
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
 static inline int ans_bypass_packet(uint8_t port_id, struct rte_mbuf *m)
 {
     int ret = 0;
@@ -763,8 +813,7 @@ static void ans_init_timer()
 **********************************************************************/
 static int ans_main_loop(__attribute__((unused)) void *dummy)
 {
-    unsigned nb_ports;
-    int i, j, nb_rx;
+    int i, nb_rx;
     unsigned lcore_id;
     uint64_t prev_tsc, diff_tsc, cur_tsc;
     uint8_t portid, queueid;
@@ -795,8 +844,7 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
         RTE_LOG(INFO, USER8, " -- lcoreid=%u portid=%hhu rxqueueid=%hhu\n", lcore_id, portid, queueid);
     }
 
-    nb_ports = rte_eth_dev_count();
-    printf("nb ports %d hz: %ld \n", nb_ports, rte_get_tsc_hz());
+    printf("hz: %ld \n", rte_get_tsc_hz());
     
     timer_10ms_tsc = rte_get_tsc_hz() / 100;
     
@@ -835,14 +883,18 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
             * This could be optimized (use queueid instead of
             * portid), but it is not called so often
             */
-            for (portid = 0; portid < nb_ports; portid++)
+            for (i = 0; i < qconf->n_tx_port; i++)
             {
+                portid = qconf->port_id[i];
+                ans_eth_tx_flush(portid);
+            /*
                 tx_queue = &qconf->tx_queue[portid];
                 if(tx_queue->pkts_nb == 0)
                     continue;
 
                 ans_send_burst(portid, tx_queue->queue_id, tx_queue->pkts, tx_queue->pkts_nb);
                 tx_queue->pkts_nb = 0;
+                */
             }
 
             prev_tsc = cur_tsc;
@@ -882,7 +934,6 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
 **********************************************************************/
 static void ans_signal_handler(int signum)
 {
-    int nb_ports;
     if (signum == SIGINT || signum == SIGTERM) 
     {
         printf("\nSignal %d received, preparing to exit...\n", signum);
@@ -1002,7 +1053,7 @@ int main(int argc, char **argv)
     }
 
     init_conf.ip_sync = ans_user_conf.ipsync_on;
-    init_conf.port_send = ans_send_packet;
+    init_conf.port_send = ans_tx_burst;
     init_conf.port_bypass = ans_bypass_packet;
 
     ret = ans_initialize(&init_conf);
@@ -1017,7 +1068,6 @@ int main(int argc, char **argv)
     uint16_t kni_id;
     struct ether_addr eth_addr;
     uint16_t qmapping_nb;
-    struct ans_port_qmapping qmapping[32];
     struct rte_eth_dev_info dev_info;
     
     for(portid= 0; portid < nb_ports; portid++)
@@ -1052,10 +1102,13 @@ int main(int argc, char **argv)
         
         ans_iface_add(portid, kni_id, ifname, &eth_addr);
 
-        /* set port rx queue mapping */
-        qmapping_nb = ans_get_port_rx_qmapping(portid, 32, qmapping, &ans_user_conf);
+        /* set port queue mapping */
+        struct ans_port_queue port_queue;
+        ans_get_port_queue(portid, &port_queue, g_lcore_queue);
         
-        ans_iface_set_queue(ifname, qmapping_nb, qmapping);
+        ret = ans_iface_set_queue(ifname, &port_queue);
+        if (ret != 0)
+            rte_exit(EXIT_FAILURE, "set queue failed \n");
 
         /* host byte order */
         int ip_addr = 0x0a000002;

@@ -69,6 +69,8 @@
 #define MAX_RX_QUEUE_PER_LCORE 16
 #define MAX_TX_QUEUE_PER_PORT RTE_MAX_ETHPORTS
 #define MAX_RX_QUEUE_PER_PORT 128
+#define INVALID_QUEUE_ID 0xff
+
 
 #define CMD_LINE_OPT_CONFIG               "config"
 #define CMD_LINE_OPT_NO_NUMA            "no-numa"
@@ -122,6 +124,8 @@ struct ans_lcore_queue
     uint16_t n_rx_queue;
     struct ans_rx_queue rx_queue[MAX_RX_QUEUE_PER_LCORE];
 
+    uint16_t n_tx_port;
+    uint16_t port_id[RTE_MAX_ETHPORTS];
     struct ans_tx_queue tx_queue[RTE_MAX_ETHPORTS];
 
 } __rte_cache_aligned;
@@ -134,8 +138,8 @@ struct ans_lcore_queue
 /*
  * Configurable number of RX/TX ring descriptors
  */
-#define ANS_RX_DESC_DEFAULT 128
-#define ANS_TX_DESC_DEFAULT 512
+#define ANS_RX_DESC_DEFAULT 1024
+#define ANS_TX_DESC_DEFAULT 2048
 
 #define TIMER_RESOLUTION_CYCLES 20000000ULL /* around 10ms at 2 Ghz */
 

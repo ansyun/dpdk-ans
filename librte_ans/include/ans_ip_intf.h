@@ -72,12 +72,25 @@
  */
 
 /*
- *  define rx queue to lcore mapping
+ *  define queue id
 */
-struct ans_port_qmapping
+struct ans_qmaping
 {
+    uint8_t lcore_id;
     uint8_t queue_id;
-    uint8_t lcore_id; 
+};
+
+/*
+ *  define queue to lcore mapping of port. 
+*/
+
+struct ans_port_queue
+{
+    uint8_t rxq_nb;
+    struct ans_qmaping rx_qmapping[RTE_MAX_LCORE];
+
+    uint8_t txq_nb;
+    struct ans_qmaping tx_qmapping[RTE_MAX_LCORE];
 };
 
  /**
@@ -95,6 +108,16 @@ struct ans_port_qmapping
  */
 void ans_eth_rx_burst(uint8_t portid, struct rte_mbuf **rx_pkts, const uint16_t nb_pkts);
 
+/**
+ * Send packets in the buffer.
+ *
+ * @param port_id  
+ *    port id.
+ *
+ * @return  
+ *
+ */
+ void ans_eth_tx_flush(uint16_t port_id);
 
 /**
  * Statistics dropped packets by port
@@ -169,15 +192,13 @@ int ans_iface_set_mtu(char *if_name, uint16_t mtu);
  *
  * @param name      
  *   name of the interface for which the queue mapping is retrieved
- * @param qmapping_nb 
- *   queue_mapping array size, and also return the queue mapping number.
- * @param qmapping 
- *   rx queue to lcore mapping 
+ * @param port_queue 
+ *   retrieved tx/rx queue of the port.
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-int ans_iface_get_queue(char *if_name, uint8_t *qmapping_nb, struct ans_port_qmapping *qmapping);
+int ans_iface_get_queue(char *if_name, struct ans_port_queue *port_queue);
 
 
 /**
@@ -185,15 +206,13 @@ int ans_iface_get_queue(char *if_name, uint8_t *qmapping_nb, struct ans_port_qma
  *
  * @param name      
  *   name of the interface for which the queue mapping is retrieved
- * @param qmapping_nb 
- *   queue_mapping array size.
- * @param qmapping 
- *   rx queue to lcore mapping 
+ * @param port_queue 
+ *   tx/rx queue of the port.
  *
  * @return  0 - SUCCESS, non-zero - FAILURE
  *
  */
-int ans_iface_set_queue(char *if_name, uint8_t qmapping_nb, struct ans_port_qmapping *qmapping);
+int ans_iface_set_queue(char *if_name, struct ans_port_queue *port_queue);
 
 /**
  * Routing table addition.

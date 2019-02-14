@@ -380,6 +380,7 @@
 #define  ANS_EMZ              1002
 #define  ANS_ESOCKET          1003
 #define  ANS_ESEM             1004
+#define  ANS_EMSGTYPE      1005
 
 #define  ANS_EIPFRAG          2000
 

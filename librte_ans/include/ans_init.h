@@ -56,10 +56,9 @@ struct ans_init_config
     cpu_set_t cpu_set;                                                              /**< system default cpu set */
     struct rte_mempool *pktmbuf_pool[ANS_MAX_NB_SOCKETS];     /**< mbuf pools for each sockets */
 
-   int (*port_send)(uint8_t port, struct rte_mbuf *m);                  /** callback for sending one mbuf to port */
-   
-   int (*port_bypass)(uint8_t port, struct rte_mbuf *m);              /** callback for bypassing one mbuf to linux */
+    uint16_t (*port_send)(uint16_t port_id, uint16_t queue_id, struct rte_mbuf **tx_pkts, uint16_t nb_pkts);  /** callback for sending one mbuf to port */
 
+    int (*port_bypass)(uint8_t port, struct rte_mbuf *m);              /** callback for bypassing one mbuf to linux */
 
 } __rte_cache_aligned;
 
