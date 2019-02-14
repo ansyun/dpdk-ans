@@ -31,7 +31,6 @@
  *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -41,15 +40,9 @@
 #include <netinet/in.h>
 #include <termios.h>
 #include <sys/epoll.h>
-
-#ifndef __linux__
-  #ifdef __FreeBSD__
-    #include <sys/socket.h>
-  #else
-    #include <net/socket.h>
-  #endif
-#endif
-
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <sys/time.h>
 
 #include "anssock_intf.h"

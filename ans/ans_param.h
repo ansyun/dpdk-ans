@@ -36,7 +36,7 @@
 
 extern int ans_parse_args(int argc, char **argv, struct ans_user_config *user_conf);
 extern int ans_check_lcore_params( struct ans_user_config *user_conf);
-extern int ans_check_port_config(const unsigned nb_ports, struct ans_user_config *user_conf);
+extern int ans_check_port_config(struct ans_user_config *user_conf);
 
 
 #endif /* _ANS_PARAM_H_ */

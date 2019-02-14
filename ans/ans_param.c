@@ -67,6 +67,8 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 #include <rte_string_fns.h>
+#include <rte_ether.h>
+#include <rte_ethdev.h>
 
 #include "ans_main.h"
 #include "ans_param.h"
@@ -83,12 +85,10 @@
 *@return values:
 *
 **********************************************************************/
-int ans_check_port_config(const unsigned nb_ports, struct ans_user_config *user_conf)
+int ans_check_port_config(struct ans_user_config *user_conf)
 {
     unsigned portid;
     uint16_t i;
-
-    printf("param nb %d ports %d \n", user_conf->lcore_param_nb, nb_ports);
 
     for (i = 0; i < user_conf->lcore_param_nb; i++)
     {
@@ -99,7 +99,8 @@ int ans_check_port_config(const unsigned nb_ports, struct ans_user_config *user_
             printf("port %u is not enabled in port mask\n", portid);
             return -1;
         }
-        if (portid >= nb_ports)
+        
+        if (!rte_eth_dev_is_valid_port(portid)) 
         {
             printf("port %u is not present on the board\n", portid);
             return -1;
@@ -426,6 +427,11 @@ int ans_parse_args(int argc, char **argv, struct ans_user_config *user_conf)
                     }
                     user_conf->max_rx_pkt_len = ret;
                 }
+                else
+                {
+                    user_conf->max_rx_pkt_len = ETHER_MAX_LEN;
+                }
+                
                 printf("set jumbo frame max packet length to %u\n", (unsigned int)user_conf->max_rx_pkt_len);
             }
             break;

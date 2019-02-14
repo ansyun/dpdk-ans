@@ -31,8 +31,6 @@
  *   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define _GNU_SOURCE             /* See feature_test_macros(7) */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -97,75 +95,6 @@ static struct ans_lcore_params ans_lcore_params_default[] =
   {0, 0, 0},
 };
 
-/* these config are used for kvm virtio nic */
-#if 0
-
-static  struct rte_eth_conf ans_port_conf = {
-    .rxmode = {
-        .max_rx_pkt_len = ETHER_MAX_LEN,
-        .split_hdr_size = 0,
-        .header_split   = 0, /**< Header Split disabled */
-        .hw_ip_checksum = 0, /**< IP checksum offload disabled */
-        .hw_vlan_filter = 0, /**< VLAN filtering disabled */
-        .jumbo_frame    = 0, /**< Jumbo Frame Support disabled */
-        .hw_strip_crc   = 0, /**< CRC stripped by hardware */
-    },
-    .txmode = {
-        .mq_mode = ETH_MQ_TX_NONE,
-    },
-};
-
-static  struct rte_eth_rxconf ans_rx_conf = {
-    .rx_thresh = {
-        .pthresh = RX_PTHRESH,
-        .hthresh = RX_HTHRESH,
-        .wthresh = RX_WTHRESH,
-    },
-};
-
-static  struct rte_eth_txconf ans_tx_conf = {
-    .tx_thresh = {
-        .pthresh = TX_PTHRESH,
-        .hthresh = TX_HTHRESH,
-        .wthresh = TX_WTHRESH,
-    },
-    .tx_free_thresh = 0, /* Use PMD default values */
-    .tx_rs_thresh = 0, /* Use PMD default values */
-    .txq_flags = ~ETH_TXQ_FLAGS_NOXSUMS  /* enable checksum for virtio */
-};
-
-#endif
-
-
-static struct rte_eth_rxconf ans_rx_conf =
-{
-  .rx_thresh =
-  {
-    .pthresh = RX_PTHRESH,
-    .hthresh = RX_HTHRESH,
-    .wthresh = RX_WTHRESH,
-  },
-  .rx_free_thresh = 32,
-};
-
-static struct rte_eth_txconf ans_tx_conf =
-{
-  .tx_thresh =
-  {
-    .pthresh = TX_PTHRESH,
-    .hthresh = TX_HTHRESH,
-    .wthresh = TX_WTHRESH,
-  },
-  .tx_free_thresh = 0, /* Use PMD default values */
-  .tx_rs_thresh = 0, /* Use PMD default values */
-  .txq_flags = ~ETH_TXQ_FLAGS_NOXSUMS /*= (ETH_TXQ_FLAGS_NOMULTSEGS |
-      ETH_TXQ_FLAGS_NOVLANOFFL |
-      ETH_TXQ_FLAGS_NOXSUMSCTP |
-      ETH_TXQ_FLAGS_NOXSUMUDP |
-      ETH_TXQ_FLAGS_NOXSUMTCP)*/
-};
-
-
 static struct rte_eth_conf ans_port_conf =
 {
   .rxmode =
@@ -173,13 +102,7 @@ static struct rte_eth_conf ans_port_conf =
     .mq_mode = ETH_MQ_RX_RSS,
     .max_rx_pkt_len = ETHER_MAX_LEN,
     .split_hdr_size = 0,
-    .header_split   = 0,      /**< Header Split disabled */
-    .hw_ip_checksum = 1, /**< IP/UDP/TCP checksum offload enable */
-    .hw_vlan_filter = 0,     /**< VLAN filtering disabled */
-    .hw_vlan_strip = 1,     /**< VLAN strip */
-    .jumbo_frame    = 0,   /**< Jumbo Frame Support disabled */
-    .hw_strip_crc   = 0,    /**< CRC stripped by hardware */
-  //  .enable_lro = 1,  /* enable LRO */
+    .offloads = DEV_RX_OFFLOAD_CHECKSUM,
   },
   .rx_adv_conf =
   {
@@ -205,7 +128,7 @@ static struct rte_eth_conf ans_port_conf =
 *@return values:
 *
 **********************************************************************/
-static void ans_check_ports_link_status(uint8_t port_num, uint32_t port_mask)
+static void ans_check_ports_link_status(uint32_t port_mask)
 {
     uint8_t check_interval = 100; /* 100ms */
     uint8_t max_check_time = 90; /* 9s (90 * 100ms) in total */
@@ -220,7 +143,7 @@ static void ans_check_ports_link_status(uint8_t port_num, uint32_t port_mask)
             return;
 
         all_ports_up = 1;
-        for (portid = 0; portid < port_num; portid++)
+        RTE_ETH_FOREACH_DEV(portid)
         {
             if (ans_stopped)
                 return;
@@ -444,7 +367,7 @@ static void ans_get_port_queue(const uint8_t port, struct ans_port_queue *port_q
 *@return values:
 *
 **********************************************************************/
-static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user_conf, struct ans_lcore_queue *lcore_conf)
+static int ans_init_ports(struct ans_user_config  *user_conf, struct ans_lcore_queue *lcore_conf)
 {
     int ret;
     uint8_t portid;
@@ -452,7 +375,7 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
     unsigned lcore_id;
     uint8_t nb_rx_queue =0;
     uint8_t queue, socketid;
-    uint32_t n_tx_queue, nb_lcores, nb_mbuf;
+    uint32_t n_tx_queue, nb_lcores;
     struct ether_addr eth_addr;
     struct rte_eth_dev_info dev_info;
     struct rte_eth_txconf *txconf;
@@ -466,7 +389,7 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
     printf("\nStart to Init port \n" );
 
     /* initialize all ports */
-    for (portid = 0; portid < nb_ports; portid++)
+    RTE_ETH_FOREACH_DEV(portid)
     {
         /* skip ports that are not enabled */
         if ((user_conf->port_mask & (1 << portid)) == 0)
@@ -484,12 +407,8 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
 
         nb_rx_queue = ans_get_port_rx_queues_nb(portid, user_conf);
 
-		/*
-        if(dev_info.max_rx_queues < nb_rx_queue)
-        {
-            rte_exit(EXIT_FAILURE, "Cannot configure not existed rxq: ""port=%d\n", portid);
-        }
-        */
+        ans_port_conf.rx_adv_conf.rss_conf.rss_hf &= dev_info.flow_type_rss_offloads;
+
         printf("\t Creating queues: rx queue number=%d tx queue number=%u... \n", nb_rx_queue, (unsigned)n_tx_queue );
 
         ret = rte_eth_dev_configure(portid, nb_rx_queue, (uint16_t)n_tx_queue, &ans_port_conf);
@@ -509,7 +428,7 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
         {
             if (rte_lcore_is_enabled(lcore_id) == 0)
             {
-                /* if lcore is enable, set as a invalid queue id */
+                /* if lcore isn't enable, set as a invalid queue id */
                 lcore_conf[lcore_id].tx_queue[portid].queue_id  = INVALID_QUEUE_ID;
                 continue;
             }
@@ -521,20 +440,15 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
 
             rte_eth_dev_info_get(portid, &dev_info);
             txconf = &dev_info.default_txconf;
-            if (ans_port_conf.rxmode.jumbo_frame)
-                txconf->txq_flags = 0;
 
-            printf("\t Deault-- tx pthresh:%d, tx hthresh:%d, tx wthresh:%d, txq_flags:0x%x \n", txconf->tx_thresh.pthresh,
-                txconf->tx_thresh.hthresh, txconf->tx_thresh.wthresh, txconf->txq_flags);
+            printf("\t Deault-- tx pthresh:%d, tx hthresh:%d, tx wthresh:%d, tx offloads:0x%lx \n", txconf->tx_thresh.pthresh,
+                txconf->tx_thresh.hthresh, txconf->tx_thresh.wthresh, txconf->offloads);
 
-            /* user default tx conf */
-
-            /* txconf = &ans_tx_conf; */
-            txconf->txq_flags = 0;  /* enable NIC all TX offload, shall set it to 0 for some nic to enable hw offload */
+            txconf->offloads = ans_port_conf.txmode.offloads;
 
             printf("\t lcore id:%u, tx queue id:%d, socket id:%d \n", lcore_id, queueid, socketid);
-            printf("\t Conf-- tx pthresh:%d, tx hthresh:%d, tx wthresh:%d, txq_flags:0x%x \n", txconf->tx_thresh.pthresh,
-                txconf->tx_thresh.hthresh, txconf->tx_thresh.wthresh, txconf->txq_flags);
+            printf("\t Conf-- tx pthresh:%d, tx hthresh:%d, tx wthresh:%d, tx offloads:0x%lx \n", txconf->tx_thresh.pthresh,
+                txconf->tx_thresh.hthresh, txconf->tx_thresh.wthresh, txconf->offloads);
 
             ret = rte_eth_tx_queue_setup(portid, queueid, ANS_TX_DESC_DEFAULT, socketid, txconf);
             if (ret < 0)
@@ -554,13 +468,8 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
 
     }
 
-    nb_mbuf = RTE_MAX((nb_ports*nb_rx_queue*ANS_RX_DESC_DEFAULT +
-        nb_ports*nb_lcores*MAX_PKT_BURST +
-        nb_ports*n_tx_queue*ANS_TX_DESC_DEFAULT +
-        nb_lcores*MEMPOOL_CACHE_SIZE), MAX_MBUF_NB);
-
     /* init memory */
-    ret = ans_init_mbuf_pool(nb_mbuf, user_conf);
+    ret = ans_init_mbuf_pool(MAX_MBUF_NB, user_conf);
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "init_mem failed\n");
 
@@ -589,12 +498,8 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
                 rxconf->rx_thresh.hthresh, rxconf->rx_thresh.wthresh);
 
             /* use default rx conf */
-            /* rxconf = &ans_rx_conf; */
 
             printf("port id:%d, rx queue id: %d, socket id:%d \n", portid, queueid, socketid);
-
-            printf("Conf-- rx pthresh:%d, rx hthresh:%d, rx wthresh:%d \n", ans_rx_conf.rx_thresh.pthresh,
-                ans_rx_conf.rx_thresh.hthresh, ans_rx_conf.rx_thresh.wthresh);
 
             /* use NIC default rx conf */
             ret = rte_eth_rx_queue_setup(portid, queueid, ANS_RX_DESC_DEFAULT, socketid, NULL, ans_pktmbuf_pool[socketid]);
@@ -617,13 +522,13 @@ static int ans_init_ports(unsigned short nb_ports, struct ans_user_config  *user
 *@return values:
 *
 **********************************************************************/
-static int ans_start_ports(unsigned short nb_ports, struct ans_user_config  *user_conf)
+static int ans_start_ports(struct ans_user_config  *user_conf)
 {
     int ret;
     uint8_t portid;
 
     /* start ports */
-    for (portid = 0; portid < nb_ports; portid++)
+    RTE_ETH_FOREACH_DEV(portid)
     {
         if ((user_conf->port_mask & (1 << portid)) == 0)
         {
@@ -644,7 +549,7 @@ static int ans_start_ports(unsigned short nb_ports, struct ans_user_config  *use
         rte_eth_promiscuous_enable(portid);
     }
 
-    ans_check_ports_link_status((uint8_t)nb_ports, user_conf->port_mask);
+    ans_check_ports_link_status(user_conf->port_mask);
 
     return 0;
 }
@@ -660,11 +565,12 @@ static int ans_start_ports(unsigned short nb_ports, struct ans_user_config  *use
 *@return values:
 *
 **********************************************************************/
-static int ans_stop_ports(unsigned short nb_ports, struct ans_user_config  *user_conf)
+static int ans_stop_ports(struct ans_user_config  *user_conf)
 {
     int portid;
     /* stop ports */
-    for (portid = 0; portid < nb_ports; portid++) {
+    RTE_ETH_FOREACH_DEV(portid)
+    {
         if ((user_conf->port_mask & (1 << portid)) == 0)
         	continue;
         
@@ -960,7 +866,6 @@ int main(int argc, char **argv)
 {
     int i;
     int ret;
-    unsigned nb_ports;
     unsigned lcore_id;
     struct ans_init_config init_conf;
     int s;
@@ -1001,7 +906,8 @@ int main(int argc, char **argv)
 
     if(ans_user_conf.jumbo_frame_on)
     {
-        ans_port_conf.rxmode.jumbo_frame = 1;
+        ans_port_conf.rxmode.offloads |= DEV_RX_OFFLOAD_JUMBO_FRAME;
+        ans_port_conf.txmode.offloads |= DEV_TX_OFFLOAD_MULTI_SEGS;
         ans_port_conf.rxmode.max_rx_pkt_len = ans_user_conf.max_rx_pkt_len;
     }
 
@@ -1019,17 +925,12 @@ int main(int argc, char **argv)
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "init_lcore_rx_queues failed\n");
 
-    nb_ports = rte_eth_dev_count();
-    if (nb_ports > RTE_MAX_ETHPORTS)
-      nb_ports = RTE_MAX_ETHPORTS;
-
-
-    ret = ans_check_port_config(nb_ports, &ans_user_conf);
+    ret = ans_check_port_config(&ans_user_conf);
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "check_port_config failed\n");
 
 
-    ret = ans_init_ports(nb_ports, &ans_user_conf, g_lcore_queue);
+    ret = ans_init_ports(&ans_user_conf, g_lcore_queue);
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "Init ports failed\n");
 
@@ -1070,7 +971,7 @@ int main(int argc, char **argv)
     uint16_t qmapping_nb;
     struct rte_eth_dev_info dev_info;
     
-    for(portid= 0; portid < nb_ports; portid++)
+    RTE_ETH_FOREACH_DEV(portid)
     {
         /* skip ports that are not enabled */
         if ((ans_user_conf.port_mask & (1 << portid)) == 0)
@@ -1136,7 +1037,7 @@ int main(int argc, char **argv)
     printf("\n");
     /* add by ans_team ---end */
 
-    ans_start_ports(nb_ports, &ans_user_conf);
+    ans_start_ports(&ans_user_conf);
 
     /* launch per-lcore init on every lcore */
     rte_eal_mp_remote_launch(ans_main_loop, NULL, CALL_MASTER);
@@ -1146,7 +1047,7 @@ int main(int argc, char **argv)
         break;
     }
 
-    ans_stop_ports(nb_ports, &ans_user_conf);
+    ans_stop_ports(&ans_user_conf);
 
     return ret;
 }

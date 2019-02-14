@@ -143,9 +143,12 @@ static int ans_kni_config_iface(uint16_t port_id, uint8_t if_up)
 static int ans_kni_change_mtu(uint16_t port_id, unsigned int new_mtu)
 {
     int ret;
-    
-    if (port_id >= rte_eth_dev_count())
+
+    if (!rte_eth_dev_is_valid_port(port_id)) 
+    {
+        printf("port %u is not present on the board\n", port_id);
         return -EINVAL;
+    } 
 
     if (new_mtu > ETHER_MAX_LEN)
         return -EINVAL;
@@ -239,12 +242,26 @@ static int ans_kni_alloc(uint8_t port_id)
 
     struct rte_kni_ops ops;
     struct rte_eth_dev_info dev_info;
+    const struct rte_pci_device *pci_dev;
+    const struct rte_bus *bus = NULL;
 
     memset(&dev_info, 0, sizeof(dev_info));
     rte_eth_dev_info_get(port_id, &dev_info);
-    conf.addr = dev_info.pci_dev->addr;
-    conf.id = dev_info.pci_dev->id;
-
+    
+    if (dev_info.device)
+        bus = rte_bus_find_by_device(dev_info.device);
+    
+    if (bus && !strcmp(bus->name, "pci")) 
+    {
+        pci_dev = RTE_DEV_TO_PCI(dev_info.device);
+        conf.addr = pci_dev->addr;
+        conf.id = pci_dev->id;
+    }
+    
+    /* Get the interface default mac address */
+    rte_eth_macaddr_get(port_id,(struct ether_addr *)&conf.mac_addr);
+    rte_eth_dev_get_mtu(port_id, &conf.mtu);
+            
     memset(&ops, 0, sizeof(ops));
     ops.port_id = port_id;
     ops.change_mtu = ans_kni_change_mtu;
