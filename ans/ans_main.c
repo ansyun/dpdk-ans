@@ -355,6 +355,41 @@ static void ans_get_port_queue(const uint8_t port, struct ans_port_queue *port_q
     return;
 }
 
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
+static void ans_set_tx_offload(struct rte_eth_dev_info *dev_info, struct rte_eth_conf *port_conf)
+{
+    if(dev_info->tx_offload_capa & DEV_TX_OFFLOAD_IPV4_CKSUM)
+    {
+        port_conf->txmode.offloads |= DEV_TX_OFFLOAD_IPV4_CKSUM;
+    }
+
+    if(dev_info->tx_offload_capa & DEV_TX_OFFLOAD_UDP_CKSUM)
+    {
+        port_conf->txmode.offloads |= DEV_TX_OFFLOAD_UDP_CKSUM;
+    }
+
+    if(dev_info->tx_offload_capa & DEV_TX_OFFLOAD_TCP_CKSUM)
+    {
+        port_conf->txmode.offloads |= DEV_TX_OFFLOAD_TCP_CKSUM;
+    }   
+
+    if(dev_info->tx_offload_capa & DEV_TX_OFFLOAD_TCP_TSO)
+    {
+        port_conf->txmode.offloads |= DEV_TX_OFFLOAD_TCP_TSO;
+    }  
+
+    return;
+}
 
 /**********************************************************************
 *@description:
@@ -380,7 +415,10 @@ static int ans_init_ports(struct ans_user_config  *user_conf, struct ans_lcore_q
     struct rte_eth_dev_info dev_info;
     struct rte_eth_txconf *txconf;
     struct rte_eth_rxconf *rxconf;
-
+    struct rte_eth_conf port_conf;
+    struct rte_eth_dev *dev;
+    struct rte_eth_conf *conf;
+            
     nb_lcores = rte_lcore_count();
     n_tx_queue = nb_lcores;
     if (n_tx_queue > MAX_TX_QUEUE_PER_PORT)
@@ -398,20 +436,25 @@ static int ans_init_ports(struct ans_user_config  *user_conf, struct ans_lcore_q
             continue;
         }
 
+        port_conf = ans_port_conf;
+        
         /* init port */
         printf("\t port %d:  \n", portid );
         rte_eth_dev_info_get(portid, &dev_info);
+        
         printf("\t port name %s:  \n", dev_info.driver_name );
         printf("\t max_rx_queues %d: max_tx_queues:%d \n", dev_info.max_rx_queues, dev_info.max_tx_queues);
         printf("\t rx_offload_capa 0x%lx: tx_offload_capa:0x%lx \n", dev_info.rx_offload_capa, dev_info.tx_offload_capa);
 
+        ans_set_tx_offload(&dev_info, &port_conf);
+        
         nb_rx_queue = ans_get_port_rx_queues_nb(portid, user_conf);
 
-        ans_port_conf.rx_adv_conf.rss_conf.rss_hf &= dev_info.flow_type_rss_offloads;
+        port_conf.rx_adv_conf.rss_conf.rss_hf &= dev_info.flow_type_rss_offloads;
 
         printf("\t Creating queues: rx queue number=%d tx queue number=%u... \n", nb_rx_queue, (unsigned)n_tx_queue );
 
-        ret = rte_eth_dev_configure(portid, nb_rx_queue, (uint16_t)n_tx_queue, &ans_port_conf);
+        ret = rte_eth_dev_configure(portid, nb_rx_queue, (uint16_t)n_tx_queue, &port_conf);
         if (ret < 0)
           rte_exit(EXIT_FAILURE, "Cannot configure device: err=%d, port=%d\n", ret, portid);
 
@@ -444,7 +487,7 @@ static int ans_init_ports(struct ans_user_config  *user_conf, struct ans_lcore_q
             printf("\t Deault-- tx pthresh:%d, tx hthresh:%d, tx wthresh:%d, tx offloads:0x%lx \n", txconf->tx_thresh.pthresh,
                 txconf->tx_thresh.hthresh, txconf->tx_thresh.wthresh, txconf->offloads);
 
-            txconf->offloads = ans_port_conf.txmode.offloads;
+            txconf->offloads = port_conf.txmode.offloads;
 
             printf("\t lcore id:%u, tx queue id:%d, socket id:%d \n", lcore_id, queueid, socketid);
             printf("\t Conf-- tx pthresh:%d, tx hthresh:%d, tx wthresh:%d, tx offloads:0x%lx \n", txconf->tx_thresh.pthresh,
@@ -485,7 +528,10 @@ static int ans_init_ports(struct ans_user_config  *user_conf, struct ans_lcore_q
         {
             portid = lcore_conf[lcore_id].rx_queue[queue].port_id;
             queueid = lcore_conf[lcore_id].rx_queue[queue].queue_id;
-
+            
+            dev = &rte_eth_devices[portid];
+            conf = &dev->data->dev_conf;
+            
             if (user_conf->numa_on)
                 socketid = (uint8_t)rte_lcore_to_socket_id(lcore_id);
             else
@@ -494,15 +540,19 @@ static int ans_init_ports(struct ans_user_config  *user_conf, struct ans_lcore_q
             rte_eth_dev_info_get(portid, &dev_info);
             rxconf = &dev_info.default_rxconf;
 
-            printf("Default-- rx pthresh:%d, rx hthresh:%d, rx wthresh:%d \n", rxconf->rx_thresh.pthresh,
-                rxconf->rx_thresh.hthresh, rxconf->rx_thresh.wthresh);
+            printf("Default-- rx pthresh:%d, rx hthresh:%d, rx wthresh:%d, rx offloads:0x%lx  \n", rxconf->rx_thresh.pthresh,
+                rxconf->rx_thresh.hthresh, rxconf->rx_thresh.wthresh, rxconf->offloads);
 
             /* use default rx conf */
+            rxconf->offloads = conf->rxmode.offloads;
 
+            printf("Conf-- rx pthresh:%d, rx hthresh:%d, rx wthresh:%d, rx offloads:0x%lx  \n", rxconf->rx_thresh.pthresh,
+                rxconf->rx_thresh.hthresh, rxconf->rx_thresh.wthresh, rxconf->offloads);
+         
             printf("port id:%d, rx queue id: %d, socket id:%d \n", portid, queueid, socketid);
 
             /* use NIC default rx conf */
-            ret = rte_eth_rx_queue_setup(portid, queueid, ANS_RX_DESC_DEFAULT, socketid, NULL, ans_pktmbuf_pool[socketid]);
+            ret = rte_eth_rx_queue_setup(portid, queueid, ANS_RX_DESC_DEFAULT, socketid, rxconf, ans_pktmbuf_pool[socketid]);
             if (ret < 0)
                 rte_exit(EXIT_FAILURE, "rte_eth_rx_queue_setup: err=%d," "port=%d\n", ret, portid);
         }
