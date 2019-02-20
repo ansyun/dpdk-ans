@@ -41,6 +41,13 @@
 #include <sys/epoll.h>  
 #include <fcntl.h>
 #include <errno.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/time.h>
+#include <pthread.h>
+
 
 int fd = -1;
 

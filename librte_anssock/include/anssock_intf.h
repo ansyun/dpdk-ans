@@ -47,7 +47,7 @@
 
 
 /**
- *  Init ans socket lib and register a user to ans. Each thread shall call it if the thread need invoke anssock API.
+ *  Init ans socket lib. Each thread shall call it if the thread need invoke anssock API.
  *
  * @param  file_prefix 
  *  Prefix for hugepage filenames, shall be same as ANS startup parameter(--file-prefix).

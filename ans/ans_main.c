@@ -102,7 +102,7 @@ static struct rte_eth_conf ans_port_conf =
     .mq_mode = ETH_MQ_RX_RSS,
     .max_rx_pkt_len = ETHER_MAX_LEN,
     .split_hdr_size = 0,
-    .offloads = DEV_RX_OFFLOAD_CHECKSUM,
+    .offloads = DEV_RX_OFFLOAD_CHECKSUM | DEV_RX_OFFLOAD_VLAN_STRIP,
   },
   .rx_adv_conf =
   {
