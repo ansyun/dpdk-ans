@@ -102,7 +102,7 @@ static struct rte_eth_conf ans_port_conf =
     .mq_mode = ETH_MQ_RX_RSS,
     .max_rx_pkt_len = ETHER_MAX_LEN,
     .split_hdr_size = 0,
-    .offloads = DEV_RX_OFFLOAD_CHECKSUM | DEV_RX_OFFLOAD_VLAN_STRIP,
+    .offloads = DEV_RX_OFFLOAD_CHECKSUM,
   },
   .rx_adv_conf =
   {
@@ -366,8 +366,10 @@ static void ans_get_port_queue(const uint8_t port, struct ans_port_queue *port_q
 *@return values:
 *
 **********************************************************************/
-static void ans_set_tx_offload(struct rte_eth_dev_info *dev_info, struct rte_eth_conf *port_conf)
+static void ans_set_port_offload(struct rte_eth_dev_info *dev_info, struct rte_eth_conf *port_conf)
 {
+    /***TX offload***/
+
     if(dev_info->tx_offload_capa & DEV_TX_OFFLOAD_IPV4_CKSUM)
     {
         port_conf->txmode.offloads |= DEV_TX_OFFLOAD_IPV4_CKSUM;
@@ -387,6 +389,13 @@ static void ans_set_tx_offload(struct rte_eth_dev_info *dev_info, struct rte_eth
     {
         port_conf->txmode.offloads |= DEV_TX_OFFLOAD_TCP_TSO;
     }  
+
+    
+    /***RX offload***/
+    if(dev_info->rx_offload_capa & DEV_RX_OFFLOAD_VLAN_STRIP)
+    {
+        port_conf->rxmode.offloads |= DEV_RX_OFFLOAD_VLAN_STRIP;
+    }
 
     return;
 }
@@ -446,7 +455,7 @@ static int ans_init_ports(struct ans_user_config  *user_conf, struct ans_lcore_q
         printf("\t max_rx_queues %d: max_tx_queues:%d \n", dev_info.max_rx_queues, dev_info.max_tx_queues);
         printf("\t rx_offload_capa 0x%lx: tx_offload_capa:0x%lx \n", dev_info.rx_offload_capa, dev_info.tx_offload_capa);
 
-        ans_set_tx_offload(&dev_info, &port_conf);
+        ans_set_port_offload(&dev_info, &port_conf);
         
         nb_rx_queue = ans_get_port_rx_queues_nb(portid, user_conf);
 
