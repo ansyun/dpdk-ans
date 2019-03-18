@@ -102,7 +102,6 @@ static struct rte_eth_conf ans_port_conf =
     .mq_mode = ETH_MQ_RX_RSS,
     .max_rx_pkt_len = ETHER_MAX_LEN,
     .split_hdr_size = 0,
-    .offloads = DEV_RX_OFFLOAD_CHECKSUM,
   },
   .rx_adv_conf =
   {
@@ -369,7 +368,7 @@ static void ans_get_port_queue(const uint8_t port, struct ans_port_queue *port_q
 static void ans_set_port_offload(struct rte_eth_dev_info *dev_info, struct rte_eth_conf *port_conf)
 {
     /***TX offload***/
-
+    port_conf->txmode.offloads = 0;
     if(dev_info->tx_offload_capa & DEV_TX_OFFLOAD_IPV4_CKSUM)
     {
         port_conf->txmode.offloads |= DEV_TX_OFFLOAD_IPV4_CKSUM;
@@ -392,9 +391,25 @@ static void ans_set_port_offload(struct rte_eth_dev_info *dev_info, struct rte_e
 
     
     /***RX offload***/
+    port_conf->rxmode.offloads = 0;
     if(dev_info->rx_offload_capa & DEV_RX_OFFLOAD_VLAN_STRIP)
     {
         port_conf->rxmode.offloads |= DEV_RX_OFFLOAD_VLAN_STRIP;
+    }
+
+    if(dev_info->rx_offload_capa & DEV_RX_OFFLOAD_IPV4_CKSUM)
+    {
+        port_conf->rxmode.offloads |= DEV_RX_OFFLOAD_IPV4_CKSUM;
+    }
+
+    if(dev_info->rx_offload_capa & DEV_RX_OFFLOAD_UDP_CKSUM)
+    {
+        port_conf->rxmode.offloads |= DEV_RX_OFFLOAD_UDP_CKSUM;
+    }
+
+    if(dev_info->rx_offload_capa & DEV_RX_OFFLOAD_TCP_CKSUM)
+    {
+        port_conf->rxmode.offloads |= DEV_RX_OFFLOAD_TCP_CKSUM;
     }
 
     return;
