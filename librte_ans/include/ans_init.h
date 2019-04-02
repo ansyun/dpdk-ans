@@ -44,13 +44,26 @@
 
 #define ANS_MAX_NB_SOCKETS 8    /**< max number of sockets */
 
+#define ANS_LCORE_ROLE_DISABLE 0  /**< lcore disable */
+#define ANS_LCORE_ROLE_RX      0x1  /**< lcore for polling packet from nic */
+#define ANS_LCORE_ROLE_WORKER  0x2  /**< lcore for high level packet handling */
+
+/**
+ * ANS lcore config
+ */
+struct ans_lcore
+{
+    uint8_t lcore_id;
+    uint8_t lcore_role;
+};
 
 /**
  * ANS configuration
  */
 struct ans_init_config 
 {
-    uint64_t lcore_mask;                                                           /**< lcore which used to run ans */
+    uint16_t lcore_nb;                                                                /**< lcore number */
+    struct ans_lcore lcore[RTE_MAX_LCORE];                                 /**< lcore configuration */
     uint32_t sock_nb;                                                                /**< support max sock connection number */
     uint8_t  ip_sync;                                                                 /**< 1: enable ip/route sync from kernel, otherwise disable sync */    
     cpu_set_t cpu_set;                                                              /**< system default cpu set */

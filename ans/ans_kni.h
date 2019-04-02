@@ -37,7 +37,7 @@
 #include "ans_main.h"
 
 /* Load Configure Information for KNI module */
-int ans_kni_config(struct ans_user_config * common_config, struct ans_lcore_queue *lcore_conf, struct rte_mempool * pktmbuf_pool[]);
+int ans_kni_config(struct ans_user_config * common_config, struct ans_lcore_config *lcore_conf, struct rte_mempool * pktmbuf_pool[]);
 
 /* Destory KNI module */
 int ans_kni_destory();

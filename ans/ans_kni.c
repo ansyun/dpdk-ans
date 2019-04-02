@@ -324,7 +324,7 @@ int ans_kni_init()
 *@return values:
 *
 **********************************************************************/
-int ans_kni_config(struct ans_user_config * common_config, struct ans_lcore_queue *lcore_conf, struct rte_mempool * pktmbuf_pool[])
+int ans_kni_config(struct ans_user_config * common_config, struct ans_lcore_config *lcore_conf, struct rte_mempool * pktmbuf_pool[])
 {
     uint32_t portmask    = common_config->port_mask;
     unsigned lcore_item  = 0;
@@ -343,8 +343,8 @@ int ans_kni_config(struct ans_user_config * common_config, struct ans_lcore_queu
 
         assert(kni_port_params_array[port_id] == NULL);
 
-        lcore_id = lcore_item >= common_config->lcore_param_nb
-            ? common_config->lcore_param[lcore_item = 0].lcore_id : common_config->lcore_param[lcore_item++].lcore_id;
+        lcore_id = lcore_item >= common_config->rx_nb
+            ? common_config->lcore_rx[lcore_item = 0].lcore_id : common_config->lcore_rx[lcore_item++].lcore_id;
 
         kni_port_params_array[port_id] = rte_zmalloc(NULL,sizeof(struct kni_port_params),0);
         kni_port_params_array[port_id]->port_id  = port_id;

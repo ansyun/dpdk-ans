@@ -34,25 +34,6 @@
 #ifndef _ANS_MAIN_H_
 #define _ANS_MAIN_H_
 
-/*
- * RX and TX Prefetch, Host, and Write-back threshold values should be
- * carefully set for optimal performance. Consult the network
- * controller's datasheet and supporting DPDK documentation for guidance
- * on how these parameters should be set.
- */
-#define RX_PTHRESH 8 /**< Default values of RX prefetch threshold reg. */
-#define RX_HTHRESH 8 /**< Default values of RX host threshold reg. */
-#define RX_WTHRESH 4 /**< Default values of RX write-back threshold reg. */
-
-/*
- * These default values are optimized for use with the Intel(R) 82599 10 GbE
- * Controller and the DPDK ixgbe PMD. Consider using other values for other
- * network controllers and/or network drivers.
- */
-#define TX_PTHRESH 36 /**< Default values of TX prefetch threshold reg. */
-#define TX_HTHRESH 0  /**< Default values of TX host threshold reg. */
-#define TX_WTHRESH 0  /**< Default values of TX write-back threshold reg. */
-
 #define MAX_PKT_BURST     32
 #define MAX_TX_BURST      32         /* set tx burst as 1 for lower packet latency, shall set to 32 ? */
 #define BURST_TX_DRAIN_US 100 /* TX drain every ~100us */
@@ -73,22 +54,33 @@
 
 
 #define CMD_LINE_OPT_CONFIG               "config"
+#define CMD_LINE_OPT_WORKER              "worker"
 #define CMD_LINE_OPT_NO_NUMA            "no-numa"
 #define CMD_LINE_OPT_ENABLE_KNI        "enable-kni"
 #define CMD_LINE_OPT_ENABLE_JUMBO   "enable-jumbo"
 #define CMD_LINE_OPT_ENABLE_IPSYNC  "enable-ipsync"
 
-
-#define MAX_LCORE_PARAMS 512
-
-struct ans_lcore_params
+/**
+ * rx lcore config
+*/
+struct ans_lcore_rx
 {
   uint8_t port_id;
   uint8_t queue_id;
   uint8_t lcore_id;
 } __rte_cache_aligned;
 
+/**
+ * worker lcore config
+*/
+struct ans_lcore_worker
+{
+  uint8_t lcore_id;
+} __rte_cache_aligned;
 
+/**
+ * tx queue of port
+*/
 struct ans_tx_queue
 {
   struct rte_mbuf *pkts[MAX_PKT_BURST];
@@ -96,6 +88,9 @@ struct ans_tx_queue
   uint8_t queue_id;
 }__rte_cache_aligned;
 
+/**
+ * rx queue of port
+*/
 struct ans_rx_queue
 {
   uint8_t port_id;
@@ -107,7 +102,6 @@ struct ans_user_config
 {
     uint8_t socket_nb;
     uint8_t lcore_nb;
-    uint32_t lcore_mask;
     uint32_t port_mask;
     uint8_t promiscuous_on;        /*  Ports set in promiscuous mode off by default. */
     uint8_t kni_on;                        /*  kni is disable by default. */
@@ -115,11 +109,14 @@ struct ans_user_config
     uint8_t numa_on ;                  /* NUMA is enabled by default. */
     uint8_t jumbo_frame_on;
     uint16_t max_rx_pkt_len;
-    uint16_t lcore_param_nb;
-    struct ans_lcore_params lcore_param[MAX_LCORE_PARAMS];
+    uint16_t rx_nb;
+    struct ans_lcore_rx lcore_rx[RTE_MAX_LCORE];
+
+    uint16_t worker_nb;
+    struct ans_lcore_worker lcore_worker[RTE_MAX_LCORE];
 };
 
-struct ans_lcore_queue
+struct ans_lcore_config
 {
     uint16_t n_rx_queue;
     struct ans_rx_queue rx_queue[MAX_RX_QUEUE_PER_LCORE];
@@ -128,6 +125,7 @@ struct ans_lcore_queue
     uint16_t port_id[RTE_MAX_ETHPORTS];
     struct ans_tx_queue tx_queue[RTE_MAX_ETHPORTS];
 
+    uint8_t lcore_role;
 } __rte_cache_aligned;
 
 #define MAX_NB_SOCKETS    8

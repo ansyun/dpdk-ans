@@ -70,6 +70,7 @@
 #include <rte_ether.h>
 #include <rte_ethdev.h>
 
+#include "ans_init.h"
 #include "ans_main.h"
 #include "ans_param.h"
 
@@ -90,9 +91,9 @@ int ans_check_port_config(struct ans_user_config *user_conf)
     unsigned portid;
     uint16_t i;
 
-    for (i = 0; i < user_conf->lcore_param_nb; i++)
+    for (i = 0; i < user_conf->rx_nb; i++)
     {
-        portid = user_conf->lcore_param[i].port_id;
+        portid = user_conf->lcore_rx[i].port_id;
 
         if ((user_conf->port_mask & (1 << portid)) == 0)
         {
@@ -112,7 +113,7 @@ int ans_check_port_config(struct ans_user_config *user_conf)
 
 /**********************************************************************
 *@description:
-*  display usage
+*  check rx lcore config
 *
 *@parameters:
 * [in]:
@@ -121,22 +122,22 @@ int ans_check_port_config(struct ans_user_config *user_conf)
 *@return values:
 *
 **********************************************************************/
-int ans_check_lcore_params(struct ans_user_config *user_conf)
+int ans_check_lcore_rx(struct ans_user_config *user_conf)
 {
     uint8_t queue, lcore, port;
     uint16_t i, j;
     int socketid;
 
-    for (i = 0; i < user_conf->lcore_param_nb; ++i)
+    for (i = 0; i < user_conf->rx_nb; ++i)
     {
-        queue = user_conf->lcore_param[i].queue_id;
+        queue = user_conf->lcore_rx[i].queue_id;
         if (queue >= MAX_RX_QUEUE_PER_PORT)
         {
             printf("invalid queue number: %hhu\n", queue);
             return -1;
         }
         
-        lcore = user_conf->lcore_param[i].lcore_id;
+        lcore = user_conf->lcore_rx[i].lcore_id;
         if (!rte_lcore_is_enabled(lcore))
         {
             printf("error: lcore %hhu is not enabled in lcore mask\n", lcore);
@@ -150,17 +151,17 @@ int ans_check_lcore_params(struct ans_user_config *user_conf)
     }
 
     /* check if same port and queue mapping to different lcore */
-    for (i = 0; i < user_conf->lcore_param_nb; ++i)
+    for (i = 0; i < user_conf->rx_nb; ++i)
     {
-        port = user_conf->lcore_param[i].port_id;
-        queue = user_conf->lcore_param[i].queue_id;
-        lcore = user_conf->lcore_param[i].lcore_id;
-
-        for(j = i + 1; j < user_conf->lcore_param_nb; ++j )
+        port = user_conf->lcore_rx[i].port_id;
+        queue = user_conf->lcore_rx[i].queue_id;
+        lcore = user_conf->lcore_rx[i].lcore_id;
+        
+        for(j = i + 1; j < user_conf->rx_nb; ++j )
         {
-            if( port == user_conf->lcore_param[j].port_id &&
-                queue == user_conf->lcore_param[j].queue_id &&
-                lcore != user_conf->lcore_param[j].lcore_id)
+            if( port == user_conf->lcore_rx[j].port_id &&
+                queue == user_conf->lcore_rx[j].queue_id &&
+                lcore != user_conf->lcore_rx[j].lcore_id)
             {
                 printf("error: same port(%d) and queue(%d) mapping to different lcore \n", port, queue);
                 return -1;
@@ -185,12 +186,11 @@ int ans_check_lcore_params(struct ans_user_config *user_conf)
 **********************************************************************/
 static void ans_print_usage(const char *prgname)
 {
-  printf ("%s [EAL options] -- -p PORTMASK -P"
-    "  [--config (port,queue,lcore)[,(port,queue,lcore]]"
-    "  [--enable-jumbo [--max-pkt-len PKTLEN]]\n"
+  printf ("%s [EAL options] -- -p PORTMASK -P \n"
     "  -p PORTMASK: hexadecimal bitmask of ports to configure\n"
     "  -P : enable promiscuous mode\n"
     "  --config (port,queue,lcore): rx queues configuration\n"
+    "  --worker (lcore,lcore...): worker lcore configuration\n"
     "  --no-numa: optional, disable numa awareness\n"
     "  --enable-kni: optional, disable kni awareness\n"
     "  --enable-ipsync: optional, sync ip/route from kernel kni interface\n"
@@ -282,9 +282,8 @@ static int ans_parse_config(const char *q_arg, struct ans_user_config *user_conf
     char *str_fld[_NUM_FLD];
     int i;
     unsigned size;
-
-    user_conf->lcore_param_nb = 0;
-
+    uint8_t lcore_id;
+    
     while ((p = strchr(p0,'(')) != NULL)
     {
         ++p;
@@ -307,24 +306,97 @@ static int ans_parse_config(const char *q_arg, struct ans_user_config *user_conf
               return -1;
         }
 
-        if (user_conf->lcore_param_nb >= MAX_LCORE_PARAMS)
+        if (user_conf->rx_nb >= RTE_MAX_LCORE)
         {
-            printf("exceeded max number of lcore params: %hu\n", user_conf->lcore_param_nb);
+            printf("exceeded max number of lcore params: %hu\n", user_conf->rx_nb);
             return -1;
         }
 
-      user_conf->lcore_param[user_conf->lcore_param_nb].port_id = (uint8_t)int_fld[FLD_PORT];
-      user_conf->lcore_param[user_conf->lcore_param_nb].queue_id = (uint8_t)int_fld[FLD_QUEUE];
-      user_conf->lcore_param[user_conf->lcore_param_nb].lcore_id = (uint8_t)int_fld[FLD_LCORE];
+        lcore_id = (uint8_t)int_fld[FLD_LCORE];
+        if (rte_lcore_is_enabled(lcore_id) == 0) 
+        {
+            printf("lcore %d isn't enable \n", lcore_id);
+            return -1;
+        }
 
-      user_conf->lcore_mask = (user_conf->lcore_mask | (1 <<user_conf->lcore_param[user_conf->lcore_param_nb].lcore_id));
+        user_conf->lcore_rx[user_conf->rx_nb].port_id = (uint8_t)int_fld[FLD_PORT];
+        user_conf->lcore_rx[user_conf->rx_nb].queue_id = (uint8_t)int_fld[FLD_QUEUE];
+        user_conf->lcore_rx[user_conf->rx_nb].lcore_id = (uint8_t)int_fld[FLD_LCORE];
 
-      ++user_conf->lcore_param_nb;
+        ++user_conf->rx_nb;
     }
 
     return 0;
 }
 
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
+static int ans_parse_worker(const char *arg,  struct ans_user_config *user_conf)
+{
+    const char *p = arg;
+    uint8_t lcore_nb;
+    uint32_t lcore;
+
+    if (strnlen(arg, 20 + 1) == 20 + 1) 
+    {
+        printf("arg len too long \n");
+        return -1;
+    }
+
+    lcore_nb = 0;
+    while (*p != 0) 
+    {
+
+        errno = 0;
+        lcore = strtoul(p, NULL, 0);
+        if (errno != 0) 
+        {
+            return -1;
+        }
+
+        /* Check and enable lcore */
+        if (rte_lcore_is_enabled(lcore) == 0)
+        {
+            printf("lcore %d is disable \n", lcore);
+            return -1;
+        }
+
+        if (lcore >= RTE_MAX_LCORE)
+        {
+            printf("lcore %d is too big \n", lcore);
+            return -1;
+        }
+
+        user_conf->lcore_worker[user_conf->worker_nb].lcore_id = lcore;
+        user_conf->worker_nb++;
+        
+        lcore_nb ++;
+
+        p = strchr(p, ',');
+        if (p == NULL) 
+        {
+            break;
+        }
+        p ++;
+    }
+
+    if (lcore_nb == 0)
+    {
+        printf("no worker lcore \n");
+        return -1;
+    }
+
+    return 0;
+}
 
 
 /**********************************************************************
@@ -346,6 +418,7 @@ int ans_parse_args(int argc, char **argv, struct ans_user_config *user_conf)
     char *prgname = argv[0];
     static struct option lgopts[] = {
       {CMD_LINE_OPT_CONFIG, 1, 0, 0},
+      {CMD_LINE_OPT_WORKER, 1, 0, 0},
       {CMD_LINE_OPT_NO_NUMA, 0, 0, 0},
       {CMD_LINE_OPT_ENABLE_KNI, 0, 0, 0},
       {CMD_LINE_OPT_ENABLE_IPSYNC, 0, 0, 0},
@@ -384,12 +457,22 @@ int ans_parse_args(int argc, char **argv, struct ans_user_config *user_conf)
                 ret = ans_parse_config(optarg, user_conf);
                 if (ret)
                 {
-                    printf("Invalid config\n");
+                    printf("Invalid config parameter\n");
                     ans_print_usage(prgname);
                     return -1;
                 }
             }
 
+            if (!strncmp(lgopts[option_index].name, CMD_LINE_OPT_WORKER, sizeof (CMD_LINE_OPT_WORKER)))
+            {
+                ret = ans_parse_worker(optarg, user_conf);
+                if (ret)
+                {
+                    printf("Invalid worker parameter\n");
+                    ans_print_usage(prgname);
+                    return -1;
+                }
+            }
             if (!strncmp(lgopts[option_index].name, CMD_LINE_OPT_NO_NUMA, sizeof(CMD_LINE_OPT_NO_NUMA)))
             {
                 printf("numa is disabled \n");

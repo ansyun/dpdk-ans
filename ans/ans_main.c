@@ -86,14 +86,9 @@
 #include "ans_kni.h"
 
 static struct ans_user_config  ans_user_conf;
-static struct ans_lcore_queue g_lcore_queue[RTE_MAX_LCORE];
+static struct ans_lcore_config g_lcore_conf[RTE_MAX_LCORE];
 static struct rte_mempool *ans_pktmbuf_pool[MAX_NB_SOCKETS];
 static uint8_t ans_stopped = 0;
-
-static struct ans_lcore_params ans_lcore_params_default[] =
-{
-  {0, 0, 0},
-};
 
 static struct rte_eth_conf ans_port_conf =
 {
@@ -189,7 +184,49 @@ static void ans_check_ports_link_status(uint32_t port_mask)
     }
 }
 
+/**********************************************************************
+*@description:
+*
+*
+*@parameters:
+* [in]:
+* [in]:
+*
+*@return values:
+*
+**********************************************************************/
+static int ans_init_lcore_config(struct ans_user_config  *user_conf, struct ans_lcore_config *lcore_conf)
+{
+    uint16_t i, nb_rx_queue;
+    uint8_t lcore;
 
+    for (i = 0; i < user_conf->rx_nb; ++i)
+    {
+        lcore = user_conf->lcore_rx[i].lcore_id;
+        nb_rx_queue = lcore_conf[lcore].n_rx_queue;
+        if (nb_rx_queue >= MAX_RX_QUEUE_PER_LCORE)
+        {
+            printf("error: too many queues (%u) for lcore: %u\n",
+              (unsigned)nb_rx_queue + 1, (unsigned)lcore);
+            return -1;
+        }
+        else
+        {
+            lcore_conf[lcore].rx_queue[nb_rx_queue].port_id = user_conf->lcore_rx[i].port_id;
+            lcore_conf[lcore].rx_queue[nb_rx_queue].queue_id = user_conf->lcore_rx[i].queue_id;
+            lcore_conf[lcore].n_rx_queue++;
+            lcore_conf[lcore].lcore_role |= ANS_LCORE_ROLE_RX;
+        }
+    }
+
+    for (i = 0; i < user_conf->worker_nb; ++i)
+    {
+        lcore = user_conf->lcore_worker[i].lcore_id;
+        lcore_conf[lcore].lcore_role |= ANS_LCORE_ROLE_WORKER;
+    }
+    
+    return 0;
+}
 
 /**********************************************************************
 *@description:
@@ -202,29 +239,24 @@ static void ans_check_ports_link_status(uint32_t port_mask)
 *@return values:
 *
 **********************************************************************/
-static int ans_init_lcore_rx_queues(struct ans_user_config  *user_conf, struct ans_lcore_queue *lcore_conf)
+static void ans_get_lcore_config(struct ans_lcore_config *lcore_conf, struct ans_init_config *init_conf)
 {
-    uint16_t i, nb_rx_queue;
-    uint8_t lcore;
+    int i;
+    uint8_t lcore_nb = 0; 
 
-    for (i = 0; i < user_conf->lcore_param_nb; ++i)
+    for (i = 0; i < RTE_MAX_LCORE; i++)
     {
-        lcore = user_conf->lcore_param[i].lcore_id;
-        nb_rx_queue = lcore_conf[lcore].n_rx_queue;
-        if (nb_rx_queue >= MAX_RX_QUEUE_PER_LCORE)
+        if(lcore_conf[i].lcore_role != ANS_LCORE_ROLE_DISABLE)
         {
-            printf("error: too many queues (%u) for lcore: %u\n",
-              (unsigned)nb_rx_queue + 1, (unsigned)lcore);
-            return -1;
-        }
-        else
-        {
-            lcore_conf[lcore].rx_queue[nb_rx_queue].port_id = user_conf->lcore_param[i].port_id;
-            lcore_conf[lcore].rx_queue[nb_rx_queue].queue_id = user_conf->lcore_param[i].queue_id;
-            lcore_conf[lcore].n_rx_queue++;
+            init_conf->lcore[lcore_nb].lcore_id = i;
+            init_conf->lcore[lcore_nb].lcore_role = lcore_conf[i].lcore_role;
+            lcore_nb++;
         }
     }
-    return 0;
+
+    init_conf->lcore_nb = lcore_nb;
+    
+    return;
 }
 
 /**********************************************************************
@@ -295,10 +327,10 @@ static uint8_t ans_get_port_rx_queues_nb(const uint8_t port, struct ans_user_con
     int queue = -1;
     uint16_t i;
 
-    for (i = 0; i < user_conf->lcore_param_nb; ++i)
+    for (i = 0; i < user_conf->rx_nb; ++i)
     {
-        if (user_conf->lcore_param[i].port_id == port && user_conf->lcore_param[i].queue_id > queue)
-          queue = user_conf->lcore_param[i].queue_id;
+        if (user_conf->lcore_rx[i].port_id == port && user_conf->lcore_rx[i].queue_id > queue)
+          queue = user_conf->lcore_rx[i].queue_id;
     }
     return (uint8_t)(++queue);
 }
@@ -314,11 +346,11 @@ static uint8_t ans_get_port_rx_queues_nb(const uint8_t port, struct ans_user_con
 *@return values:
 *
 **********************************************************************/
-static void ans_get_port_queue(const uint8_t port, struct ans_port_queue *port_queue, struct ans_lcore_queue *lcore_conf)
+static void ans_get_port_queue(const uint8_t port, struct ans_port_queue *port_queue, struct ans_lcore_config *lcore_conf)
 {
     uint16_t i;
     uint8_t lcore_id;
-    struct ans_lcore_queue *lcore_queue;
+    struct ans_lcore_config *lcore_queue;
 
     port_queue->rxq_nb = 0;
     port_queue->txq_nb = 0;
@@ -426,7 +458,7 @@ static void ans_set_port_offload(struct rte_eth_dev_info *dev_info, struct rte_e
 *@return values:
 *
 **********************************************************************/
-static int ans_init_ports(struct ans_user_config  *user_conf, struct ans_lcore_queue *lcore_conf)
+static int ans_init_ports(struct ans_user_config  *user_conf, struct ans_lcore_config *lcore_conf)
 {
     int ret;
     uint8_t portid;
@@ -522,7 +554,7 @@ static int ans_init_ports(struct ans_user_config  *user_conf, struct ans_lcore_q
               rte_exit(EXIT_FAILURE, "rte_eth_tx_queue_setup: err=%d, " "port=%d\n", ret, portid);
 
 
-            struct ans_lcore_queue * qconf = &lcore_conf[lcore_id];
+            struct ans_lcore_config * qconf = &lcore_conf[lcore_id];
             qconf->tx_queue[portid].queue_id = queueid;
             queueid++;
 
@@ -700,10 +732,10 @@ static inline int ans_send_burst(uint8_t port_id, uint16_t queue_id, struct rte_
 **********************************************************************/
 static inline int ans_send_packet(uint8_t port, struct rte_mbuf *m)
 {
-    struct ans_lcore_queue *qconf;
+    struct ans_lcore_config *qconf;
     struct ans_tx_queue  *tx_queue;
     
-    qconf = &g_lcore_queue[rte_lcore_id()];
+    qconf = &g_lcore_conf[rte_lcore_id()];
 
     tx_queue = &qconf->tx_queue[port];
 
@@ -797,7 +829,7 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
     unsigned lcore_id;
     uint64_t prev_tsc, diff_tsc, cur_tsc;
     uint8_t portid, queueid;
-    struct ans_lcore_queue *qconf;
+    struct ans_lcore_config *qconf;
     uint64_t timer_prev_tsc = 0, timer_cur_tsc, timer_diff_tsc, timer_10ms_tsc;
     struct rte_mbuf *pkts_burst[MAX_PKT_BURST];
     struct ans_tx_queue *tx_queue;
@@ -807,7 +839,7 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
     prev_tsc = 0;
 
     lcore_id = rte_lcore_id();
-    qconf = &g_lcore_queue[lcore_id];
+    qconf = &g_lcore_conf[lcore_id];
 
     if (qconf->n_rx_queue == 0)
     {
@@ -945,11 +977,9 @@ int main(int argc, char **argv)
     int s;
 
     memset(&ans_user_conf, 0, sizeof(ans_user_conf));
-    memset(g_lcore_queue, 0, sizeof(g_lcore_queue));
+    memset(g_lcore_conf, 0, sizeof(g_lcore_conf));
 
     ans_user_conf.numa_on = 1;
-    ans_user_conf.lcore_param_nb = sizeof(ans_lcore_params_default) / sizeof(ans_lcore_params_default[0]);
-    rte_memcpy(ans_user_conf.lcore_param, ans_lcore_params_default, sizeof(ans_lcore_params_default));
 
     CPU_ZERO(&init_conf.cpu_set);
 
@@ -990,38 +1020,51 @@ int main(int argc, char **argv)
         rte_exit(EXIT_FAILURE, "ipsync is enable, kni shall be enable too.\n");
     }
 
+    if(ans_user_conf.rx_nb == 0)
+    {
+        rte_exit(EXIT_FAILURE, "No configure RX lcore \n");
+    }
+
+    if(ans_user_conf.worker_nb >= 1)
+    {
+        rte_exit(EXIT_FAILURE, "Don't support worker for current ans version \n");
+    }
+
     ans_user_conf.lcore_nb = rte_lcore_count();
 
-    if (ans_check_lcore_params(&ans_user_conf) < 0)
-        rte_exit(EXIT_FAILURE, "check_lcore_params failed\n");
-
-    ret = ans_init_lcore_rx_queues(&ans_user_conf, g_lcore_queue);
-    if (ret < 0)
-      rte_exit(EXIT_FAILURE, "init_lcore_rx_queues failed\n");
+    if (ans_check_lcore_rx(&ans_user_conf) < 0)
+        rte_exit(EXIT_FAILURE, "check rx lcore config failed\n");
 
     ret = ans_check_port_config(&ans_user_conf);
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "check_port_config failed\n");
 
 
-    ret = ans_init_ports(&ans_user_conf, g_lcore_queue);
+    ret = ans_init_lcore_config(&ans_user_conf, g_lcore_conf);
+    if (ret < 0)
+      rte_exit(EXIT_FAILURE, "init lcore config failed\n");
+
+    ret = ans_init_ports(&ans_user_conf, g_lcore_conf);
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "Init ports failed\n");
 
 
     /* add by ans_team: support KNI interface at 2014-12-15 */
     if(ans_user_conf.kni_on == 1)
-        ans_kni_config(&ans_user_conf, g_lcore_queue, ans_pktmbuf_pool);
+        ans_kni_config(&ans_user_conf, g_lcore_conf, ans_pktmbuf_pool);
 
 
     /* add by ans_team ---start */
     ans_init_timer();
-    printf("\ncore mask: %x, sockets number:%d, lcore number:%d \n", ans_user_conf.lcore_mask, ans_user_conf.socket_nb, ans_user_conf.lcore_nb);
+    printf("\n rx core: %d, worker core: %d, sockets number:%d, lcore number:%d \n", 
+        ans_user_conf.rx_nb, ans_user_conf.worker_nb, ans_user_conf.socket_nb, ans_user_conf.lcore_nb);
 
     printf("start to init ans \n");
+
+    ans_get_lcore_config(g_lcore_conf, &init_conf);
+    
     init_conf.sock_nb = ans_user_conf.lcore_nb * 128 * 1024;
 
-    init_conf.lcore_mask = ans_user_conf.lcore_mask;
     for(i = 0 ; i < MAX_NB_SOCKETS; i++)
     {
         init_conf.pktmbuf_pool[i] = ans_pktmbuf_pool[i];
@@ -1079,7 +1122,7 @@ int main(int argc, char **argv)
 
         /* set port queue mapping */
         struct ans_port_queue port_queue;
-        ans_get_port_queue(portid, &port_queue, g_lcore_queue);
+        ans_get_port_queue(portid, &port_queue, g_lcore_conf);
         
         ret = ans_iface_set_queue(ifname, &port_queue);
         if (ret != 0)
