@@ -72,14 +72,11 @@
 #include <rte_tcp.h>
 #include <rte_udp.h>
 #include <rte_string_fns.h>
-
-/* add by ans_team -- start */
+#include <rte_meter.h>
 #include <rte_spinlock.h>
 
 #include "ans_init.h"
 #include "ans_ip_intf.h"
-
-/* add by ans_team -- end */
 
 #include "ans_main.h"
 #include "ans_param.h"
@@ -866,9 +863,7 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
         cur_tsc = rte_rdtsc();
         timer_cur_tsc = cur_tsc;
         
-        /* add by ans_team ---start */
         ans_message_handle(cur_tsc);
-        /* add by ans_team ---end */
   
         /*
          * Call the timer handler on each core: as we don't
@@ -899,14 +894,6 @@ static int ans_main_loop(__attribute__((unused)) void *dummy)
             {
                 portid = qconf->port_id[i];
                 ans_eth_tx_flush(portid);
-            /*
-                tx_queue = &qconf->tx_queue[portid];
-                if(tx_queue->pkts_nb == 0)
-                    continue;
-
-                ans_send_burst(portid, tx_queue->queue_id, tx_queue->pkts, tx_queue->pkts_nb);
-                tx_queue->pkts_nb = 0;
-                */
             }
 
             prev_tsc = cur_tsc;
@@ -972,14 +959,19 @@ int main(int argc, char **argv)
 {
     int i;
     int ret;
+    int s;
     unsigned lcore_id;
     struct ans_init_config init_conf;
-    int s;
+    struct ans_user_config *user_conf;
+    struct ans_lcore_config *lcore_conf;
 
-    memset(&ans_user_conf, 0, sizeof(ans_user_conf));
-    memset(g_lcore_conf, 0, sizeof(g_lcore_conf));
+    user_conf = &ans_user_conf;
+    lcore_conf = g_lcore_conf;
+    
+    memset(user_conf, 0, sizeof(struct ans_user_config));
+    memset(lcore_conf, 0, sizeof(g_lcore_conf));
 
-    ans_user_conf.numa_on = 1;
+    user_conf->numa_on = 1;
 
     CPU_ZERO(&init_conf.cpu_set);
 
@@ -1003,74 +995,74 @@ int main(int argc, char **argv)
     argv += ret;
 
     /* parse application arguments (after the EAL ones) */
-    ret = ans_parse_args(argc, argv, &ans_user_conf);
+    ret = ans_parse_args(argc, argv, user_conf);
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "Invalid ANS parameters\n");
 
 
-    if(ans_user_conf.jumbo_frame_on)
+    if(user_conf->jumbo_frame_on)
     {
         ans_port_conf.rxmode.offloads |= DEV_RX_OFFLOAD_JUMBO_FRAME;
         ans_port_conf.txmode.offloads |= DEV_TX_OFFLOAD_MULTI_SEGS;
-        ans_port_conf.rxmode.max_rx_pkt_len = ans_user_conf.max_rx_pkt_len;
+        ans_port_conf.rxmode.max_rx_pkt_len = user_conf->max_rx_pkt_len;
     }
 
-    if(ans_user_conf.ipsync_on && !ans_user_conf.kni_on)
+    if(user_conf->ipsync_on && !user_conf->kni_on)
     {
         rte_exit(EXIT_FAILURE, "ipsync is enable, kni shall be enable too.\n");
     }
 
-    if(ans_user_conf.rx_nb == 0)
+    if(user_conf->rx_nb == 0)
     {
         rte_exit(EXIT_FAILURE, "No configure RX lcore \n");
     }
 
-    if(ans_user_conf.worker_nb >= 1)
+    if(user_conf->worker_nb >= 1)
     {
         rte_exit(EXIT_FAILURE, "Don't support worker for current ans version \n");
     }
 
-    ans_user_conf.lcore_nb = rte_lcore_count();
+    user_conf->lcore_nb = rte_lcore_count();
 
-    if (ans_check_lcore_rx(&ans_user_conf) < 0)
+    if (ans_check_lcore_rx(user_conf) < 0)
         rte_exit(EXIT_FAILURE, "check rx lcore config failed\n");
 
-    ret = ans_check_port_config(&ans_user_conf);
+    ret = ans_check_port_config(user_conf);
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "check_port_config failed\n");
 
 
-    ret = ans_init_lcore_config(&ans_user_conf, g_lcore_conf);
+    ret = ans_init_lcore_config(user_conf, lcore_conf);
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "init lcore config failed\n");
 
-    ret = ans_init_ports(&ans_user_conf, g_lcore_conf);
+    ret = ans_init_ports(user_conf, lcore_conf);
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "Init ports failed\n");
 
 
     /* add by ans_team: support KNI interface at 2014-12-15 */
-    if(ans_user_conf.kni_on == 1)
-        ans_kni_config(&ans_user_conf, g_lcore_conf, ans_pktmbuf_pool);
+    if(user_conf->kni_on == 1)
+        ans_kni_config(user_conf, lcore_conf, ans_pktmbuf_pool);
 
 
     /* add by ans_team ---start */
     ans_init_timer();
     printf("\n rx core: %d, worker core: %d, sockets number:%d, lcore number:%d \n", 
-        ans_user_conf.rx_nb, ans_user_conf.worker_nb, ans_user_conf.socket_nb, ans_user_conf.lcore_nb);
+        user_conf->rx_nb, user_conf->worker_nb, user_conf->socket_nb, user_conf->lcore_nb);
 
     printf("start to init ans \n");
 
-    ans_get_lcore_config(g_lcore_conf, &init_conf);
+    ans_get_lcore_config(lcore_conf, &init_conf);
     
-    init_conf.sock_nb = ans_user_conf.lcore_nb * 128 * 1024;
+    init_conf.sock_nb = user_conf->lcore_nb * 128 * 1024;
 
     for(i = 0 ; i < MAX_NB_SOCKETS; i++)
     {
         init_conf.pktmbuf_pool[i] = ans_pktmbuf_pool[i];
     }
 
-    init_conf.ip_sync = ans_user_conf.ipsync_on;
+    init_conf.ip_sync = user_conf->ipsync_on;
     init_conf.port_send = ans_tx_burst;
     init_conf.port_bypass = ans_bypass_packet;
 
@@ -1091,7 +1083,7 @@ int main(int argc, char **argv)
     RTE_ETH_FOREACH_DEV(portid)
     {
         /* skip ports that are not enabled */
-        if ((ans_user_conf.port_mask & (1 << portid)) == 0)
+        if ((user_conf->port_mask & (1 << portid)) == 0)
         {
             printf("\nSkipping disabled port %d\n", portid);
             continue;
@@ -1122,7 +1114,7 @@ int main(int argc, char **argv)
 
         /* set port queue mapping */
         struct ans_port_queue port_queue;
-        ans_get_port_queue(portid, &port_queue, g_lcore_conf);
+        ans_get_port_queue(portid, &port_queue, lcore_conf);
         
         ret = ans_iface_set_queue(ifname, &port_queue);
         if (ret != 0)
@@ -1154,7 +1146,7 @@ int main(int argc, char **argv)
     printf("\n");
     /* add by ans_team ---end */
 
-    ans_start_ports(&ans_user_conf);
+    ans_start_ports(user_conf);
 
     /* launch per-lcore init on every lcore */
     rte_eal_mp_remote_launch(ans_main_loop, NULL, CALL_MASTER);
@@ -1164,7 +1156,7 @@ int main(int argc, char **argv)
         break;
     }
 
-    ans_stop_ports(&ans_user_conf);
+    ans_stop_ports(user_conf);
 
     return ret;
 }
