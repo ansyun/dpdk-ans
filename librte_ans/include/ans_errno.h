@@ -116,10 +116,10 @@
 
 /* math software */
 #define	ANS_EDOM		EDOM		/* Numerical argument out of domain */
-#define	ANS_ERANGE	ERANGE		/* Result too large */
+#define	ANS_ERANGE 	ERANGE		/* Result too large */
 
 /* non-blocking and interrupt i/o */
-#define	ANS_EAGAIN	EAGAIN		/* Resource temporarily unavailable */
+#define	ANS_EAGAIN 	EAGAIN		/* Resource temporarily unavailable */
 #ifndef _POSIX_SOURCE
 #define	ANS_EWOULDBLOCK	ANS_EAGAIN		/* Operation would block */
 #define	ANS_EINPROGRESS	EINPROGRESS		/* Operation now in progress */
@@ -150,7 +150,7 @@
 #define	ANS_EISCONN		EISCONN		/* Socket is already connected */
 #define	ANS_ENOTCONN	ENOTCONN		/* Socket is not connected */
 #define	ANS_ESHUTDOWN	ESHUTDOWN		/* Can't send after socket shutdown */
-#define	ANS_ETOOMANYREFS	ETOOMANYREFS		/* Too many references: can't splice */
+#define	ANS_ETOOMANYREFS	 ETOOMANYREFS		/* Too many references: can't splice */
 #define	ANS_ETIMEDOUT	ETIMEDOUT		/* Operation timed out */
 #define	ANS_ECONNREFUSED	ECONNREFUSED		/* Connection refused */
 

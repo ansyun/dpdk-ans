@@ -81,7 +81,7 @@ struct ans_init_config
  * @param user_conf   
  *   user config.
  *
- * @return  0 - SUCCESS, non-zero - FAILURE
+ * @return  0 - SUCCESS, non-zero - FAILURE, process shall exist.
  *
  */
 int ans_initialize(struct ans_init_config *user_conf);

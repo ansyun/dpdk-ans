@@ -38,7 +38,7 @@
 #define MAX_TX_BURST      32         /* set tx burst as 1 for lower packet latency, shall set to 32 ? */
 #define BURST_TX_DRAIN_US 100 /* TX drain every ~100us */
 
-#define MAX_MBUF_NB     (1024 * 16)
+#define MAX_MBUF_NB     (1024 * 32)
 
 
 /* Configure how many packets ahead to prefetch, when reading packets */

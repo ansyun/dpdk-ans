@@ -565,7 +565,7 @@ static int ans_init_ports(struct ans_user_config  *user_conf, struct ans_lcore_c
     }
 
     /* init memory */
-    ret = ans_init_mbuf_pool(MAX_MBUF_NB, user_conf);
+    ret = ans_init_mbuf_pool(MAX_MBUF_NB * nb_lcores, user_conf);
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "init_mem failed\n");
 
