@@ -74,6 +74,9 @@
 #include <rte_string_fns.h>
 #include <rte_meter.h>
 #include <rte_spinlock.h>
+#ifdef RTE_LIBRTE_PDUMP
+#include <rte_pdump.h>
+#endif
 
 #include "ans_init.h"
 #include "ans_ip_intf.h"
@@ -937,6 +940,11 @@ static void ans_signal_handler(int signum)
     {
         printf("\nSignal %d received, preparing to exit...\n", signum);
 
+#ifdef RTE_LIBRTE_PDUMP
+        /* uninitialize packet capture framework */
+        rte_pdump_uninit();
+#endif
+
         printf("Telling cores to stop...\n");
         ans_stopped = 1;
     }
@@ -990,6 +998,11 @@ int main(int argc, char **argv)
 
     signal(SIGINT, ans_signal_handler);
     signal(SIGTERM, ans_signal_handler);
+
+#ifdef RTE_LIBRTE_PDUMP
+	/* initialize packet capture framework */
+//	rte_pdump_init(NULL);
+#endif
 
     argc -= ret;
     argv += ret;

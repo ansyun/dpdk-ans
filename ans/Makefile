@@ -54,7 +54,7 @@ CFLAGS += -O3 -std=gnu99 $(USER_FLAGS)
 #CFLAGS += $(WERROR_FLAGS)
 CFLAGS += -I$(ANS_PATH)/librte_ans/include
 
-LDLIBS += $(ANS_PATH)/librte_ans/librte_ans.a 
+LDLIBS += $(ANS_PATH)/librte_ans/librte_ans.a -lcrypto
 
 
 # workaround for a gcc bug with noreturn attribute

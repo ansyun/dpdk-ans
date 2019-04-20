@@ -53,7 +53,7 @@
  *  Prefix for hugepage filenames, shall be same as ANS startup parameter(--file-prefix).
  *  If input is NULL, the default file-prefix is "rte"
  * @return  
- *
+ * On success, zero is returned. On error, errno is returned.
  */
 int anssock_init(char *file_prefix);
 
