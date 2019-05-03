@@ -131,7 +131,7 @@ ANS          |               |               |
     |       ANS with epoll         | 
     |         (one core)           |
     |------------------------------|
-    |     80k connection/s         | 
+    |     100k connection/s         | 
     |------------------------------| 
 ```
 - L3 forwarding with NIC performance testing
@@ -193,87 +193,85 @@ LRANGE_600 (first 600 elements): 7964.95 requests per second
 MSET (10 keys): 107758.62 requests per second
 
 ```
-- http server connection performance
+
+- dpdk-nginx CPS performance
 ```
-CPU:Intel(R) Xeon(R) CPU E5-2430 0 @ 2.20GHz.
-NIC:Intel Corporation 82576 Gigabit Network Connection (rev 01) 
-ANS run on a lcore.
-examples/http_server run as http server.
-
-root@h163:~# ab -n 30000 -c 500 10.0.0.2:8089/
-This is ApacheBench, Version 2.3 <$Revision: 1528965 $>
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-Licensed to The Apache Software Foundation, http://www.apache.org/
-
-Benchmarking 10.0.0.2 (be patient)
-Completed 3000 requests
-Completed 6000 requests
-Completed 9000 requests
-Completed 12000 requests
-Completed 15000 requests
-Completed 18000 requests
-Completed 21000 requests
-Completed 24000 requests
-Completed 27000 requests
-Completed 30000 requests
-Finished 30000 requests
-
-
-Server Software:
-Server Hostname:        10.0.0.2
-Server Port:            8089
-
-Document Path:          /
-Document Length:        63 bytes
-
-Concurrency Level:      500
-Time taken for tests:   0.642 seconds
-Complete requests:      30000
-Failed requests:        0
-Total transferred:      4530000 bytes
-HTML transferred:       1890000 bytes
-Requests per second:    46695.59 [#/sec] (mean)
-Time per request:       10.708 [ms] (mean)
-Time per request:       0.021 [ms] (mean, across all concurrent requests)
-Transfer rate:          6885.78 [Kbytes/sec] received
-
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        2    5   0.9      5       7
-Processing:     2    6   1.0      6      10
-Waiting:        1    4   1.0      4       9
-Total:          7   11   0.5     11      14
-
-Percentage of the requests served within a certain time (ms)
-  50%     11
-  66%     11
-  75%     11
-  80%     11
-  90%     11
-  95%     12
-  98%     12
-  99%     13
- 100%     14 (longest request)
-root@h163:~#
-
-```
-
-- dpdk-nginx over ans performance
-```
-CPU:Intel(R) Xeon(R) CPU E5-2670 0 @ 2.60GHz.
+CPU: Intel(R) Xeon(R) CPU E5-2683 v3 @ 2.00GHz
 NIC:82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01) 
 ANS run on a lcore.
-6 dpdk-nginx run on ANS.
+4 dpdk-nginx run on ANS.
 
-./wrk -c 5k -d30s -t16  http://10.0.0.2/
-Running 30s test @ http://10.0.0.2/
-  16 threads and 5000 connections
+# ./wrk --timeout=1 --latency -H "Connection: close" -t20 -c100 -d30s http://10.0.0.2
+Running 30s test @ http://10.0.0.2
+  20 threads and 100 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    41.93ms  119.14ms   1.73s    92.61%
-    Req/Sec    18.16k     1.73k   26.34k    76.00%
-  8700983 requests in 30.11s, 6.88GB read
-Requests/sec: 288956.57
-Transfer/sec:    233.95MB
+    Latency   480.80us   73.12us   4.66ms   88.86%
+    Req/Sec     5.32k   125.94     6.98k    84.30%
+  Latency Distribution
+     50%  478.00us
+     75%  505.00us
+     90%  535.00us
+     99%  648.00us
+  3186335 requests in 30.10s, 2.51GB read
+Requests/sec: 105860.26
+Transfer/sec:     85.31MB
+
+ANS run on two lcore.
+8 dpdk-nginx run on ANS.
+# ./wrk --timeout=1 --latency -H "Connection: close" -t20 -c100 -d30s http://10.0.0.2
+Running 30s test @ http://10.0.0.2
+  20 threads and 100 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   251.70us   89.45us   4.39ms   68.59%
+    Req/Sec    10.28k   340.17    12.40k    67.67%
+  Latency Distribution
+     50%  246.00us
+     75%  310.00us
+     90%  363.00us
+     99%  480.00us
+  6155775 requests in 30.10s, 4.84GB read
+Requests/sec: 204512.88
+Transfer/sec:    164.81MB
+
+```
+- dpdk-nginx QPS performance
+```
+CPU: Intel(R) Xeon(R) CPU E5-2683 v3 @ 2.00GHz
+NIC:82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01) 
+ANS run on a lcore.
+8 dpdk-nginx run on ANS.
+
+# ./wrk --timeout=1 --latency -t20 -c100 -d30s http://10.0.0.2
+Running 30s test @ http://10.0.0.2
+  20 threads and 100 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   257.91us  407.36us  24.37ms   98.77%
+    Req/Sec    20.85k     1.84k   26.88k    70.23%
+  Latency Distribution
+     50%  214.00us
+     75%  289.00us
+     90%  338.00us
+     99%  825.00us
+  12488349 requests in 30.10s, 9.89GB read
+Requests/sec: 414900.42
+Transfer/sec:    336.31MB
+
+ANS run on two lcore.
+10 dpdk-nginx run on ANS.
+# ./wrk --timeout=1 --latency -t20 -c100 -d30s http://10.0.0.2
+Running 30s test @ http://10.0.0.2
+  20 threads and 100 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   184.60us  165.39us  12.97ms   98.92%
+    Req/Sec    26.69k     0.93k   29.92k    79.17%
+  Latency Distribution
+     50%  186.00us
+     75%  200.00us
+     90%  216.00us
+     99%  370.00us
+  15985217 requests in 30.10s, 12.65GB read
+Requests/sec: 531077.97
+Transfer/sec:    430.48MB
 
 ```
 
