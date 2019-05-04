@@ -81,7 +81,7 @@ char *https_200 = "HTTP/1.0 200 OK\r\n"
                  "\r\n"
                  "<html><body><h1>200 OK</h1>\nEverything is fine.\n</body></html>\n";
  
-extern void ans_mod_init();
+extern void ans_mod_init(char *file_prefix);
 
 int dpdk_https_event(struct epoll_event ev,SSL *ssl)
 {
@@ -157,7 +157,7 @@ int RunHttpsThread(void)
     int result =0;
     int do_sslaccept = 0; 
      
-    ans_mod_init();
+    ans_mod_init(NULL);
   
     myport = 7838;   
     lisnum = 2048;  
