@@ -72,7 +72,8 @@ Support feature:
      - Support virtio-user;     
      - Support kni; 
      - Support tap; 
-
+  - ARM SoC;     
+     
 #### ANS User Guide
 --------------
 ```
