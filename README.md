@@ -74,10 +74,7 @@ Support feature:
      - Support tap; 
   - Hardware;     
      - x86: broadwell, haswell, ivybridge, knl, sandybridge, westmere and so on.
-     - arm: arm64.
-  - SoC and embeb system;      
-     - disk: 4M, memory: 128M
-     - Support TCP connection: 512, ACL: 16, application: 8
+     - arm: arm64 SoC and edge computer; 
      
 #### ANS User Guide
 --------------
