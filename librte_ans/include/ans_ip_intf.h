@@ -87,10 +87,10 @@ struct ans_qmaping
 struct ans_port_queue
 {
     uint8_t rxq_nb;
-    struct ans_qmaping rx_qmapping[RTE_MAX_LCORE];
+    struct ans_qmaping rx_qmapping[ANS_MAX_NB_LCORE];
 
     uint8_t txq_nb;
-    struct ans_qmaping tx_qmapping[RTE_MAX_LCORE];
+    struct ans_qmaping tx_qmapping[ANS_MAX_NB_LCORE];
 };
 
  /**

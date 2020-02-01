@@ -110,10 +110,10 @@ struct ans_user_config
     uint8_t jumbo_frame_on;
     uint16_t max_rx_pkt_len;
     uint16_t rx_nb;
-    struct ans_lcore_rx lcore_rx[RTE_MAX_LCORE];
+    struct ans_lcore_rx lcore_rx[ANS_MAX_NB_LCORE];
 
     uint16_t worker_nb;
-    struct ans_lcore_worker lcore_worker[RTE_MAX_LCORE];
+    struct ans_lcore_worker lcore_worker[ANS_MAX_NB_LCORE];
 };
 
 struct ans_lcore_config
@@ -128,7 +128,6 @@ struct ans_lcore_config
     uint8_t lcore_role;
 } __rte_cache_aligned;
 
-#define MAX_NB_SOCKETS    8
 #define MEMPOOL_CACHE_SIZE 256
 
 #define MAX_MBUF_SIZE (2048 + sizeof(struct rte_mbuf) + RTE_PKTMBUF_HEADROOM)

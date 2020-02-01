@@ -76,7 +76,7 @@ char *http_200 = "HTTP/1.0 200 OK\r\n"
                  "Connection: close\r\n"
                  "Content-Type: text/html\r\n"
                  "\r\n"
-                 "<html><body><h1>200 OK</h1>\nEverything is fine.\n</body></html>\n";
+                 "<html><body><h1>200 OK</h1>\nHello world.\n</body></html>\n";
 
 static int
 HandleReadEvent(int epoll_fd, struct epoll_event ev)

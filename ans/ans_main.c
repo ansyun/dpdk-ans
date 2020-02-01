@@ -86,8 +86,8 @@
 #include "ans_kni.h"
 
 static struct ans_user_config  ans_user_conf;
-static struct ans_lcore_config g_lcore_conf[RTE_MAX_LCORE];
-static struct rte_mempool *ans_pktmbuf_pool[MAX_NB_SOCKETS];
+static struct ans_lcore_config g_lcore_conf[ANS_MAX_NB_LCORE];
+static struct rte_mempool *ans_pktmbuf_pool[ANS_MAX_NB_SOCKETS];
 static uint8_t ans_stopped = 0;
 
 static struct rte_eth_conf ans_port_conf =
@@ -244,7 +244,7 @@ static void ans_get_lcore_config(struct ans_lcore_config *lcore_conf, struct ans
     int i;
     uint8_t lcore_nb = 0; 
 
-    for (i = 0; i < RTE_MAX_LCORE; i++)
+    for (i = 0; i < ANS_MAX_NB_LCORE; i++)
     {
         if(lcore_conf[i].lcore_role != ANS_LCORE_ROLE_DISABLE)
         {
@@ -278,7 +278,7 @@ static int ans_init_mbuf_pool(unsigned nb_mbuf, struct ans_user_config  *user_co
 
     memset(ans_pktmbuf_pool, 0, sizeof(ans_pktmbuf_pool));
 
-    for (lcore_id = 0; lcore_id < RTE_MAX_LCORE; lcore_id++)
+    for (lcore_id = 0; lcore_id < ANS_MAX_NB_LCORE; lcore_id++)
     {
         if (rte_lcore_is_enabled(lcore_id) == 0)
             continue;
@@ -288,9 +288,9 @@ static int ans_init_mbuf_pool(unsigned nb_mbuf, struct ans_user_config  *user_co
         else
             socketid = 0;
 
-        if (socketid >= MAX_NB_SOCKETS)
+        if (socketid >= ANS_MAX_NB_SOCKETS)
         {
-            rte_exit(EXIT_FAILURE, "Socket %d of lcore %u is out of range %d\n", socketid, lcore_id, MAX_NB_SOCKETS);
+            rte_exit(EXIT_FAILURE, "Socket %d of lcore %u is out of range %d\n", socketid, lcore_id, ANS_MAX_NB_SOCKETS);
         }
 
         if (ans_pktmbuf_pool[socketid] == NULL)
@@ -355,7 +355,7 @@ static void ans_get_port_queue(const uint8_t port, struct ans_port_queue *port_q
     port_queue->rxq_nb = 0;
     port_queue->txq_nb = 0;
     
-    for(lcore_id = 0; lcore_id < RTE_MAX_LCORE; lcore_id++)
+    for(lcore_id = 0; lcore_id < ANS_MAX_NB_LCORE; lcore_id++)
     {
         if (rte_lcore_is_enabled(lcore_id) == 0)
             continue;
@@ -523,7 +523,7 @@ static int ans_init_ports(struct ans_user_config  *user_conf, struct ans_lcore_c
 
         /* init one TX queue per couple (lcore,port) */
         queueid = 0;
-        for (lcore_id = 0; lcore_id < RTE_MAX_LCORE; lcore_id++)
+        for (lcore_id = 0; lcore_id < ANS_MAX_NB_LCORE; lcore_id++)
         {
             if (rte_lcore_is_enabled(lcore_id) == 0)
             {
@@ -572,7 +572,7 @@ static int ans_init_ports(struct ans_user_config  *user_conf, struct ans_lcore_c
     if (ret < 0)
       rte_exit(EXIT_FAILURE, "init_mem failed\n");
 
-    for (lcore_id = 0; lcore_id < RTE_MAX_LCORE; lcore_id++)
+    for (lcore_id = 0; lcore_id < ANS_MAX_NB_LCORE; lcore_id++)
     {
         if (rte_lcore_is_enabled(lcore_id) == 0)
             continue;
@@ -1070,7 +1070,7 @@ int main(int argc, char **argv)
     
     init_conf.sock_nb = user_conf->lcore_nb * 128 * 1024;
 
-    for(i = 0 ; i < MAX_NB_SOCKETS; i++)
+    for(i = 0 ; i < ANS_MAX_NB_SOCKETS; i++)
     {
         init_conf.pktmbuf_pool[i] = ans_pktmbuf_pool[i];
     }

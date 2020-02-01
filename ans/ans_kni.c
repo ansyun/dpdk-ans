@@ -115,7 +115,7 @@ struct kni_lcore_params
 } __rte_cache_aligned;
 
 struct kni_port_params  * kni_port_params_array[RTE_MAX_ETHPORTS];
-struct kni_lcore_params * kni_lcore_params_array[RTE_MAX_LCORE];
+struct kni_lcore_params * kni_lcore_params_array[ANS_MAX_NB_LCORE];
 
 static struct rte_mempool ** kni_pktmbuf_pool;
 

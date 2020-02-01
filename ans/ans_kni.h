@@ -34,6 +34,7 @@
 #define __ANS_KNI_H__
 
 #include <rte_mempool.h>
+#include "ans_init.h"
 #include "ans_main.h"
 
 /* Load Configure Information for KNI module */

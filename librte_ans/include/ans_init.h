@@ -42,6 +42,7 @@
  *
  */
 
+#define ANS_MAX_NB_LCORE    RTE_MAX_LCORE
 #define ANS_MAX_NB_SOCKETS 8    /**< max number of sockets */
 
 #define ANS_LCORE_ROLE_DISABLE 0  /**< lcore disable */
@@ -63,7 +64,7 @@ struct ans_lcore
 struct ans_init_config 
 {
     uint16_t lcore_nb;                                                                /**< lcore number */
-    struct ans_lcore lcore[RTE_MAX_LCORE];                                 /**< lcore configuration */
+    struct ans_lcore lcore[ANS_MAX_NB_LCORE];                                 /**< lcore configuration */
     uint32_t sock_nb;                                                                /**< support max sock connection number */
     uint8_t  ip_sync;                                                                 /**< 1: enable ip/route sync from kernel, otherwise disable sync */    
     cpu_set_t cpu_set;                                                              /**< system default cpu set */

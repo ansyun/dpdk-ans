@@ -306,7 +306,7 @@ static int ans_parse_config(const char *q_arg, struct ans_user_config *user_conf
               return -1;
         }
 
-        if (user_conf->rx_nb >= RTE_MAX_LCORE)
+        if (user_conf->rx_nb >= ANS_MAX_NB_LCORE)
         {
             printf("exceeded max number of lcore params: %hu\n", user_conf->rx_nb);
             return -1;
@@ -370,7 +370,7 @@ static int ans_parse_worker(const char *arg,  struct ans_user_config *user_conf)
             return -1;
         }
 
-        if (lcore >= RTE_MAX_LCORE)
+        if (lcore >= ANS_MAX_NB_LCORE)
         {
             printf("lcore %d is too big \n", lcore);
             return -1;
